@@ -108,6 +108,15 @@ export interface FamilyCase {
   notes: CaseNote[];
   lastUpdatedAt: string; // ISO
   members?: CaseMember[]; // users who can access this case
+  currentStage?: string; // Current stage in the case process
+}
+
+export interface CaseStage {
+  id: string;
+  name: string;
+  description?: string;
+  order: number;
+  completedAt?: string; // ISO date
 }
 
 export interface AppStateSnapshot {
@@ -115,22 +124,52 @@ export interface AppStateSnapshot {
   createdAt: string;
   updatedAt: string;
   cases: FamilyCase[];
+  invites: CaseInvite[];
+  deadlines: DocumentDeadline[];
 }
 
-export type UserRole = 'LIP' | 'McKenzieFriend';
+export type UserRole = 'LIP' | 'McKenzieFriend' | 'Solicitor' | 'Barrister';
 
 export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
+  firm?: string; // For Solicitor/Barrister
+  registrationNumber?: string; // Professional registration number
 }
 
-export type CaseMemberRole = 'Owner' | 'Collaborator';
+export type CaseMemberRole = 'Owner' | 'Collaborator' | 'McKenzieFriend' | 'Solicitor' | 'Barrister';
 
 export interface CaseMember {
   userId: string;
   role: CaseMemberRole;
+  invitedAt?: string; // ISO date
+  invitedBy?: string; // userId
+}
+
+export interface CaseInvite {
+  id: string;
+  caseId: string;
+  token: string;
+  role: 'McKenzieFriend' | 'Solicitor' | 'Barrister';
+  createdBy: string; // userId
+  createdAt: string; // ISO date
+  expiresAt?: string; // ISO date
+  usedAt?: string; // ISO date
+  usedBy?: string; // userId
+}
+
+export interface DocumentDeadline {
+  id: string;
+  caseId: string;
+  title: string;
+  description?: string;
+  deadlineDate: string; // ISO date
+  documentType?: string;
+  status: 'pending' | 'submitted' | 'overdue';
+  assignedTo?: string; // userId
+  submittedAt?: string; // ISO date
 }
 
 

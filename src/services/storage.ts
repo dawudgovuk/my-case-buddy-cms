@@ -1,7 +1,7 @@
-import type { AppStateSnapshot, FamilyCase } from '../types/domain';
+import type { AppStateSnapshot, FamilyCase, CaseInvite, DocumentDeadline } from '../types/domain';
 
 const STORAGE_KEY = 'uk-family-court-cms:v1';
-const VERSION = 1;
+const VERSION = 2;
 
 function nowIso(): string {
   return new Date().toISOString();
@@ -15,6 +15,8 @@ export function loadSnapshot(): AppStateSnapshot {
       createdAt: nowIso(),
       updatedAt: nowIso(),
       cases: [],
+      invites: [],
+      deadlines: [],
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(empty));
     return empty;
@@ -22,12 +24,14 @@ export function loadSnapshot(): AppStateSnapshot {
   try {
     const parsed = JSON.parse(raw) as AppStateSnapshot;
     if (parsed.version !== VERSION) {
-      // simple forward-compatible migration hook
+      // Migration: add invites and deadlines if missing
       const migrated: AppStateSnapshot = {
         version: VERSION,
         createdAt: parsed.createdAt ?? nowIso(),
         updatedAt: nowIso(),
         cases: parsed.cases ?? [],
+        invites: (parsed as any).invites ?? [],
+        deadlines: (parsed as any).deadlines ?? [],
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
       return migrated;
@@ -39,6 +43,8 @@ export function loadSnapshot(): AppStateSnapshot {
       createdAt: nowIso(),
       updatedAt: nowIso(),
       cases: [],
+      invites: [],
+      deadlines: [],
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(reset));
     return reset;
@@ -83,6 +89,54 @@ export function getCase(caseId: string): FamilyCase | undefined {
 
 export function generateId(prefix: string): string {
   return `${prefix}_${Math.random().toString(36).slice(2, 8)}_${Date.now().toString(36)}`;
+}
+
+export function createInvite(invite: CaseInvite): AppStateSnapshot {
+  return saveSnapshot((prev) => ({
+    ...prev,
+    invites: [...prev.invites, invite],
+  }));
+}
+
+export function getInviteByToken(token: string): CaseInvite | undefined {
+  return loadSnapshot().invites.find((i) => i.token === token);
+}
+
+export function updateInvite(inviteId: string, updates: Partial<CaseInvite>): AppStateSnapshot {
+  return saveSnapshot((prev) => ({
+    ...prev,
+    invites: prev.invites.map((i) => (i.id === inviteId ? { ...i, ...updates } : i)),
+  }));
+}
+
+export function createDeadline(deadline: DocumentDeadline): AppStateSnapshot {
+  return saveSnapshot((prev) => ({
+    ...prev,
+    deadlines: [...prev.deadlines, deadline],
+  }));
+}
+
+export function updateDeadline(deadlineId: string, updates: Partial<DocumentDeadline>): AppStateSnapshot {
+  return saveSnapshot((prev) => ({
+    ...prev,
+    deadlines: prev.deadlines.map((d) => (d.id === deadlineId ? { ...d, ...updates } : d)),
+  }));
+}
+
+export function getDeadlinesForCase(caseId: string): DocumentDeadline[] {
+  return loadSnapshot().deadlines.filter((d) => d.caseId === caseId);
+}
+
+export function getDeadlinesForUser(userId: string): DocumentDeadline[] {
+  return loadSnapshot().deadlines.filter((d) => d.assignedTo === userId);
+}
+
+export function getAllInvites(): CaseInvite[] {
+  return loadSnapshot().invites;
+}
+
+export function getAllDeadlines(): DocumentDeadline[] {
+  return loadSnapshot().deadlines;
 }
 
 

@@ -1,9 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom'
 import { useCasesStore } from '../store/casesStore'
-import { Box, Button, Chip, Divider, MenuItem, Paper, Stack, Tab, Tabs, TextField, Typography } from '@mui/material'
+import { Box, Button, Chip, Divider, IconButton, MenuItem, Paper, Stack, Tab, Tabs, TextField, Typography } from '@mui/material'
+import { ContentCopy } from '@mui/icons-material'
 import type { FamilyCase, Party, Hearing, DocumentRecord, OrderRecord } from '../types/domain'
-import { generateId } from '../services/storage'
+import { generateId, createInvite, getAllInvites } from '../services/storage'
+import { useAuthStore } from '../store/authStore'
+import { listUsers } from '../services/auth'
 
 function PartiesTab({ caseId }: { caseId: string }) {
   const store = useCasesStore()
@@ -255,6 +258,216 @@ function NotesTab({ caseId }: { caseId: string }) {
   )
 }
 
+function TeamInvitesTab({ caseId }: { caseId: string }) {
+  const store = useCasesStore()
+  const { user } = useAuthStore()
+  const fc = store.getById(caseId)
+  if (!fc || !user) return null
+  const current = fc as FamilyCase
+  const [inviteRole, setInviteRole] = useState<'McKenzieFriend' | 'Solicitor' | 'Barrister'>('McKenzieFriend')
+  const [generatedInvite, setGeneratedInvite] = useState<string | null>(null)
+  const [solicitorName, setSolicitorName] = useState('')
+  const [solicitorFirm, setSolicitorFirm] = useState('')
+  const [barristerName, setBarristerName] = useState('')
+  const [barristerChambers, setBarristerChambers] = useState('')
+
+  const allInvites = getAllInvites().filter(i => i.caseId === caseId)
+  const allUsers = listUsers()
+
+  function generateInviteLink() {
+    const token = generateId('INV')
+    const invite = {
+      id: generateId('INV'),
+      caseId: current.id,
+      token,
+      role: inviteRole,
+      createdBy: user.id,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
+    }
+    createInvite(invite)
+    const inviteUrl = `${window.location.origin}/invite/${token}`
+    setGeneratedInvite(inviteUrl)
+  }
+
+  function copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text)
+  }
+
+  function addSolicitor() {
+    if (!solicitorName.trim()) return
+    const updated: FamilyCase = {
+      ...current,
+      parties: [
+        ...current.parties,
+        {
+          id: generateId('PTY'),
+          role: 'Applicant',
+          firstName: solicitorName.trim().split(' ')[0] || '',
+          lastName: solicitorName.trim().split(' ').slice(1).join(' ') || '',
+          solicitorFirm: solicitorFirm.trim() || undefined,
+        },
+      ],
+    }
+    store.addOrUpdate(updated)
+    setSolicitorName('')
+    setSolicitorFirm('')
+  }
+
+  function addBarrister() {
+    if (!barristerName.trim()) return
+    const updated: FamilyCase = {
+      ...current,
+      parties: [
+        ...current.parties,
+        {
+          id: generateId('PTY'),
+          role: 'Applicant',
+          firstName: barristerName.trim().split(' ')[0] || '',
+          lastName: barristerName.trim().split(' ').slice(1).join(' ') || '',
+          solicitorFirm: barristerChambers.trim() || undefined,
+        },
+      ],
+    }
+    store.addOrUpdate(updated)
+    setBarristerName('')
+    setBarristerChambers('')
+  }
+
+  return (
+    <Stack spacing={2}>
+      {/* Generate Invite Links */}
+      <Paper sx={{ p: 2 }}>
+        <Typography variant="subtitle1" sx={{ mb: 2 }}>Generate Invite Link</Typography>
+        <Stack spacing={2}>
+          <TextField
+            select
+            label="Invite Role"
+            value={inviteRole}
+            onChange={(e) => setInviteRole(e.target.value as any)}
+            fullWidth
+          >
+            <MenuItem value="McKenzieFriend">McKenzie Friend</MenuItem>
+            <MenuItem value="Solicitor">Solicitor</MenuItem>
+            <MenuItem value="Barrister">Barrister</MenuItem>
+          </TextField>
+          <Button variant="contained" onClick={generateInviteLink} fullWidth>
+            Generate Invite Link
+          </Button>
+          {generatedInvite && (
+            <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
+              <Typography variant="caption" color="text.secondary">Invite Link:</Typography>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography variant="body2" sx={{ flex: 1, wordBreak: 'break-all' }}>
+                  {generatedInvite}
+                </Typography>
+                <IconButton size="small" onClick={() => copyToClipboard(generatedInvite)}>
+                  <ContentCopy fontSize="small" />
+                </IconButton>
+              </Stack>
+            </Box>
+          )}
+        </Stack>
+      </Paper>
+
+      {/* Add Solicitor */}
+      <Paper sx={{ p: 2 }}>
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Add Solicitor</Typography>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <TextField
+            label="Solicitor Name"
+            value={solicitorName}
+            onChange={(e) => setSolicitorName(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            label="Firm"
+            value={solicitorFirm}
+            onChange={(e) => setSolicitorFirm(e.target.value)}
+            fullWidth
+          />
+          <Button variant="contained" onClick={addSolicitor} disabled={!solicitorName.trim()}>
+            Add Solicitor
+          </Button>
+        </Stack>
+      </Paper>
+
+      {/* Add Barrister */}
+      <Paper sx={{ p: 2 }}>
+        <Typography variant="subtitle1" sx={{ mb: 1 }}>Add Barrister</Typography>
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+          <TextField
+            label="Barrister Name"
+            value={barristerName}
+            onChange={(e) => setBarristerName(e.target.value)}
+            fullWidth
+          />
+          <TextField
+            label="Chambers"
+            value={barristerChambers}
+            onChange={(e) => setBarristerChambers(e.target.value)}
+            fullWidth
+          />
+          <Button variant="contained" onClick={addBarrister} disabled={!barristerName.trim()}>
+            Add Barrister
+          </Button>
+        </Stack>
+      </Paper>
+
+      {/* Existing Invites */}
+      {allInvites.length > 0 && (
+        <Paper sx={{ p: 2 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>Active Invites</Typography>
+          <Stack spacing={1}>
+            {allInvites.map((invite) => {
+              const inviteUrl = `${window.location.origin}/invite/${invite.token}`
+              return (
+                <Box key={invite.id} sx={{ p: 1, bgcolor: 'background.default', borderRadius: 1 }}>
+                  <Stack direction="row" spacing={1} alignItems="center">
+                    <Chip size="small" label={invite.role} />
+                    <Typography variant="body2" sx={{ flex: 1 }}>
+                      {invite.usedAt ? 'Used' : 'Active'} • Created {new Date(invite.createdAt).toLocaleDateString()}
+                    </Typography>
+                    {!invite.usedAt && (
+                      <IconButton size="small" onClick={() => copyToClipboard(inviteUrl)}>
+                        <ContentCopy fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Stack>
+                </Box>
+              )
+            })}
+          </Stack>
+        </Paper>
+      )}
+
+      {/* Case Members */}
+      {fc.members && fc.members.length > 0 && (
+        <Paper sx={{ p: 2 }}>
+          <Typography variant="subtitle1" sx={{ mb: 1 }}>Case Team</Typography>
+          <Stack spacing={1}>
+            {fc.members.map((member) => {
+              const memberUser = allUsers.find(u => u.id === member.userId)
+              return (
+                <Box key={member.userId} sx={{ p: 1 }}>
+                  <Typography fontWeight={600}>
+                    {memberUser?.name || 'Unknown User'} ({member.role})
+                  </Typography>
+                  {memberUser?.email && (
+                    <Typography variant="body2" color="text.secondary">
+                      {memberUser.email}
+                    </Typography>
+                  )}
+                </Box>
+              )
+            })}
+          </Stack>
+        </Paper>
+      )}
+    </Stack>
+  )
+}
+
 export default function CaseDetails() {
   const { caseId } = useParams()
   const navigate = useNavigate()
@@ -289,6 +502,7 @@ export default function CaseDetails() {
         <Tab label="Documents" />
         <Tab label="Orders" />
         <Tab label="Notes" />
+        <Tab label="Team & Invites" />
       </Tabs>
 
       {tab === 0 && <PartiesTab caseId={fc.id} />}
@@ -296,6 +510,7 @@ export default function CaseDetails() {
       {tab === 2 && <DocumentsTab caseId={fc.id} />}
       {tab === 3 && <OrdersTab caseId={fc.id} />}
       {tab === 4 && <NotesTab caseId={fc.id} />}
+      {tab === 5 && <TeamInvitesTab caseId={fc.id} />}
     </Stack>
   )
 }

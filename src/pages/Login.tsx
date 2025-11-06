@@ -1,4 +1,4 @@
-import { Box, Button, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material'
+import { Box, Button, Divider, MenuItem, Paper, Stack, TextField, Typography } from '@mui/material'
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useNavigate } from 'react-router-dom'
@@ -36,7 +36,24 @@ export default function Login() {
               <MenuItem key={u.id} value={u.id}>{u.name} — {u.role}</MenuItem>
             ))}
           </TextField>
-          <Button type="submit" variant="contained">Sign in</Button>
+          <Button type="submit" variant="contained" fullWidth>Sign in</Button>
+          
+          <Divider sx={{ my: 2 }}>Or</Divider>
+          
+          <Typography variant="body2" color="text.secondary" align="center">
+            Need to register?
+          </Typography>
+          <Stack direction="row" spacing={1}>
+            <Button variant="outlined" size="small" onClick={() => navigate('/register/McKenzieFriend')} fullWidth>
+              Register as McKenzie Friend
+            </Button>
+            <Button variant="outlined" size="small" onClick={() => navigate('/register/Solicitor')} fullWidth>
+              Register as Solicitor
+            </Button>
+            <Button variant="outlined" size="small" onClick={() => navigate('/register/Barrister')} fullWidth>
+              Register as Barrister
+            </Button>
+          </Stack>
         </Stack>
       </Paper>
     </Box>

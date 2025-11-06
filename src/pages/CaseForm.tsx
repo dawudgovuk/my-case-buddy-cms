@@ -41,6 +41,7 @@ export default function CaseForm() {
       documents: [],
       notes: [],
       lastUpdatedAt: new Date().toISOString(),
+      currentStage: 'application',
     },
   )
 
@@ -60,6 +61,7 @@ export default function CaseForm() {
       allocatedJudge: trimmedJudge,
       startedAt: form.startedAt,
       members: existing?.members ?? (user ? [{ userId: user.id, role: 'Owner' }] : []),
+      currentStage: existing?.currentStage || 'application',
     }
     addOrUpdate(payload)
     navigate(`/cases/${id}`)

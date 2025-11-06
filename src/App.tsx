@@ -5,6 +5,10 @@ import CasesList from './pages/CasesList'
 import CaseForm from './pages/CaseForm'
 import CaseDetails from './pages/CaseDetails'
 import Login from './pages/Login'
+import Register from './pages/Register'
+import LIPDashboard from './pages/LIPDashboard'
+import ProfessionalDashboard from './pages/ProfessionalDashboard'
+import InviteAccept from './pages/InviteAccept'
 import { useAuthStore } from './store/authStore'
 
 function Shell() {
@@ -21,8 +25,15 @@ function Shell() {
           </Typography>
           {user && (
             <>
-              <Button color="inherit" onClick={() => navigate('/')}>Cases</Button>
-              <Button color="inherit" onClick={() => navigate('/cases/new')}>New Case</Button>
+              <Button color="inherit" onClick={() => navigate(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}>
+                Dashboard
+              </Button>
+              {user.role === 'LIP' && (
+                <>
+                  <Button color="inherit" onClick={() => navigate('/')}>Cases</Button>
+                  <Button color="inherit" onClick={() => navigate('/cases/new')}>New Case</Button>
+                </>
+              )}
             </>
           )}
           {user ? (
@@ -42,7 +53,11 @@ function Shell() {
       <Container sx={{ py: 3, flexGrow: 1 }}>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={user ? <CasesList /> : <Navigate to="/login" replace />} />
+          <Route path="/register/:role" element={<Register />} />
+          <Route path="/invite/:token" element={<InviteAccept />} />
+          <Route path="/dashboard" element={user ? (user.role === 'LIP' ? <LIPDashboard /> : <Navigate to="/professional-dashboard" replace />) : <Navigate to="/login" replace />} />
+          <Route path="/professional-dashboard" element={user ? (user.role !== 'LIP' ? <ProfessionalDashboard /> : <Navigate to="/dashboard" replace />) : <Navigate to="/login" replace />} />
+          <Route path="/" element={user ? (user.role === 'LIP' ? <CasesList /> : <Navigate to="/professional-dashboard" replace />) : <Navigate to="/login" replace />} />
           <Route path="/cases/new" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
           <Route path="/cases/:caseId" element={user ? <CaseDetails /> : <Navigate to="/login" replace />} />
           <Route path="/cases/:caseId/edit" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
