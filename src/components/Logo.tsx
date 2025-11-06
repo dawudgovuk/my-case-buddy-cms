@@ -1,103 +1,47 @@
-import { Box } from '@mui/material'
+import { FaGavel, FaBalanceScale } from 'react-icons/fa'
 
 export default function Logo() {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 1.5,
-        cursor: 'pointer',
-      }}
-    >
-      {/* Character Icon */}
-      <Box
-        sx={{
-          width: 48,
-          height: 48,
-          position: 'relative',
-          flexShrink: 0,
-        }}
-      >
-        <svg
-          width="48"
-          height="48"
-          viewBox="0 0 48 48"
-          style={{ display: 'block' }}
-        >
-          {/* Head */}
-          <circle
-            cx="24"
-            cy="18"
-            r="12"
-            fill="#F9C74F"
-            stroke="#276A7B"
-            strokeWidth="2.5"
-          />
-          {/* Eyes */}
-          <circle cx="20" cy="16" r="1.5" fill="#276A7B" />
-          <circle cx="28" cy="16" r="1.5" fill="#276A7B" />
-          {/* Smile */}
-          <path
-            d="M 18 20 Q 24 22 30 20"
-            stroke="#276A7B"
-            strokeWidth="2"
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* Hair tuft */}
-          <path
-            d="M 18 8 Q 24 4 30 8 Q 28 10 24 10 Q 20 10 18 8"
-            fill="#F9C74F"
-            stroke="#276A7B"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-          />
-          {/* Body/Neck */}
-          <rect
-            x="22"
-            y="28"
-            width="4"
-            height="8"
-            fill="#F9C74F"
-            stroke="#276A7B"
-            strokeWidth="2.5"
-          />
-        </svg>
-      </Box>
-
-      {/* Text */}
-      <Box
-        sx={{
+    <div className="d-flex align-items-center gap-2" style={{ cursor: 'pointer' }}>
+      <div
+        style={{
+          width: '48px',
+          height: '48px',
+          borderRadius: '12px',
+          background: 'linear-gradient(135deg, #F9C74F 0%, #F8961E 100%)',
           display: 'flex',
-          flexDirection: 'column',
-          lineHeight: 1.2,
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.15)',
+          border: '3px solid #276A7B',
         }}
       >
-        <Box
-          component="span"
-          sx={{
+        <FaBalanceScale size={24} color="#276A7B" />
+      </div>
+      <div className="d-flex flex-column">
+        <span
+          style={{
             fontSize: '1.25rem',
             fontWeight: 700,
             color: '#276A7B',
             letterSpacing: '-0.02em',
+            lineHeight: 1.2,
           }}
         >
           MyCase
-        </Box>
-        <Box
-          component="span"
-          sx={{
+        </span>
+        <span
+          style={{
             fontSize: '1.25rem',
             fontWeight: 700,
             color: '#276A7B',
             letterSpacing: '-0.02em',
+            lineHeight: 1.2,
           }}
         >
           Buddy
-        </Box>
-      </Box>
-    </Box>
+        </span>
+      </div>
+    </div>
   )
 }
-

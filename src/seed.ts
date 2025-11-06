@@ -75,23 +75,37 @@ function randomStatus(): CaseStatus {
 
 function generateUsers() {
   const users: any[] = []
+  const usedNames = new Set<string>()
   
-  // Generate 12 LIPs
-  for (let i = 0; i < 12; i++) {
-    const firstName = randomElement(firstNames)
-    const lastName = randomElement(lastNames)
+  function getUniqueName(): { firstName: string; lastName: string } {
+    let firstName = randomElement(firstNames)
+    let lastName = randomElement(lastNames)
+    let key = `${firstName} ${lastName}`
+    let attempts = 0
+    while (usedNames.has(key) && attempts < 100) {
+      firstName = randomElement(firstNames)
+      lastName = randomElement(lastNames)
+      key = `${firstName} ${lastName}`
+      attempts++
+    }
+    usedNames.add(key)
+    return { firstName, lastName }
+  }
+  
+  // Generate 15 LIPs
+  for (let i = 0; i < 15; i++) {
+    const { firstName, lastName } = getUniqueName()
     users.push({
       id: `u_lip_${i + 1}`,
       name: `${firstName} ${lastName}`,
-      email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
+      email: `lip.${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
       role: 'LIP'
     })
   }
   
-  // Generate 12 McKenzie Friends
-  for (let i = 0; i < 12; i++) {
-    const firstName = randomElement(firstNames)
-    const lastName = randomElement(lastNames)
+  // Generate 15 McKenzie Friends
+  for (let i = 0; i < 15; i++) {
+    const { firstName, lastName } = getUniqueName()
     users.push({
       id: `u_mf_${i + 1}`,
       name: `${firstName} ${lastName}`,
@@ -100,10 +114,9 @@ function generateUsers() {
     })
   }
   
-  // Generate 12 Solicitors
-  for (let i = 0; i < 12; i++) {
-    const firstName = randomElement(firstNames)
-    const lastName = randomElement(lastNames)
+  // Generate 15 Solicitors
+  for (let i = 0; i < 15; i++) {
+    const { firstName, lastName } = getUniqueName()
     users.push({
       id: `u_sol_${i + 1}`,
       name: `${firstName} ${lastName}`,
@@ -114,10 +127,9 @@ function generateUsers() {
     })
   }
   
-  // Generate 12 Barristers
-  for (let i = 0; i < 12; i++) {
-    const firstName = randomElement(firstNames)
-    const lastName = randomElement(lastNames)
+  // Generate 15 Barristers
+  for (let i = 0; i < 15; i++) {
+    const { firstName, lastName } = getUniqueName()
     users.push({
       id: `u_bar_${i + 1}`,
       name: `${firstName} ${lastName}`,

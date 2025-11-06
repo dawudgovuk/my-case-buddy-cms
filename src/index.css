@@ -1,68 +1,236 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import 'semantic-ui-css/semantic.min.css';
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  --primary-color: #276A7B;
+  --secondary-color: #F9C74F;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --info-color: #17a2b8;
+  --light-bg: #F8F5ED;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --card-shadow-hover: 0 8px 12px rgba(0, 0, 0, 0.15);
 }
 
 body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+.card {
+  border: none;
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: white;
 }
 
-button {
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%);
+  border: none;
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  padding: 10px 20px;
+  font-weight: 600;
+  transition: all 0.3s;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+.btn-primary:hover {
+  background: linear-gradient(135deg, #1e5a6a 0%, var(--primary-color) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.btn-success {
+  background: linear-gradient(135deg, var(--success-color) 0%, #218838 100%);
+  border: none;
+}
+
+.btn-warning {
+  background: linear-gradient(135deg, var(--warning-color) 0%, #e0a800 100%);
+  border: none;
+  color: #000;
+}
+
+.btn-danger {
+  background: linear-gradient(135deg, var(--danger-color) 0%, #c82333 100%);
+  border: none;
+}
+
+.btn-info {
+  background: linear-gradient(135deg, var(--info-color) 0%, #138496 100%);
+  border: none;
+}
+
+.navbar {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 1rem 0;
+}
+
+.navbar-brand, .navbar-nav .nav-link {
+  color: white !important;
+  font-weight: 600;
+}
+
+.navbar-nav .nav-link:hover {
+  color: var(--secondary-color) !important;
+}
+
+.table-responsive {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table thead th {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%);
+  color: white;
+  border: none;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+}
+
+.table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.priority-high {
+  border-left: 4px solid var(--danger-color);
+}
+
+.priority-medium {
+  border-left: 4px solid var(--warning-color);
+}
+
+.priority-low {
+  border-left: 4px solid var(--success-color);
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.75rem;
+}
+
+.badge-success {
+  background: linear-gradient(135deg, var(--success-color) 0%, #218838 100%);
+}
+
+.badge-warning {
+  background: linear-gradient(135deg, var(--warning-color) 0%, #e0a800 100%);
+  color: #000;
+}
+
+.badge-danger {
+  background: linear-gradient(135deg, var(--danger-color) 0%, #c82333 100%);
+}
+
+.badge-info {
+  background: linear-gradient(135deg, var(--info-color) 0%, #138496 100%);
+}
+
+.badge-primary {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%);
+}
+
+/* Semantic UI Steps customization */
+.ui.steps {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ui.step {
+  border-radius: 12px !important;
+  padding: 15px !important;
+  transition: all 0.3s !important;
+}
+
+.ui.step:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.ui.step.active {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%) !important;
+  color: white !important;
+}
+
+.ui.step.completed {
+  background: linear-gradient(135deg, var(--success-color) 0%, #218838 100%) !important;
+  color: white !important;
+}
+
+.ui.step.disabled {
+  background: #e9ecef !important;
+  color: #6c757d !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .ui.steps {
+    flex-direction: column;
   }
-  a:hover {
-    color: #747bff;
+  
+  .ui.step {
+    margin-bottom: 10px !important;
   }
-  button {
-    background-color: #f9f9f9;
+  
+  .table-responsive {
+    font-size: 0.875rem;
   }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Animation for fun elements */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #1e5a6a 0%, var(--primary-color) 100%);
 }

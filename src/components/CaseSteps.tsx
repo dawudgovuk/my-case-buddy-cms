@@ -1,33 +1,47 @@
-import { Box, Stepper, Step, StepLabel, StepContent, Paper, Typography } from '@mui/material'
+import { Step } from 'semantic-ui-react'
 import type { CaseStageInfo } from '../utils/caseStages'
+import { FaFileAlt, FaGavel, FaHandshake, FaClipboardCheck, FaSearch, FaUserCheck, FaCheckCircle } from 'react-icons/fa'
 
 interface CaseStepsProps {
   stages: CaseStageInfo[]
   currentStageIndex: number
 }
 
+const stageIcons = [
+  FaFileAlt,      // Application
+  FaGavel,        // First Hearing
+  FaHandshake,    // Mediation/Assessment
+  FaClipboardCheck, // Directions
+  FaSearch,       // Fact-Finding
+  FaUserCheck,    // Welfare
+  FaCheckCircle,  // Final
+]
+
 export default function CaseSteps({ stages, currentStageIndex }: CaseStepsProps) {
   return (
-    <Box sx={{ width: '100%', mt: 2 }}>
-      <Stepper activeStep={currentStageIndex} orientation="vertical">
-        {stages.map((stage, index) => (
-          <Step key={stage.id} completed={index < currentStageIndex} active={index === currentStageIndex}>
-            <StepLabel>
-              <Typography variant="h6">{stage.name}</Typography>
-            </StepLabel>
-            <StepContent>
-              <Typography variant="body2" color="text.secondary">
-                {stage.description}
-              </Typography>
-              {index === currentStageIndex && (
-                <Paper sx={{ mt: 1, p: 1, bgcolor: 'primary.light', color: 'primary.contrastText' }}>
-                  <Typography variant="caption">Current Stage</Typography>
-                </Paper>
-              )}
-            </StepContent>
-          </Step>
-        ))}
-      </Stepper>
-    </Box>
+    <div className="mt-3">
+      <Step.Group size="small" fluid>
+        {stages.map((stage, index) => {
+          const Icon = stageIcons[index % stageIcons.length]
+          const isCompleted = index < currentStageIndex
+          const isActive = index === currentStageIndex
+          
+          return (
+            <Step
+              key={stage.id}
+              completed={isCompleted}
+              active={isActive}
+              disabled={index > currentStageIndex}
+            >
+              <Icon style={{ marginRight: '8px' }} />
+              <Step.Content>
+                <Step.Title>{stage.name}</Step.Title>
+                <Step.Description>{stage.description}</Step.Description>
+              </Step.Content>
+            </Step>
+          )
+        })}
+      </Step.Group>
+    </div>
   )
 }

@@ -1,10 +1,11 @@
-import { Box, Button, Paper, Stack, TextField, Typography } from '@mui/material'
+import { Container, Card, Form, Button, Alert, Row, Col } from 'react-bootstrap'
 import { useState } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useNavigate, useParams } from 'react-router-dom'
 import type { UserRole } from '../types/domain'
 import { saveUsers, listUsers } from '../services/auth'
 import { generateId } from '../services/storage'
+import { FaUserPlus, FaArrowLeft, FaBuilding, FaIdCard } from 'react-icons/fa'
 
 export default function Register() {
   const navigate = useNavigate()
@@ -20,9 +21,9 @@ export default function Register() {
 
   if (!userRole || !['LIP', 'McKenzieFriend', 'Solicitor', 'Barrister'].includes(userRole)) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
-        <Typography>Invalid registration type</Typography>
-      </Box>
+      <Container className="d-flex justify-content-center align-items-center min-vh-100">
+        <Alert variant="danger">Invalid registration type</Alert>
+      </Container>
     )
   }
 
@@ -35,14 +36,12 @@ export default function Register() {
       return
     }
 
-    // Check if email already exists
     const existingUsers = listUsers()
-    if (existingUsers.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+    if (existingUsers.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
       setError('An account with this email already exists')
       return
     }
 
-    // Create new user
     const newUser = {
       id: generateId('user'),
       name: name.trim(),
@@ -55,71 +54,111 @@ export default function Register() {
     const updatedUsers = [...existingUsers, newUser]
     saveUsers(updatedUsers)
     useAuthStore.setState({ users: updatedUsers })
-    
-    // Auto-login
+
     login(newUser.id)
     navigate('/dashboard')
   }
 
+  const roleColors: Record<string, string> = {
+    LIP: 'primary',
+    McKenzieFriend: 'success',
+    Solicitor: 'info',
+    Barrister: 'warning',
+  }
+
+  const bgColor = roleColors[userRole] || 'primary'
+
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
-      <Paper sx={{ p: 3, width: 500, maxWidth: '90%' }} component="form" onSubmit={handleSubmit}>
-        <Stack spacing={2}>
-          <Typography variant="h5">Register as {userRole}</Typography>
-          <Typography variant="body2" color="text.secondary">
-            Create your account to start managing cases
-          </Typography>
-          
-          {error && (
-            <Typography color="error" variant="body2">{error}</Typography>
-          )}
+    <Container className="d-flex justify-content-center align-items-center min-vh-100 py-5">
+      <Card className="shadow-lg border-0" style={{ width: '100%', maxWidth: '500px' }}>
+        <Card.Header className={`bg-${bgColor} text-white text-center py-4`}>
+          <h3 className="mb-0">
+            <FaUserPlus className="me-2" />
+            Register as {userRole}
+          </h3>
+        </Card.Header>
+        <Card.Body className="p-4">
+          <Form onSubmit={handleSubmit}>
+            {error && (
+              <Alert variant="danger" className="mb-3">
+                {error}
+              </Alert>
+            )}
 
-          <TextField
-            label="Full Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            fullWidth
-          />
-
-          <TextField
-            label="Email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            fullWidth
-          />
-
-          {(userRole === 'Solicitor' || userRole === 'Barrister') && (
-            <>
-              <TextField
-                label="Firm/Chambers"
-                value={firm}
-                onChange={(e) => setFirm(e.target.value)}
-                fullWidth
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-bold">Full Name</Form.Label>
+              <Form.Control
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                size="lg"
+                placeholder="Enter your full name"
               />
+            </Form.Group>
 
-              <TextField
-                label="Registration Number"
-                value={registrationNumber}
-                onChange={(e) => setRegistrationNumber(e.target.value)}
-                fullWidth
-                helperText="Your professional registration number"
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-bold">Email</Form.Label>
+              <Form.Control
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                size="lg"
+                placeholder="Enter your email"
               />
-            </>
-          )}
+            </Form.Group>
 
-          <Stack direction="row" spacing={2}>
-            <Button type="submit" variant="contained" fullWidth>
-              Register
-            </Button>
-            <Button variant="outlined" onClick={() => navigate('/login')} fullWidth>
-              Back to Login
-            </Button>
-          </Stack>
-        </Stack>
-      </Paper>
-    </Box>
+            {(userRole === 'Solicitor' || userRole === 'Barrister') && (
+              <>
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">
+                    <FaBuilding className="me-2" />
+                    {userRole === 'Solicitor' ? 'Firm' : 'Chambers'}
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={firm}
+                    onChange={(e) => setFirm(e.target.value)}
+                    size="lg"
+                    placeholder={userRole === 'Solicitor' ? 'Enter firm name' : 'Enter chambers name'}
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-bold">
+                    <FaIdCard className="me-2" />
+                    Registration Number
+                  </Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={registrationNumber}
+                    onChange={(e) => setRegistrationNumber(e.target.value)}
+                    size="lg"
+                    placeholder="Your professional registration number"
+                  />
+                  <Form.Text className="text-muted">Your professional registration number</Form.Text>
+                </Form.Group>
+              </>
+            )}
+
+            <Row className="g-2">
+              <Col>
+                <Button type="submit" variant={bgColor as any} size="lg" className="w-100">
+                  <FaUserPlus className="me-2" />
+                  Register
+                </Button>
+              </Col>
+              <Col>
+                <Button variant="outline-secondary" size="lg" className="w-100" onClick={() => navigate('/login')}>
+                  <FaArrowLeft className="me-2" />
+                  Back to Login
+                </Button>
+              </Col>
+            </Row>
+          </Form>
+        </Card.Body>
+      </Card>
+    </Container>
   )
 }

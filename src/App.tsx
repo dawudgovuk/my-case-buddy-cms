@@ -1,6 +1,7 @@
-import React from 'react'
-import { AppBar, Box, Button, Container, Menu, MenuItem, Toolbar, Typography } from '@mui/material'
+import React, { useState } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { Navbar, Nav, Container, Dropdown } from 'react-bootstrap'
+import { FaUser, FaSignOutAlt, FaHome, FaPlus, FaGavel } from 'react-icons/fa'
 import CasesList from './pages/CasesList'
 import CaseForm from './pages/CaseForm'
 import CaseDetails from './pages/CaseDetails'
@@ -15,63 +16,122 @@ import Logo from './components/Logo'
 function Shell() {
   const navigate = useNavigate()
   const { user, logout } = useAuthStore()
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const open = Boolean(anchorEl)
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static" color="primary">
-        <Toolbar>
-          <Box
+    <div className="d-flex flex-column min-vh-100">
+      <Navbar bg="primary" variant="dark" expand="lg" className="shadow-sm">
+        <Container>
+          <Navbar.Brand
             onClick={() => navigate(user ? (user.role === 'LIP' ? '/dashboard' : '/professional-dashboard') : '/login')}
-            sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}
+            style={{ cursor: 'pointer' }}
           >
             <Logo />
-          </Box>
-          {user && (
-            <>
-              <Button color="inherit" onClick={() => navigate(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}>
-                Dashboard
-              </Button>
-              {user.role === 'LIP' && (
+          </Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="ms-auto align-items-center">
+              {user ? (
                 <>
-                  <Button color="inherit" onClick={() => navigate('/')}>Cases</Button>
-                  <Button color="inherit" onClick={() => navigate('/cases/new')}>New Case</Button>
+                  <Nav.Link onClick={() => navigate(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}>
+                    <FaHome className="me-1" />
+                    Dashboard
+                  </Nav.Link>
+                  {user.role === 'LIP' && (
+                    <>
+                      <Nav.Link onClick={() => navigate('/')}>
+                        <FaGavel className="me-1" />
+                        Cases
+                      </Nav.Link>
+                      <Nav.Link onClick={() => navigate('/cases/new')}>
+                        <FaPlus className="me-1" />
+                        New Case
+                      </Nav.Link>
+                    </>
+                  )}
+                  <Dropdown align="end">
+                    <Dropdown.Toggle variant="link" className="text-white text-decoration-none d-flex align-items-center">
+                      <FaUser className="me-1" />
+                      {user.name} ({user.role})
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                      <Dropdown.Item onClick={handleLogout}>
+                        <FaSignOutAlt className="me-2" />
+                        Logout
+                      </Dropdown.Item>
+                    </Dropdown.Menu>
+                  </Dropdown>
                 </>
+              ) : (
+                <Nav.Link onClick={() => navigate('/login')}>Login</Nav.Link>
               )}
-            </>
-          )}
-          {user ? (
-            <>
-              <Button color="inherit" onClick={(e) => setAnchorEl(e.currentTarget)} aria-controls={open ? 'user-menu' : undefined} aria-haspopup="true" aria-expanded={open ? 'true' : undefined}>
-                {user.name} ({user.role})
-              </Button>
-              <Menu id="user-menu" anchorEl={anchorEl} open={open} onClose={() => setAnchorEl(null)}>
-                <MenuItem onClick={() => { setAnchorEl(null); logout(); navigate('/login') }}>Logout</MenuItem>
-              </Menu>
-            </>
-          ) : (
-            <Button color="inherit" onClick={() => navigate('/login')}>Login</Button>
-          )}
-        </Toolbar>
-      </AppBar>
-      <Container sx={{ py: 3, flexGrow: 1 }}>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+
+      <Container className="py-4 flex-grow-1">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register/:role" element={<Register />} />
           <Route path="/invite/:token" element={<InviteAccept />} />
-          <Route path="/dashboard" element={user ? (user.role === 'LIP' ? <LIPDashboard /> : <Navigate to="/professional-dashboard" replace />) : <Navigate to="/login" replace />} />
-          <Route path="/professional-dashboard" element={user ? (user.role !== 'LIP' ? <ProfessionalDashboard /> : <Navigate to="/dashboard" replace />) : <Navigate to="/login" replace />} />
-          <Route path="/" element={user ? (user.role === 'LIP' ? <CasesList /> : <Navigate to="/professional-dashboard" replace />) : <Navigate to="/login" replace />} />
+          <Route
+            path="/dashboard"
+            element={
+              user ? (
+                user.role === 'LIP' ? (
+                  <LIPDashboard />
+                ) : (
+                  <Navigate to="/professional-dashboard" replace />
+                )
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/professional-dashboard"
+            element={
+              user ? (
+                user.role !== 'LIP' ? (
+                  <ProfessionalDashboard />
+                ) : (
+                  <Navigate to="/dashboard" replace />
+                )
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
+          <Route
+            path="/"
+            element={
+              user ? (
+                user.role === 'LIP' ? (
+                  <CasesList />
+                ) : (
+                  <Navigate to="/professional-dashboard" replace />
+                )
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
           <Route path="/cases/new" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
           <Route path="/cases/:caseId" element={user ? <CaseDetails /> : <Navigate to="/login" replace />} />
           <Route path="/cases/:caseId/edit" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
-          <Route path="*" element={<Typography>Not found</Typography>} />
+          <Route path="*" element={<div className="text-center py-5">Page not found</div>} />
         </Routes>
       </Container>
-      <Box component="footer" sx={{ textAlign: 'center', py: 2, color: 'text.secondary' }}>
-        <Typography variant="caption">For demonstration purposes only. Not legal advice or a court system.</Typography>
-      </Box>
-    </Box>
+
+      <footer className="bg-light text-center py-3 mt-auto">
+        <small className="text-muted">For demonstration purposes only. Not legal advice or a court system.</small>
+      </footer>
+    </div>
   )
 }
 
