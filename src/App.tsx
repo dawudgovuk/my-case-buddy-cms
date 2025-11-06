@@ -10,6 +10,7 @@ import LIPDashboard from './pages/LIPDashboard'
 import ProfessionalDashboard from './pages/ProfessionalDashboard'
 import InviteAccept from './pages/InviteAccept'
 import { useAuthStore } from './store/authStore'
+import Logo from './components/Logo'
 
 function Shell() {
   const navigate = useNavigate()
@@ -20,9 +21,12 @@ function Shell() {
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
       <AppBar position="static" color="primary">
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            MyCaseBuddy
-          </Typography>
+          <Box
+            onClick={() => navigate(user ? (user.role === 'LIP' ? '/dashboard' : '/professional-dashboard') : '/login')}
+            sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}
+          >
+            <Logo />
+          </Box>
           {user && (
             <>
               <Button color="inherit" onClick={() => navigate(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}>

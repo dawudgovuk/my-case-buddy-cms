@@ -18,7 +18,7 @@ export default function Register() {
 
   const userRole = role as UserRole | undefined
 
-  if (!userRole || !['McKenzieFriend', 'Solicitor', 'Barrister'].includes(userRole)) {
+  if (!userRole || !['LIP', 'McKenzieFriend', 'Solicitor', 'Barrister'].includes(userRole)) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
         <Typography>Invalid registration type</Typography>

@@ -43,14 +43,17 @@ export default function Login() {
           <Typography variant="body2" color="text.secondary" align="center">
             Need to register?
           </Typography>
-          <Stack direction="row" spacing={1}>
-            <Button variant="outlined" size="small" onClick={() => navigate('/register/McKenzieFriend')} fullWidth>
+          <Stack direction="row" spacing={1} flexWrap="wrap">
+            <Button variant="outlined" size="small" onClick={() => navigate('/register/LIP')} sx={{ flex: '1 1 45%' }}>
+              Register as LIP
+            </Button>
+            <Button variant="outlined" size="small" onClick={() => navigate('/register/McKenzieFriend')} sx={{ flex: '1 1 45%' }}>
               Register as McKenzie Friend
             </Button>
-            <Button variant="outlined" size="small" onClick={() => navigate('/register/Solicitor')} fullWidth>
+            <Button variant="outlined" size="small" onClick={() => navigate('/register/Solicitor')} sx={{ flex: '1 1 45%' }}>
               Register as Solicitor
             </Button>
-            <Button variant="outlined" size="small" onClick={() => navigate('/register/Barrister')} fullWidth>
+            <Button variant="outlined" size="small" onClick={() => navigate('/register/Barrister')} sx={{ flex: '1 1 45%' }}>
               Register as Barrister
             </Button>
           </Stack>
