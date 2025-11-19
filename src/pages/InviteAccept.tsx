@@ -1,4 +1,4 @@
-import { Box, Button, Card, CardContent, Stack, Typography } from '@mui/material'
+// Removed Material UI imports
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
@@ -10,7 +10,7 @@ export default function InviteAccept() {
   const navigate = useNavigate()
   const { token } = useParams<{ token: string }>()
   const { user } = useAuthStore()
-  const { getById, addOrUpdate } = useCasesStore()
+  const { addOrUpdate } = useCasesStore()
   const [invite, setInvite] = useState<CaseInvite | null>(null)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
@@ -74,7 +74,7 @@ export default function InviteAccept() {
         ...(caseData.members || []),
         {
           userId: user.id,
-          role: invite.role as any,
+          role: invite.role as 'McKenzieFriend' | 'Solicitor' | 'Barrister',
           invitedAt: new Date().toISOString(),
           invitedBy: invite.createdBy,
         },
@@ -95,80 +95,72 @@ export default function InviteAccept() {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
-        <Typography>Loading...</Typography>
-      </Box>
-    )
+      <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <span>Loading...</span>
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
-        <Card sx={{ p: 3, maxWidth: 500 }}>
-          <Stack spacing={2}>
-            <Typography variant="h6" color="error">Error</Typography>
-            <Typography>{error}</Typography>
-            <Button variant="contained" onClick={() => navigate('/login')}>
-              Go to Login
-            </Button>
-          </Stack>
-        </Card>
-      </Box>
-    )
+      <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 16px #0002', padding: 32, maxWidth: 420, width: '100%' }}>
+          <div style={{ background: 'var(--danger-color, #ffeaea)', color: '#b00020', borderRadius: 8, padding: 12, marginBottom: 12, textAlign: 'center', fontWeight: 600 }}>Error</div>
+          <div style={{ marginBottom: 18, textAlign: 'center' }}>{error}</div>
+          <button className="btn" style={{ width: '100%', background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: 8, padding: 12, fontWeight: 600, fontSize: 16 }} onClick={() => navigate('/login')}>
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (!user) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
-        <Card sx={{ p: 3, maxWidth: 500 }}>
-          <Stack spacing={2}>
-            <Typography variant="h6">Please Log In</Typography>
-            <Typography>
-              You need to be logged in to accept this invite. If you don't have an account, please register first.
-            </Typography>
-            <Stack direction="row" spacing={2}>
-              <Button variant="contained" onClick={() => navigate(`/register/${invite?.role}`)}>
-                Register as {invite?.role}
-              </Button>
-              <Button variant="outlined" onClick={() => navigate('/login')}>
-                Login
-              </Button>
-            </Stack>
-          </Stack>
-        </Card>
-      </Box>
-    )
+      <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 16px #0002', padding: 32, maxWidth: 420, width: '100%' }}>
+          <h4 style={{ color: 'var(--primary-color)', fontWeight: 700, marginBottom: 8, textAlign: 'center' }}>Please Log In</h4>
+          <div style={{ marginBottom: 18, textAlign: 'center', color: '#444' }}>
+            You need to be logged in to accept this invite. If you don't have an account, please register first.
+          </div>
+          <div style={{ display: 'flex', gap: 10, marginTop: 8, justifyContent: 'center' }}>
+            <button className="btn" style={{ flex: 1, background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: 8, padding: 10, fontWeight: 600, fontSize: 15 }} onClick={() => navigate(`/register/${invite?.role}`)}>
+              Register as {invite?.role}
+            </button>
+            <button className="btn" style={{ flex: 1, background: '#fff', color: 'var(--primary-color)', border: '1.5px solid var(--primary-color)', borderRadius: 8, fontWeight: 600, fontSize: 15, padding: 10 }} onClick={() => navigate('/login')}>
+              Login
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const caseData = invite ? getCase(invite.caseId) : null
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '70vh' }}>
-      <Card sx={{ p: 3, maxWidth: 500 }}>
-        <Stack spacing={2}>
-          <Typography variant="h6">Case Invitation</Typography>
-          <Typography>
-            You have been invited to join a case as a <strong>{invite?.role}</strong>.
-          </Typography>
-          {caseData && (
-            <Box>
-              <Typography variant="subtitle2">Case Details:</Typography>
-              <Typography variant="body2">{caseData.id} — {caseData.title}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                {caseData.court} • {caseData.caseType}
-              </Typography>
-            </Box>
-          )}
-          <Stack direction="row" spacing={2}>
-            <Button variant="contained" onClick={handleAccept} fullWidth>
-              Accept Invitation
-            </Button>
-            <Button variant="outlined" onClick={() => navigate('/dashboard')} fullWidth>
-              Decline
-            </Button>
-          </Stack>
-        </Stack>
-      </Card>
-    </Box>
-  )
+    <div style={{ minHeight: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ background: '#fff', borderRadius: 16, boxShadow: '0 2px 16px #0002', padding: 32, maxWidth: 420, width: '100%' }}>
+        <h4 style={{ color: 'var(--primary-color)', fontWeight: 700, marginBottom: 8, textAlign: 'center' }}>Case Invitation</h4>
+        <div style={{ marginBottom: 12, textAlign: 'center', color: '#444' }}>
+          You have been invited to join a case as a <strong>{invite?.role}</strong>.
+        </div>
+        {caseData && (
+          <div style={{ marginBottom: 16, textAlign: 'center' }}>
+            <div style={{ color: '#888', fontSize: 13, marginBottom: 2 }}>Case Details:</div>
+            <div style={{ fontWeight: 600 }}>{caseData.id} — {caseData.title}</div>
+            <div style={{ color: '#888', fontSize: 13 }}>{caseData.court} • {caseData.caseType}</div>
+          </div>
+        )}
+        <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+          <button className="btn" style={{ flex: 1, background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: 8, padding: 12, fontWeight: 600, fontSize: 16 }} onClick={handleAccept}>
+            Accept Invitation
+          </button>
+          <button className="btn" style={{ flex: 1, background: '#fff', color: 'var(--primary-color)', border: '1.5px solid var(--primary-color)', borderRadius: 8, fontWeight: 600, fontSize: 16, padding: 12 }} onClick={() => navigate('/dashboard')}>
+            Decline
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }

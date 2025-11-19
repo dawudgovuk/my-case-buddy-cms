@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Box, Button, FormControl, InputLabel, MenuItem, Select, Stack, TextField, Typography } from '@mui/material'
+import { Button, Card, Form, Row, Col } from 'react-bootstrap'
 import type { FamilyCase } from '../types/domain'
 import { generateId } from '../services/storage'
 import { useCasesStore } from '../store/casesStore'
@@ -68,78 +68,90 @@ export default function CaseForm() {
   }
 
   return (
-    <Box component="form" onSubmit={handleSubmit}>
-      <Stack spacing={2}>
-        <Typography variant="h5">{existing ? 'Edit Case' : 'Create New Case'}</Typography>
-        <TextField
-          label="Case title"
-          value={form.title}
-          onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-          required
-        />
-        <TextField
-          label="Case number (auto if left blank)"
-          value={form.id}
-          onChange={(e) => setForm((f) => ({ ...f, id: e.target.value }))}
-          placeholder="e.g., FC-23-001234"
-        />
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <FormControl fullWidth>
-            <InputLabel id="court">Court</InputLabel>
-            <Select labelId="court" label="Court" value={form.court} onChange={(e) => setForm((f) => ({ ...f, court: e.target.value as any }))}>
-              {courts.map((c) => (
-                <MenuItem key={c} value={c}>{c}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <FormControl fullWidth>
-            <InputLabel id="caseType">Case Type</InputLabel>
-            <Select labelId="caseType" label="Case Type" value={form.caseType} onChange={(e) => setForm((f) => ({ ...f, caseType: e.target.value as any }))}>
-              {types.map((t) => (
-                <MenuItem key={t} value={t}>{t}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Stack>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <FormControl fullWidth>
-            <InputLabel id="status">Status</InputLabel>
-            <Select labelId="status" label="Status" value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as any }))}>
-              {statuses.map((s) => (
-                <MenuItem key={s} value={s}>{s}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <TextField
-            label="Started on"
-            type="date"
-            value={form.startedAt}
-            onChange={(e) => setForm((f) => ({ ...f, startedAt: e.target.value }))}
-            InputLabelProps={{ shrink: true }}
-            fullWidth
+    <Card className="p-4 mx-auto" style={{ maxWidth: 600 }}>
+      <Form onSubmit={handleSubmit}>
+        <h4 className="mb-3">{existing ? 'Edit Case' : 'Create New Case'}</h4>
+        <Form.Group className="mb-3">
+          <Form.Label>Case title</Form.Label>
+          <Form.Control
+            value={form.title}
+            onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+            required
           />
-        </Stack>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <TextField
-            label="Allocated judge"
-            value={form.allocatedJudge || ''}
-            onChange={(e) => setForm((f) => ({ ...f, allocatedJudge: e.target.value }))}
-            fullWidth
+        </Form.Group>
+        <Form.Group className="mb-3">
+          <Form.Label>Case number (auto if left blank)</Form.Label>
+          <Form.Control
+            value={form.id}
+            onChange={e => setForm(f => ({ ...f, id: e.target.value }))}
+            placeholder="e.g., FC-23-001234"
           />
-          <TextField
-            label="Children involved"
-            type="number"
-            value={form.childrenInvolved ?? ''}
-            onChange={(e) => setForm((f) => ({ ...f, childrenInvolved: e.target.value === '' ? undefined : Number(e.target.value) }))}
-            fullWidth
-          />
-        </Stack>
-        <Stack direction="row" spacing={2}>
-          <Button type="submit" variant="contained">Save</Button>
-          <Button variant="outlined" onClick={() => navigate(existing ? `/cases/${existing.id}` : '/')}>Cancel</Button>
-        </Stack>
-      </Stack>
-    </Box>
+        </Form.Group>
+        <Row className="mb-3">
+          <Col>
+            <Form.Group>
+              <Form.Label>Court</Form.Label>
+              <Form.Select value={form.court} onChange={e => setForm(f => ({ ...f, court: e.target.value as any }))}>
+                {courts.map(c => <option key={c} value={c}>{c}</option>)}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group>
+              <Form.Label>Case Type</Form.Label>
+              <Form.Select value={form.caseType} onChange={e => setForm(f => ({ ...f, caseType: e.target.value as any }))}>
+                {types.map(t => <option key={t} value={t}>{t}</option>)}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className="mb-3">
+          <Col>
+            <Form.Group>
+              <Form.Label>Status</Form.Label>
+              <Form.Select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as any }))}>
+                {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group>
+              <Form.Label>Started on</Form.Label>
+              <Form.Control
+                type="date"
+                value={form.startedAt}
+                onChange={e => setForm(f => ({ ...f, startedAt: e.target.value }))}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <Row className="mb-3">
+          <Col>
+            <Form.Group>
+              <Form.Label>Allocated judge</Form.Label>
+              <Form.Control
+                value={form.allocatedJudge || ''}
+                onChange={e => setForm(f => ({ ...f, allocatedJudge: e.target.value }))}
+              />
+            </Form.Group>
+          </Col>
+          <Col>
+            <Form.Group>
+              <Form.Label>Children involved</Form.Label>
+              <Form.Control
+                type="number"
+                value={form.childrenInvolved ?? ''}
+                onChange={e => setForm(f => ({ ...f, childrenInvolved: e.target.value === '' ? undefined : Number(e.target.value) }))}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+        <div className="d-flex gap-2">
+          <Button type="submit" variant="primary">Save</Button>
+          <Button variant="outline-secondary" onClick={() => navigate(existing ? `/cases/${existing.id}` : '/')}>Cancel</Button>
+        </div>
+      </Form>
+    </Card>
   )
 }
 

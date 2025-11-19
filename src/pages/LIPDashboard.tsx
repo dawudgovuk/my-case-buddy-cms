@@ -5,7 +5,7 @@ import { useCasesStore } from '../store/casesStore'
 import CaseSteps from '../components/CaseSteps'
 import { getStagesForCase, getCurrentStageIndex } from '../utils/caseStages'
 import { format } from 'date-fns'
-import { FaCalendarAlt, FaMapMarkerAlt, FaEye, FaPlus } from 'react-icons/fa'
+import { FaCalendarAlt, FaMapMarkerAlt, FaEye, FaPlus, FaGavel } from 'react-icons/fa'
 
 export default function LIPDashboard() {
   const navigate = useNavigate()

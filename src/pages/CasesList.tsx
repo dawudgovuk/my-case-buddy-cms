@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useCasesStore } from '../store/casesStore'
-import { Box, Button, Chip, IconButton, Paper, Stack, TextField, Typography } from '@mui/material'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
-import DeleteIcon from '@mui/icons-material/Delete'
-import AddIcon from '@mui/icons-material/Add'
+import { Button, Card, Form, Badge } from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 
 export default function CasesList() {
@@ -27,53 +25,45 @@ export default function CasesList() {
   }, [cases, q, user])
 
   return (
-    <Stack spacing={2}>
-      <Stack direction="row" alignItems="center" justifyContent="space-between">
-        <Typography variant="h5">Cases</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} component={RouterLink} to="/cases/new">
-          New Case
-        </Button>
-      </Stack>
-      <TextField
-        label="Search cases"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Case number, title, judge, status..."
-      />
-
-      <Stack spacing={1}>
-        {filtered.length === 0 && (
-          <Paper sx={{ p: 2 }}>
-            <Typography>No cases found. Create your first case.</Typography>
-          </Paper>
-        )}
-
-        {filtered.map((c) => (
-          <Paper key={c.id} sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Box sx={{ flexGrow: 1, minWidth: 0, cursor: 'pointer' }} onClick={() => navigate(`/cases/${c.id}`)}>
-              <Typography variant="subtitle1" noWrap>{c.id} — {c.title}</Typography>
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {c.court} • {c.caseType} • Judge: {c.allocatedJudge || 'Unassigned'}
-              </Typography>
-              <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                <Chip size="small" label={c.status} color={c.status === 'Open' ? 'success' : c.status === 'Concluded' ? 'default' : 'warning'} />
-                {typeof c.childrenInvolved === 'number' && (
-                  <Chip size="small" label={`${c.childrenInvolved} child${c.childrenInvolved === 1 ? '' : 'ren'}`} />
-                )}
-                <Chip size="small" label={`Parties: ${c.parties.length}`} />
-                <Chip size="small" label={`Hearings: ${c.hearings.length}`} />
-              </Stack>
-            </Box>
-            <Stack direction="row" spacing={1}>
-              <Button variant="outlined" onClick={() => navigate(`/cases/${c.id}/edit`)}>Edit</Button>
-              <IconButton color="error" onClick={() => remove(c.id)} aria-label={`Delete case ${c.id}`}>
-                <DeleteIcon />
-              </IconButton>
-            </Stack>
-          </Paper>
-        ))}
-      </Stack>
-    </Stack>
+    <div className="container-fluid p-0">
+      <div className="d-flex justify-content-between align-items-center mb-3">
+        <h4 className="mb-0">Cases</h4>
+        <Button variant="primary" href="/cases/new">+ New Case</Button>
+      </div>
+      <Form.Group className="mb-3">
+        <Form.Control
+          type="text"
+          placeholder="Case number, title, judge, status..."
+          value={q}
+          onChange={e => setQ(e.target.value)}
+        />
+      </Form.Group>
+      {filtered.length === 0 && (
+        <Card className="mb-2 p-3 text-center text-muted">No cases found. Create your first case.</Card>
+      )}
+      {filtered.map((c) => (
+        <Card key={c.id} className="mb-2 p-3 d-flex flex-row align-items-center gap-3">
+          <div className="flex-grow-1 min-width-0" style={{ cursor: 'pointer' }} onClick={() => navigate(`/cases/${c.id}`)}>
+            <div className="fw-bold text-truncate">{c.id} — {c.title}</div>
+            <div className="text-muted small text-truncate">
+              {c.court} • {c.caseType} • Judge: {c.allocatedJudge || 'Unassigned'}
+            </div>
+            <div className="d-flex gap-2 mt-1 flex-wrap">
+              <Badge bg={c.status === 'Open' ? 'success' : c.status === 'Concluded' ? 'secondary' : 'warning'}>{c.status}</Badge>
+              {typeof c.childrenInvolved === 'number' && (
+                <Badge bg="info" text="dark">{c.childrenInvolved} child{c.childrenInvolved === 1 ? '' : 'ren'}</Badge>
+              )}
+              <Badge bg="info" text="dark">Parties: {c.parties.length}</Badge>
+              <Badge bg="info" text="dark">Hearings: {c.hearings.length}</Badge>
+            </div>
+          </div>
+          <div className="d-flex gap-2">
+            <Button variant="outline-primary" onClick={() => navigate(`/cases/${c.id}/edit`)}>Edit</Button>
+            <Button variant="outline-danger" onClick={() => remove(c.id)}>Delete</Button>
+          </div>
+        </Card>
+      ))}
+    </div>
   )
 }
 

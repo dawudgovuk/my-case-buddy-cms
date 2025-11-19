@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
-import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { useCasesStore } from '../store/casesStore'
-import { Box, Button, Chip, Divider, IconButton, MenuItem, Paper, Stack, Tab, Tabs, TextField, Typography } from '@mui/material'
-import { ContentCopy } from '@mui/icons-material'
+import { Button, Card, Form, Row, Col, Tabs, Tab } from 'react-bootstrap'
+
 import type { FamilyCase, Party, Hearing, DocumentRecord, OrderRecord } from '../types/domain'
 import { generateId, createInvite, getAllInvites } from '../services/storage'
 import { useAuthStore } from '../store/authStore'
@@ -10,13 +10,13 @@ import { listUsers } from '../services/auth'
 
 function PartiesTab({ caseId }: { caseId: string }) {
   const store = useCasesStore()
-  const fc = store.getById(caseId)
-  if (!fc) return null
-  const current = fc as FamilyCase
   const [role, setRole] = useState<Party['role']>('Applicant')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [solicitorFirm, setSolicitorFirm] = useState('')
+  const fc = store.getById(caseId)
+  if (!fc) return null
+  const current = fc as FamilyCase
 
   function addParty() {
     if (!firstName.trim() || !lastName.trim()) return
@@ -37,43 +37,65 @@ function PartiesTab({ caseId }: { caseId: string }) {
     setFirstName(''); setLastName(''); setSolicitorFirm('')
   }
   return (
-    <Stack spacing={1}>
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Add party</Typography>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <TextField select label="Role" value={role} onChange={(e) => setRole(e.target.value as Party['role'])} fullWidth>
-            {['Applicant','Respondent','Child','Guardian','Intervener'].map(r => (
-              <MenuItem key={r} value={r}>{r}</MenuItem>
-            ))}
-          </TextField>
-          <TextField label="First name" value={firstName} onChange={(e) => setFirstName(e.target.value)} fullWidth />
-          <TextField label="Last name" value={lastName} onChange={(e) => setLastName(e.target.value)} fullWidth />
-          <TextField label="Solicitor firm" value={solicitorFirm} onChange={(e) => setSolicitorFirm(e.target.value)} fullWidth />
-          <Button variant="contained" onClick={addParty} disabled={!firstName || !lastName}>Add</Button>
-        </Stack>
-      </Paper>
-      {fc.parties.length === 0 && <Typography color="text.secondary">No parties recorded.</Typography>}
+    <div className="mb-3">
+      <Card className="mb-3 p-3">
+        <Card.Title>Add party</Card.Title>
+        <Form as={Row} className="g-2 align-items-end">
+          <Col md>
+            <Form.Group>
+              <Form.Label>Role</Form.Label>
+              <Form.Select value={role} onChange={e => setRole(e.target.value as Party['role'])}>
+                {['Applicant','Respondent','Child','Guardian','Intervener'].map(r => (
+                  <option key={r} value={r}>{r}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>First name</Form.Label>
+              <Form.Control value={firstName} onChange={e => setFirstName(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Last name</Form.Label>
+              <Form.Control value={lastName} onChange={e => setLastName(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Solicitor firm</Form.Label>
+              <Form.Control value={solicitorFirm} onChange={e => setSolicitorFirm(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md="auto">
+            <Button variant="primary" onClick={addParty} disabled={!firstName || !lastName}>Add</Button>
+          </Col>
+        </Form>
+      </Card>
+      {fc.parties.length === 0 && <div className="text-muted">No parties recorded.</div>}
       {fc.parties.map((p) => (
-        <Paper key={p.id} sx={{ p: 2 }}>
-          <Typography fontWeight={600}>{p.role}: {p.firstName} {p.lastName}</Typography>
-          <Typography variant="body2" color="text.secondary">{p.solicitorFirm ? `Solicitor: ${p.solicitorFirm}` : 'No solicitor'}</Typography>
-        </Paper>
+        <Card key={p.id} className="mb-2 p-2">
+          <div className="fw-bold">{p.role}: {p.firstName} {p.lastName}</div>
+          <div className="text-muted">{p.solicitorFirm ? `Solicitor: ${p.solicitorFirm}` : 'No solicitor'}</div>
+        </Card>
       ))}
-    </Stack>
+    </div>
   )
 }
 
 function HearingsTab({ caseId }: { caseId: string }) {
   const store = useCasesStore()
-  const fc = store.getById(caseId)
-  if (!fc) return null
-  const current = fc as FamilyCase
   const [type, setType] = useState<Hearing['type']>('Case Management')
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0,10))
   const [time, setTime] = useState<string>('10:00')
   const [location, setLocation] = useState<string>('')
   const [judge, setJudge] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
+  const fc = store.getById(caseId)
+  if (!fc) return null
+  const current = fc as FamilyCase
 
   function addHearing() {
     if (!date) return
@@ -88,44 +110,74 @@ function HearingsTab({ caseId }: { caseId: string }) {
     setLocation(''); setJudge(''); setNotes('')
   }
   return (
-    <Stack spacing={1}>
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Schedule hearing</Typography>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <TextField select label="Type" value={type} onChange={(e) => setType(e.target.value as Hearing['type'])} fullWidth>
-            {['Case Management','Directions','Fact-Finding','Final','Other'].map(t => (
-              <MenuItem key={t} value={t}>{t}</MenuItem>
-            ))}
-          </TextField>
-          <TextField type="date" label="Date" value={date} onChange={(e) => setDate(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-          <TextField type="time" label="Time" value={time} onChange={(e) => setTime(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-          <TextField label="Location" value={location} onChange={(e) => setLocation(e.target.value)} fullWidth />
-          <TextField label="Judge" value={judge} onChange={(e) => setJudge(e.target.value)} fullWidth />
-          <Button variant="contained" onClick={addHearing} disabled={!date}>Add</Button>
-        </Stack>
-        <TextField sx={{ mt: 2 }} multiline minRows={2} label="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} fullWidth />
-      </Paper>
-      {fc.hearings.length === 0 && <Typography color="text.secondary">No hearings scheduled.</Typography>}
+    <div className="mb-3">
+      <Card className="mb-3 p-3">
+        <Card.Title>Schedule hearing</Card.Title>
+        <Form as={Row} className="g-2 align-items-end">
+          <Col md>
+            <Form.Group>
+              <Form.Label>Type</Form.Label>
+              <Form.Select value={type} onChange={e => setType(e.target.value as Hearing['type'])}>
+                {['Case Management','Directions','Fact-Finding','Final','Other'].map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Date</Form.Label>
+              <Form.Control type="date" value={date} onChange={e => setDate(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Time</Form.Label>
+              <Form.Control type="time" value={time} onChange={e => setTime(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Location</Form.Label>
+              <Form.Control value={location} onChange={e => setLocation(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Judge</Form.Label>
+              <Form.Control value={judge} onChange={e => setJudge(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md="auto">
+            <Button variant="primary" onClick={addHearing} disabled={!date}>Add</Button>
+          </Col>
+        </Form>
+        <Form.Group className="mt-3">
+          <Form.Label>Notes (optional)</Form.Label>
+          <Form.Control as="textarea" rows={2} value={notes} onChange={e => setNotes(e.target.value)} />
+        </Form.Group>
+      </Card>
+      {fc.hearings.length === 0 && <div className="text-muted">No hearings scheduled.</div>}
       {fc.hearings.map((h) => (
-        <Paper key={h.id} sx={{ p: 2 }}>
-          <Typography fontWeight={600}>{h.type} — {h.date}{h.time ? ` ${h.time}` : ''}</Typography>
-          <Typography variant="body2" color="text.secondary">{h.location || 'Location TBC'}{h.judge ? ` • Judge: ${h.judge}` : ''}</Typography>
-          {h.notes && <Typography variant="body2" sx={{ mt: 1 }}>{h.notes}</Typography>}
-        </Paper>
+        <Card key={h.id} className="mb-2 p-2">
+          <div className="fw-bold">{h.type} — {h.date}{h.time ? ` ${h.time}` : ''}</div>
+          <div className="text-muted">{h.location || 'Location TBC'}{h.judge ? ` • Judge: ${h.judge}` : ''}</div>
+          {h.notes && <div className="mt-1">{h.notes}</div>}
+        </Card>
       ))}
-    </Stack>
+    </div>
   )
 }
 
 function DocumentsTab({ caseId }: { caseId: string }) {
   const store = useCasesStore()
-  const fc = store.getById(caseId)
-  if (!fc) return null
-  const current = fc as FamilyCase
   const [title, setTitle] = useState('')
   const [type, setType] = useState<DocumentRecord['type']>('Application')
   const [url, setUrl] = useState('')
   const [notes, setNotes] = useState('')
+  const fc = store.getById(caseId)
+  if (!fc) return null
+  const current = fc as FamilyCase
 
   function addDocument() {
     if (!title.trim()) return
@@ -140,41 +192,61 @@ function DocumentsTab({ caseId }: { caseId: string }) {
     setTitle(''); setUrl(''); setNotes('')
   }
   return (
-    <Stack spacing={1}>
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Add document (URL)</Typography>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <TextField label="Title" value={title} onChange={(e) => setTitle(e.target.value)} fullWidth />
-          <TextField select label="Type" value={type} onChange={(e) => setType(e.target.value as DocumentRecord['type'])} fullWidth>
-            {['Application','Statement','Medical','Expert Report','Bundle','Order','Other'].map(t => (
-              <MenuItem key={t} value={t}>{t}</MenuItem>
-            ))}
-          </TextField>
-          <TextField label="URL" value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://..." fullWidth />
-          <Button variant="contained" onClick={addDocument} disabled={!title}>Add</Button>
-        </Stack>
-        <TextField sx={{ mt: 2 }} multiline minRows={2} label="Notes (optional)" value={notes} onChange={(e) => setNotes(e.target.value)} fullWidth />
-      </Paper>
-      {fc.documents.length === 0 && <Typography color="text.secondary">No documents uploaded.</Typography>}
+    <div className="mb-3">
+      <Card className="mb-3 p-3">
+        <Card.Title>Add document (URL)</Card.Title>
+        <Form as={Row} className="g-2 align-items-end">
+          <Col md>
+            <Form.Group>
+              <Form.Label>Title</Form.Label>
+              <Form.Control value={title} onChange={e => setTitle(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Type</Form.Label>
+              <Form.Select value={type} onChange={e => setType(e.target.value as DocumentRecord['type'])}>
+                {['Application','Statement','Medical','Expert Report','Bundle','Order','Other'].map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>URL</Form.Label>
+              <Form.Control value={url} onChange={e => setUrl(e.target.value)} placeholder="https://..." />
+            </Form.Group>
+          </Col>
+          <Col md="auto">
+            <Button variant="primary" onClick={addDocument} disabled={!title}>Add</Button>
+          </Col>
+        </Form>
+        <Form.Group className="mt-3">
+          <Form.Label>Notes (optional)</Form.Label>
+          <Form.Control as="textarea" rows={2} value={notes} onChange={e => setNotes(e.target.value)} />
+        </Form.Group>
+      </Card>
+      {fc.documents.length === 0 && <div className="text-muted">No documents uploaded.</div>}
       {fc.documents.map((d) => (
-        <Paper key={d.id} sx={{ p: 2 }}>
-          <Typography fontWeight={600}>{d.title}</Typography>
-          <Typography variant="body2" color="text.secondary">{d.type} • Uploaded {new Date(d.uploadedAt).toLocaleString()}</Typography>
-        </Paper>
+        <Card key={d.id} className="mb-2 p-2">
+          <div className="fw-bold">{d.title}</div>
+          <div className="text-muted">{d.type} • Uploaded {new Date(d.uploadedAt).toLocaleString()}</div>
+        </Card>
       ))}
-    </Stack>
+    </div>
   )
 }
 
 function OrdersTab({ caseId }: { caseId: string }) {
   const store = useCasesStore()
-  const fc = store.getById(caseId)
-  if (!fc) return null
-  const current = fc as FamilyCase
   const [type, setType] = useState<OrderRecord['type']>('Child Arrangements Order')
   const [dateMade, setDateMade] = useState<string>(new Date().toISOString().slice(0,10))
   const [summary, setSummary] = useState<string>('')
   const [expiresOn, setExpiresOn] = useState<string>('')
+  const fc = store.getById(caseId)
+  if (!fc) return null
+  const current = fc as FamilyCase
 
   function addOrder() {
     if (!dateMade || !summary.trim()) return
@@ -189,39 +261,59 @@ function OrdersTab({ caseId }: { caseId: string }) {
     setSummary(''); setExpiresOn('')
   }
   return (
-    <Stack spacing={1}>
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Record order</Typography>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <TextField select label="Type" value={type} onChange={(e) => setType(e.target.value as OrderRecord['type'])} fullWidth>
-            {['Child Arrangements Order','Care Order','Supervision Order','Non-Molestation Order','Prohibited Steps Order','Specific Issue Order','Financial Remedies Order','Other'].map(t => (
-              <MenuItem key={t} value={t}>{t}</MenuItem>
-            ))}
-          </TextField>
-          <TextField type="date" label="Date made" value={dateMade} onChange={(e) => setDateMade(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-          <TextField type="date" label="Expires on (optional)" value={expiresOn} onChange={(e) => setExpiresOn(e.target.value)} InputLabelProps={{ shrink: true }} fullWidth />
-          <Button variant="contained" onClick={addOrder} disabled={!summary || !dateMade}>Add</Button>
-        </Stack>
-        <TextField sx={{ mt: 2 }} multiline minRows={2} label="Summary" value={summary} onChange={(e) => setSummary(e.target.value)} fullWidth />
-      </Paper>
-      {fc.orders.length === 0 && <Typography color="text.secondary">No orders recorded.</Typography>}
+    <div className="mb-3">
+      <Card className="mb-3 p-3">
+        <Card.Title>Record order</Card.Title>
+        <Form as={Row} className="g-2 align-items-end">
+          <Col md>
+            <Form.Group>
+              <Form.Label>Type</Form.Label>
+              <Form.Select value={type} onChange={e => setType(e.target.value as OrderRecord['type'])}>
+                {['Child Arrangements Order','Care Order','Supervision Order','Non-Molestation Order','Prohibited Steps Order','Specific Issue Order','Financial Remedies Order','Other'].map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Date made</Form.Label>
+              <Form.Control type="date" value={dateMade} onChange={e => setDateMade(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Expires on (optional)</Form.Label>
+              <Form.Control type="date" value={expiresOn} onChange={e => setExpiresOn(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md="auto">
+            <Button variant="primary" onClick={addOrder} disabled={!summary || !dateMade}>Add</Button>
+          </Col>
+        </Form>
+        <Form.Group className="mt-3">
+          <Form.Label>Summary</Form.Label>
+          <Form.Control as="textarea" rows={2} value={summary} onChange={e => setSummary(e.target.value)} />
+        </Form.Group>
+      </Card>
+      {fc.orders.length === 0 && <div className="text-muted">No orders recorded.</div>}
       {fc.orders.map((o) => (
-        <Paper key={o.id} sx={{ p: 2 }}>
-          <Typography fontWeight={600}>{o.type} — {o.dateMade}</Typography>
-          <Typography variant="body2" color="text.secondary">{o.summary}</Typography>
-        </Paper>
+        <Card key={o.id} className="mb-2 p-2">
+          <div className="fw-bold">{o.type} — {o.dateMade}</div>
+          <div className="text-muted">{o.summary}</div>
+        </Card>
       ))}
-    </Stack>
+    </div>
   )
 }
 
 function NotesTab({ caseId }: { caseId: string }) {
   const store = useCasesStore()
+  const [author, setAuthor] = useState('')
+  const [text, setText] = useState('')
   const fc = store.getById(caseId)
   if (!fc) return null
   const current = fc as FamilyCase
-  const [author, setAuthor] = useState('')
-  const [text, setText] = useState('')
 
   function addNote() {
     if (!text.trim()) return
@@ -236,45 +328,50 @@ function NotesTab({ caseId }: { caseId: string }) {
     setText('')
   }
   return (
-    <Stack spacing={1}>
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Add note</Typography>
-        <Stack spacing={2}>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-            <TextField label="Author (optional)" value={author} onChange={(e) => setAuthor(e.target.value)} fullWidth />
-          </Stack>
-          <TextField multiline minRows={3} label="Note" value={text} onChange={(e) => setText(e.target.value)} fullWidth />
-          <Button variant="contained" onClick={addNote} disabled={!text.trim()}>Add</Button>
-        </Stack>
-      </Paper>
-      {fc.notes.length === 0 && <Typography color="text.secondary">No notes yet.</Typography>}
+    <div className="mb-3">
+      <Card className="mb-3 p-3">
+        <Card.Title>Add note</Card.Title>
+        <Form>
+          <Form.Group className="mb-2">
+            <Form.Label>Author (optional)</Form.Label>
+            <Form.Control value={author} onChange={e => setAuthor(e.target.value)} />
+          </Form.Group>
+          <Form.Group className="mb-2">
+            <Form.Label>Note</Form.Label>
+            <Form.Control as="textarea" rows={3} value={text} onChange={e => setText(e.target.value)} />
+          </Form.Group>
+          <Button variant="primary" onClick={addNote} disabled={!text.trim()}>Add</Button>
+        </Form>
+      </Card>
+      {fc.notes.length === 0 && <div className="text-muted">No notes yet.</div>}
       {fc.notes.map((n) => (
-        <Paper key={n.id} sx={{ p: 2 }}>
-          <Typography variant="body2" color="text.secondary">{new Date(n.createdAt).toLocaleString()} — {n.author}</Typography>
-          <Typography sx={{ mt: 0.5 }}>{n.text}</Typography>
-        </Paper>
+        <Card key={n.id} className="mb-2 p-2">
+          <div className="text-muted">{new Date(n.createdAt).toLocaleString()} — {n.author}</div>
+          <div>{n.text}</div>
+        </Card>
       ))}
-    </Stack>
+    </div>
   )
 }
 
 function TeamInvitesTab({ caseId }: { caseId: string }) {
   const store = useCasesStore()
-  const { user } = useAuthStore()
-  const fc = store.getById(caseId)
-  if (!fc || !user) return null
-  const current = fc as FamilyCase
   const [inviteRole, setInviteRole] = useState<'McKenzieFriend' | 'Solicitor' | 'Barrister'>('McKenzieFriend')
   const [generatedInvite, setGeneratedInvite] = useState<string | null>(null)
   const [solicitorName, setSolicitorName] = useState('')
   const [solicitorFirm, setSolicitorFirm] = useState('')
   const [barristerName, setBarristerName] = useState('')
   const [barristerChambers, setBarristerChambers] = useState('')
+  const { user } = useAuthStore()
+  const fc = store.getById(caseId)
+  if (!fc || !user) return null
+  const current = fc as FamilyCase
 
   const allInvites = getAllInvites().filter(i => i.caseId === caseId)
   const allUsers = listUsers()
 
   function generateInviteLink() {
+    if (!user) return
     const token = generateId('INV')
     const invite = {
       id: generateId('INV'),
@@ -335,136 +432,113 @@ function TeamInvitesTab({ caseId }: { caseId: string }) {
   }
 
   return (
-    <Stack spacing={2}>
+    <div className="mb-3">
       {/* Generate Invite Links */}
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 2 }}>Generate Invite Link</Typography>
-        <Stack spacing={2}>
-          <TextField
-            select
-            label="Invite Role"
-            value={inviteRole}
-            onChange={(e) => setInviteRole(e.target.value as any)}
-            fullWidth
-          >
-            <MenuItem value="McKenzieFriend">McKenzie Friend</MenuItem>
-            <MenuItem value="Solicitor">Solicitor</MenuItem>
-            <MenuItem value="Barrister">Barrister</MenuItem>
-          </TextField>
-          <Button variant="contained" onClick={generateInviteLink} fullWidth>
-            Generate Invite Link
-          </Button>
-          {generatedInvite && (
-            <Box sx={{ p: 2, bgcolor: 'background.default', borderRadius: 1 }}>
-              <Typography variant="caption" color="text.secondary">Invite Link:</Typography>
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="body2" sx={{ flex: 1, wordBreak: 'break-all' }}>
-                  {generatedInvite}
-                </Typography>
-                <IconButton size="small" onClick={() => copyToClipboard(generatedInvite)}>
-                  <ContentCopy fontSize="small" />
-                </IconButton>
-              </Stack>
-            </Box>
-          )}
-        </Stack>
-      </Paper>
+      <Card className="mb-3 p-3">
+        <Card.Title>Generate Invite Link</Card.Title>
+        <Form.Group className="mb-2">
+          <Form.Label>Invite Role</Form.Label>
+          <Form.Select value={inviteRole} onChange={e => setInviteRole(e.target.value as 'McKenzieFriend' | 'Solicitor' | 'Barrister')}>
+            <option value="McKenzieFriend">McKenzie Friend</option>
+            <option value="Solicitor">Solicitor</option>
+            <option value="Barrister">Barrister</option>
+          </Form.Select>
+        </Form.Group>
+        <Button variant="primary" onClick={generateInviteLink} className="mb-2" block>
+          Generate Invite Link
+        </Button>
+        {generatedInvite && (
+          <div className="p-2 bg-light rounded mb-2">
+            <div className="small text-muted mb-1">Invite Link:</div>
+            <div className="d-flex align-items-center">
+              <span className="flex-grow-1 text-break">{generatedInvite}</span>
+              <Button size="sm" variant="outline-secondary" onClick={() => copyToClipboard(generatedInvite)} className="ms-2">Copy</Button>
+            </div>
+          </div>
+        )}
+      </Card>
 
       {/* Add Solicitor */}
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Add Solicitor</Typography>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <TextField
-            label="Solicitor Name"
-            value={solicitorName}
-            onChange={(e) => setSolicitorName(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Firm"
-            value={solicitorFirm}
-            onChange={(e) => setSolicitorFirm(e.target.value)}
-            fullWidth
-          />
-          <Button variant="contained" onClick={addSolicitor} disabled={!solicitorName.trim()}>
-            Add Solicitor
-          </Button>
-        </Stack>
-      </Paper>
+      <Card className="mb-3 p-3">
+        <Card.Title>Add Solicitor</Card.Title>
+        <Form as={Row} className="g-2 align-items-end">
+          <Col md>
+            <Form.Group>
+              <Form.Label>Solicitor Name</Form.Label>
+              <Form.Control value={solicitorName} onChange={e => setSolicitorName(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Firm</Form.Label>
+              <Form.Control value={solicitorFirm} onChange={e => setSolicitorFirm(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md="auto">
+            <Button variant="primary" onClick={addSolicitor} disabled={!solicitorName.trim()}>Add Solicitor</Button>
+          </Col>
+        </Form>
+      </Card>
 
       {/* Add Barrister */}
-      <Paper sx={{ p: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Add Barrister</Typography>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-          <TextField
-            label="Barrister Name"
-            value={barristerName}
-            onChange={(e) => setBarristerName(e.target.value)}
-            fullWidth
-          />
-          <TextField
-            label="Chambers"
-            value={barristerChambers}
-            onChange={(e) => setBarristerChambers(e.target.value)}
-            fullWidth
-          />
-          <Button variant="contained" onClick={addBarrister} disabled={!barristerName.trim()}>
-            Add Barrister
-          </Button>
-        </Stack>
-      </Paper>
+      <Card className="mb-3 p-3">
+        <Card.Title>Add Barrister</Card.Title>
+        <Form as={Row} className="g-2 align-items-end">
+          <Col md>
+            <Form.Group>
+              <Form.Label>Barrister Name</Form.Label>
+              <Form.Control value={barristerName} onChange={e => setBarristerName(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md>
+            <Form.Group>
+              <Form.Label>Chambers</Form.Label>
+              <Form.Control value={barristerChambers} onChange={e => setBarristerChambers(e.target.value)} />
+            </Form.Group>
+          </Col>
+          <Col md="auto">
+            <Button variant="primary" onClick={addBarrister} disabled={!barristerName.trim()}>Add Barrister</Button>
+          </Col>
+        </Form>
+      </Card>
 
       {/* Existing Invites */}
       {allInvites.length > 0 && (
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>Active Invites</Typography>
-          <Stack spacing={1}>
-            {allInvites.map((invite) => {
-              const inviteUrl = `${window.location.origin}/invite/${invite.token}`
-              return (
-                <Box key={invite.id} sx={{ p: 1, bgcolor: 'background.default', borderRadius: 1 }}>
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Chip size="small" label={invite.role} />
-                    <Typography variant="body2" sx={{ flex: 1 }}>
-                      {invite.usedAt ? 'Used' : 'Active'} • Created {new Date(invite.createdAt).toLocaleDateString()}
-                    </Typography>
-                    {!invite.usedAt && (
-                      <IconButton size="small" onClick={() => copyToClipboard(inviteUrl)}>
-                        <ContentCopy fontSize="small" />
-                      </IconButton>
-                    )}
-                  </Stack>
-                </Box>
-              )
-            })}
-          </Stack>
-        </Paper>
+        <Card className="mb-3 p-3">
+          <Card.Title>Active Invites</Card.Title>
+          {allInvites.map((invite) => {
+            const inviteUrl = `${window.location.origin}/invite/${invite.token}`
+            return (
+              <div key={invite.id} className="p-2 bg-light rounded mb-2 d-flex align-items-center">
+                <span className="badge bg-info text-dark me-2">{invite.role}</span>
+                <span className="flex-grow-1">{invite.usedAt ? 'Used' : 'Active'} • Created {new Date(invite.createdAt).toLocaleDateString()}</span>
+                {!invite.usedAt && (
+                  <Button size="sm" variant="outline-secondary" onClick={() => copyToClipboard(inviteUrl)} className="ms-2">Copy Link</Button>
+                )}
+              </div>
+            )
+          })}
+        </Card>
       )}
 
       {/* Case Members */}
       {fc.members && fc.members.length > 0 && (
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="subtitle1" sx={{ mb: 1 }}>Case Team</Typography>
-          <Stack spacing={1}>
-            {fc.members.map((member) => {
-              const memberUser = allUsers.find(u => u.id === member.userId)
-              return (
-                <Box key={member.userId} sx={{ p: 1 }}>
-                  <Typography fontWeight={600}>
-                    {memberUser?.name || 'Unknown User'} ({member.role})
-                  </Typography>
-                  {memberUser?.email && (
-                    <Typography variant="body2" color="text.secondary">
-                      {memberUser.email}
-                    </Typography>
-                  )}
-                </Box>
-              )
-            })}
-          </Stack>
-        </Paper>
+        <Card className="mb-3 p-3">
+          <Card.Title>Case Team</Card.Title>
+          {fc.members.map((member) => {
+            const memberUser = allUsers.find(u => u.id === member.userId)
+            return (
+              <div key={member.userId} className="mb-2">
+                <div className="fw-bold">{memberUser?.name || 'Unknown User'} ({member.role})</div>
+                {memberUser?.email && (
+                  <div className="text-muted">{memberUser.email}</div>
+                )}
+              </div>
+            )
+          })}
+        </Card>
       )}
-    </Stack>
+    </div>
   )
 }
 
@@ -475,44 +549,59 @@ export default function CaseDetails() {
   const fc = useMemo(() => (caseId ? getById(caseId) : undefined), [caseId, getById])
   const [tab, setTab] = useState(0)
 
-  if (!caseId || !fc) return <Typography>Case not found.</Typography>
+  if (!caseId || !fc) return <div className="text-danger">Case not found.</div>;
 
   return (
-    <Stack spacing={2}>
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }}>
-        <Box sx={{ flexGrow: 1 }}>
-          <Typography variant="h5">{fc.id} — {fc.title}</Typography>
-          <Typography variant="body2" color="text.secondary">{fc.court} • {fc.caseType} • Started {fc.startedAt}</Typography>
-          <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-            <Chip size="small" label={fc.status} />
-            <Chip size="small" label={`Parties: ${fc.parties.length}`} />
-            <Chip size="small" label={`Hearings: ${fc.hearings.length}`} />
-          </Stack>
-        </Box>
-        <Stack direction="row" spacing={1}>
-          <Button variant="outlined" onClick={() => navigate(`/cases/${fc.id}/edit`)}>Edit</Button>
-          <Button component={RouterLink} to="/" variant="text">Back to cases</Button>
-        </Stack>
-      </Stack>
-      <Divider />
-
-      <Tabs value={tab} onChange={(_, v) => setTab(v)} variant="scrollable" allowScrollButtonsMobile>
-        <Tab label="Parties" />
-        <Tab label="Hearings" />
-        <Tab label="Documents" />
-        <Tab label="Orders" />
-        <Tab label="Notes" />
-        <Tab label="Team & Invites" />
-      </Tabs>
-
-      {tab === 0 && <PartiesTab caseId={fc.id} />}
-      {tab === 1 && <HearingsTab caseId={fc.id} />}
-      {tab === 2 && <DocumentsTab caseId={fc.id} />}
-      {tab === 3 && <OrdersTab caseId={fc.id} />}
-      {tab === 4 && <NotesTab caseId={fc.id} />}
-      {tab === 5 && <TeamInvitesTab caseId={fc.id} />}
-    </Stack>
-  )
+    <div className="mb-3">
+      <div className="container-fluid p-0">
+        <div className="row mb-3 align-items-center">
+          <div className="col">
+            <h4>{fc.id} — {fc.title}</h4>
+            <div className="text-muted small mb-1">{fc.court} • {fc.caseType} • Started {fc.startedAt}</div>
+            <div className="d-flex gap-2 mb-2">
+              <span className="badge bg-secondary">{fc.status}</span>
+              <span className="badge bg-info text-dark">Parties: {fc.parties.length}</span>
+              <span className="badge bg-info text-dark">Hearings: {fc.hearings.length}</span>
+            </div>
+          </div>
+          <div className="col-auto d-flex gap-2">
+            <Button variant="outline-primary" onClick={() => navigate(`/cases/${fc.id}/edit`)}>Edit</Button>
+            <Button as="a" href="/" variant="link">Back to cases</Button>
+          </div>
+        </div>
+        <hr />
+        <Card className="mb-3">
+          <Card.Body>
+            <Tabs
+              id="case-details-tabs"
+              activeKey={tab}
+              onSelect={(k: string | null) => setTab(Number(k))}
+              className="mb-3"
+            >
+              <Tab eventKey={0} title="Parties">
+                <PartiesTab caseId={fc.id} />
+              </Tab>
+              <Tab eventKey={1} title="Hearings">
+                <HearingsTab caseId={fc.id} />
+              </Tab>
+              <Tab eventKey={2} title="Documents">
+                <DocumentsTab caseId={fc.id} />
+              </Tab>
+              <Tab eventKey={3} title="Orders">
+                <OrdersTab caseId={fc.id} />
+              </Tab>
+              <Tab eventKey={4} title="Notes">
+                <NotesTab caseId={fc.id} />
+              </Tab>
+              <Tab eventKey={5} title="Team & Invites">
+                <TeamInvitesTab caseId={fc.id} />
+              </Tab>
+            </Tabs>
+          </Card.Body>
+        </Card>
+      </div>
+    </div>
+    );
 }
 
 
