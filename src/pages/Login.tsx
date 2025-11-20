@@ -25,7 +25,7 @@ export default function Login() {
   }
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-100 py-5">
+    <Container className="d-flex justify-content-center align-items-center min-vh-50 py-5">
       <Card className="shadow-lg border-0" style={{ width: '100%', maxWidth: '600px' }}>
         <Card.Header className="bg-primary text-white text-center py-4">
           <h2 className="mb-0">
