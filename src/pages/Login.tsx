@@ -25,23 +25,23 @@ export default function Login() {
   }
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-100 py-5">
-      <Card className="shadow-lg border-0" style={{ width: '100%', maxWidth: '600px' }}>
-        <Card.Header className="bg-primary text-white text-center py-4">
-          <h2 className="mb-0">
+    <div className="login-airbnb-bg">
+      <Card className="login-airbnb-card shadow-lg border-0" style={{ width: '100%', maxWidth: '420px' }}>
+        <Card.Header className="login-airbnb-header text-center">
+          <h2 className="login-airbnb-title mb-0 d-flex align-items-center justify-content-center">
             <FaGavel className="me-2" />
             MyCase Buddy
           </h2>
-          <p className="mb-0 mt-2 small">Sign in to manage your cases</p>
+          <div className="login-airbnb-sub">Sign in to manage your cases</div>
         </Card.Header>
         <Card.Body className="p-4">
           <Form onSubmit={onSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">
+              <Form.Label className="login-airbnb-label">
                 <FaSignInAlt className="me-2" />
                 Choose User
               </Form.Label>
-              <Form.Select value={userId} onChange={(e) => setUserId(e.target.value)} required size="lg">
+              <Form.Select value={userId} onChange={(e) => setUserId(e.target.value)} required size="lg" className="login-airbnb-select">
                 <option value="">Select a user...</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>
@@ -50,13 +50,13 @@ export default function Login() {
                 ))}
               </Form.Select>
             </Form.Group>
-            <Button type="submit" variant="primary" size="lg" className="w-100 mb-3">
+            <Button type="submit" className="login-airbnb-btn w-100 mb-3" size="lg">
               <FaSignInAlt className="me-2" />
               Sign In
             </Button>
           </Form>
 
-          <hr className="my-4" />
+          <hr className="login-airbnb-divider my-4" />
 
           <div className="text-center mb-3">
             <p className="text-muted mb-3">Need to register?</p>
@@ -64,8 +64,7 @@ export default function Login() {
           <Row className="g-2">
             <Col xs={6} sm={6}>
               <Button
-                variant="outline-primary"
-                className="w-100"
+                className="login-airbnb-outline w-100"
                 onClick={() => navigate('/register/LIP')}
                 size="sm"
               >
@@ -75,8 +74,7 @@ export default function Login() {
             </Col>
             <Col xs={6} sm={6}>
               <Button
-                variant="outline-success"
-                className="w-100"
+                className="login-airbnb-outline w-100"
                 onClick={() => navigate('/register/McKenzieFriend')}
                 size="sm"
               >
@@ -86,8 +84,7 @@ export default function Login() {
             </Col>
             <Col xs={6} sm={6}>
               <Button
-                variant="outline-info"
-                className="w-100"
+                className="login-airbnb-outline w-100"
                 onClick={() => navigate('/register/Solicitor')}
                 size="sm"
               >
@@ -97,8 +94,7 @@ export default function Login() {
             </Col>
             <Col xs={6} sm={6}>
               <Button
-                variant="outline-warning"
-                className="w-100"
+                className="login-airbnb-outline w-100"
                 onClick={() => navigate('/register/Barrister')}
                 size="sm"
               >
@@ -109,6 +105,6 @@ export default function Login() {
           </Row>
         </Card.Body>
       </Card>
-    </Container>
+    </div>
   )
 }

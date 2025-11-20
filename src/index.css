@@ -1,236 +1,134 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
-@import 'semantic-ui-css/semantic.min.css';
+/* @import 'semantic-ui-css/semantic.min.css'; */
 
+/* Parallax Navbar and Hero Styles */
+.parallax-hero {
+  position: relative;
+  height: 96px;
+  width: 100%;
+  overflow: hidden;
+  z-index: 0;
+}
+.parallax-hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 96px;
+  background-attachment: fixed;
+  z-index: 1;
+  opacity: 0.85;
+}
+.parallax-navbar {
+  background: transparent !important;
+  transition: background 0.4s, box-shadow 0.4s, transform 0.4s cubic-bezier(0.4,0,0.2,1);
+  z-index: 10;
+}
+.parallax-navbar-solid {
+  box-shadow: 0 2px 12px rgba(39,106,123,0.10);
+}
+.parallax-navbar-hide {
+  transform: translateY(-110%);
+  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+@media (max-width: 768px) {
+  .parallax-hero, .parallax-hero-bg {
+    height: 64px;
+  }
+}
+
+/* Airbnb Color Scheme */
 :root {
-  --primary-color: #276A7B;
-  --secondary-color: #F9C74F;
-  --success-color: #28a745;
-  --warning-color: #ffc107;
-  --danger-color: #dc3545;
-  --info-color: #17a2b8;
-  --light-bg: #F8F5ED;
-  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  --card-shadow-hover: 0 8px 12px rgba(0, 0, 0, 0.15);
+  --airbnb-coral: #FF5A5F;
+  --airbnb-dark: #484848;
+  --airbnb-light: #fff;
+  --airbnb-gray: #767676;
+  --airbnb-green: #008489;
+  --airbnb-yellow: #FFB400;
+  --airbnb-border: #EBEBEB;
 }
 
 body {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: linear-gradient(135deg, #fff 0%, #f7f7f7 100%);
+}
+
+.login-airbnb-bg {
   min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  background: linear-gradient(120deg, #fff 0%, #f7f7f7 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.card {
-  border: none;
-  border-radius: 12px;
-  box-shadow: var(--card-shadow);
-  transition: transform 0.2s, box-shadow 0.2s;
-  background: white;
+.login-airbnb-card {
+  border-radius: 20px !important;
+  box-shadow: 0 8px 32px rgba(72,72,72,0.08);
+  border: 1px solid var(--airbnb-border);
+  background: var(--airbnb-light);
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--card-shadow-hover);
+.login-airbnb-header {
+  background: var(--airbnb-coral);
+  color: var(--airbnb-light);
+  border-radius: 20px 20px 0 0 !important;
+  padding-top: 1.5rem;
+  padding-bottom: 1rem;
 }
 
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%);
-  border: none;
-  border-radius: 8px;
-  padding: 10px 20px;
+.login-airbnb-title {
+  font-family: 'Montserrat', Arial, sans-serif;
+  font-weight: 800;
+  font-size: 2rem;
+  color: var(--airbnb-light);
+  letter-spacing: -0.01em;
+}
+
+.login-airbnb-sub {
+  color: #fff6;
+  font-size: 1rem;
+  margin-top: 0.25rem;
+}
+
+.login-airbnb-btn {
+  background: var(--airbnb-coral) !important;
+  border: none !important;
+  color: var(--airbnb-light) !important;
+  font-weight: 700;
+  border-radius: 20px !important;
+  font-size: 1.1rem;
+  box-shadow: 0 2px 8px rgba(255,90,95,0.08);
+  transition: background 0.2s;
+}
+.login-airbnb-btn:hover {
+  background: #e04850 !important;
+}
+
+.login-airbnb-outline {
+  border-radius: 20px !important;
   font-weight: 600;
-  transition: all 0.3s;
+  border: 1.5px solid var(--airbnb-border) !important;
+  color: var(--airbnb-dark) !important;
+  background: var(--airbnb-light) !important;
+  transition: border 0.2s, color 0.2s;
+}
+.login-airbnb-outline:hover {
+  border-color: var(--airbnb-coral) !important;
+  color: var(--airbnb-coral) !important;
 }
 
-.btn-primary:hover {
-  background: linear-gradient(135deg, #1e5a6a 0%, var(--primary-color) 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+.login-airbnb-label {
+  color: var(--airbnb-dark);
+  font-weight: 700;
+  font-size: 1.1rem;
 }
 
-.btn-success {
-  background: linear-gradient(135deg, var(--success-color) 0%, #218838 100%);
-  border: none;
-}
-
-.btn-warning {
-  background: linear-gradient(135deg, var(--warning-color) 0%, #e0a800 100%);
-  border: none;
-  color: #000;
-}
-
-.btn-danger {
-  background: linear-gradient(135deg, var(--danger-color) 0%, #c82333 100%);
-  border: none;
-}
-
-.btn-info {
-  background: linear-gradient(135deg, var(--info-color) 0%, #138496 100%);
-  border: none;
-}
-
-.navbar {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%) !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 1rem 0;
-}
-
-.navbar-brand, .navbar-nav .nav-link {
-  color: white !important;
-  font-weight: 600;
-}
-
-.navbar-nav .nav-link:hover {
-  color: var(--secondary-color) !important;
-}
-
-.table-responsive {
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: var(--card-shadow);
-}
-
-.table {
-  margin-bottom: 0;
-}
-
-.table thead th {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%);
-  color: white;
-  border: none;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.5px;
-}
-
-.table tbody tr {
-  transition: background-color 0.2s;
-}
-
-.table tbody tr:hover {
-  background-color: #f8f9fa;
-}
-
-.priority-high {
-  border-left: 4px solid var(--danger-color);
-}
-
-.priority-medium {
-  border-left: 4px solid var(--warning-color);
-}
-
-.priority-low {
-  border-left: 4px solid var(--success-color);
-}
-
-.badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 0.75rem;
-}
-
-.badge-success {
-  background: linear-gradient(135deg, var(--success-color) 0%, #218838 100%);
-}
-
-.badge-warning {
-  background: linear-gradient(135deg, var(--warning-color) 0%, #e0a800 100%);
-  color: #000;
-}
-
-.badge-danger {
-  background: linear-gradient(135deg, var(--danger-color) 0%, #c82333 100%);
-}
-
-.badge-info {
-  background: linear-gradient(135deg, var(--info-color) 0%, #138496 100%);
-}
-
-.badge-primary {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%);
-}
-
-/* Semantic UI Steps customization */
-.ui.steps {
-  background: transparent !important;
-  box-shadow: none !important;
-}
-
-.ui.step {
-  border-radius: 12px !important;
-  padding: 15px !important;
-  transition: all 0.3s !important;
-}
-
-.ui.step:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
-}
-
-.ui.step.active {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%) !important;
-  color: white !important;
-}
-
-.ui.step.completed {
-  background: linear-gradient(135deg, var(--success-color) 0%, #218838 100%) !important;
-  color: white !important;
-}
-
-.ui.step.disabled {
-  background: #e9ecef !important;
-  color: #6c757d !important;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .ui.steps {
-    flex-direction: column;
-  }
-  
-  .ui.step {
-    margin-bottom: 10px !important;
-  }
-  
-  .table-responsive {
-    font-size: 0.875rem;
-  }
-  
-  .card {
-    margin-bottom: 1rem;
-  }
-}
-
-/* Animation for fun elements */
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-.pulse {
-  animation: pulse 2s infinite;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
+.login-airbnb-select {
   border-radius: 10px;
+  border: 1.5px solid var(--airbnb-border);
+  font-size: 1.1rem;
+  padding: 0.75rem 1rem;
 }
 
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--primary-color) 0%, #1e5a6a 100%);
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #1e5a6a 0%, var(--primary-color) 100%);
+.login-airbnb-divider {
+  border-top: 1.5px solid var(--airbnb-border);
 }

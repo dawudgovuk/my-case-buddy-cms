@@ -68,90 +68,97 @@ export default function CaseForm() {
   }
 
   return (
-    <Card className="p-4 mx-auto" style={{ maxWidth: 600 }}>
-      <Form onSubmit={handleSubmit}>
-        <h4 className="mb-3">{existing ? 'Edit Case' : 'Create New Case'}</h4>
-        <Form.Group className="mb-3">
-          <Form.Label>Case title</Form.Label>
-          <Form.Control
-            value={form.title}
-            onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Case number (auto if left blank)</Form.Label>
-          <Form.Control
-            value={form.id}
-            onChange={e => setForm(f => ({ ...f, id: e.target.value }))}
-            placeholder="e.g., FC-23-001234"
-          />
-        </Form.Group>
-        <Row className="mb-3">
-          <Col>
-            <Form.Group>
-              <Form.Label>Court</Form.Label>
-              <Form.Select value={form.court} onChange={e => setForm(f => ({ ...f, court: e.target.value as any }))}>
-                {courts.map(c => <option key={c} value={c}>{c}</option>)}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group>
-              <Form.Label>Case Type</Form.Label>
-              <Form.Select value={form.caseType} onChange={e => setForm(f => ({ ...f, caseType: e.target.value as any }))}>
-                {types.map(t => <option key={t} value={t}>{t}</option>)}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-        </Row>
-        <Row className="mb-3">
-          <Col>
-            <Form.Group>
-              <Form.Label>Status</Form.Label>
-              <Form.Select value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as any }))}>
-                {statuses.map(s => <option key={s} value={s}>{s}</option>)}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group>
-              <Form.Label>Started on</Form.Label>
-              <Form.Control
-                type="date"
-                value={form.startedAt}
-                onChange={e => setForm(f => ({ ...f, startedAt: e.target.value }))}
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-        <Row className="mb-3">
-          <Col>
-            <Form.Group>
-              <Form.Label>Allocated judge</Form.Label>
-              <Form.Control
-                value={form.allocatedJudge || ''}
-                onChange={e => setForm(f => ({ ...f, allocatedJudge: e.target.value }))}
-              />
-            </Form.Group>
-          </Col>
-          <Col>
-            <Form.Group>
-              <Form.Label>Children involved</Form.Label>
-              <Form.Control
-                type="number"
-                value={form.childrenInvolved ?? ''}
-                onChange={e => setForm(f => ({ ...f, childrenInvolved: e.target.value === '' ? undefined : Number(e.target.value) }))}
-              />
-            </Form.Group>
-          </Col>
-        </Row>
-        <div className="d-flex gap-2">
-          <Button type="submit" variant="primary">Save</Button>
-          <Button variant="outline-secondary" onClick={() => navigate(existing ? `/cases/${existing.id}` : '/')}>Cancel</Button>
-        </div>
-      </Form>
-    </Card>
+    <div className="login-airbnb-bg" style={{ minHeight: '80vh' }}>
+      <Card className="login-airbnb-card p-4 mx-auto" style={{ maxWidth: 600 }}>
+        <Form onSubmit={handleSubmit}>
+          <h4 className="mb-4" style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontWeight: 800, color: 'var(--airbnb-coral)', fontSize: '2rem', letterSpacing: '-0.01em' }}>{existing ? 'Edit Case' : 'Create New Case'}</h4>
+          <Form.Group className="mb-3">
+            <Form.Label className="login-airbnb-label">Case title</Form.Label>
+            <Form.Control
+              className="login-airbnb-select"
+              value={form.title}
+              onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+              required
+            />
+          </Form.Group>
+          <Form.Group className="mb-3">
+            <Form.Label className="login-airbnb-label">Case number (auto if left blank)</Form.Label>
+            <Form.Control
+              className="login-airbnb-select"
+              value={form.id}
+              onChange={e => setForm(f => ({ ...f, id: e.target.value }))}
+              placeholder="e.g., FC-23-001234"
+            />
+          </Form.Group>
+          <Row className="mb-3">
+            <Col>
+              <Form.Group>
+                <Form.Label className="login-airbnb-label">Court</Form.Label>
+                <Form.Select className="login-airbnb-select" value={form.court} onChange={e => setForm(f => ({ ...f, court: e.target.value as (typeof courts)[number] }))}>
+                  {courts.map(c => <option key={c} value={c}>{c}</option>)}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group>
+                <Form.Label className="login-airbnb-label">Case Type</Form.Label>
+                <Form.Select className="login-airbnb-select" value={form.caseType} onChange={e => setForm(f => ({ ...f, caseType: e.target.value as (typeof types)[number] }))}>
+                  {types.map(t => <option key={t} value={t}>{t}</option>)}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col>
+              <Form.Group>
+                <Form.Label className="login-airbnb-label">Status</Form.Label>
+                <Form.Select className="login-airbnb-select" value={form.status} onChange={e => setForm(f => ({ ...f, status: e.target.value as (typeof statuses)[number] }))}>
+                  {statuses.map(s => <option key={s} value={s}>{s}</option>)}
+                </Form.Select>
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group>
+                <Form.Label className="login-airbnb-label">Started on</Form.Label>
+                <Form.Control
+                  className="login-airbnb-select"
+                  type="date"
+                  value={form.startedAt}
+                  onChange={e => setForm(f => ({ ...f, startedAt: e.target.value }))}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <Row className="mb-4">
+            <Col>
+              <Form.Group>
+                <Form.Label className="login-airbnb-label">Allocated judge</Form.Label>
+                <Form.Control
+                  className="login-airbnb-select"
+                  value={form.allocatedJudge || ''}
+                  onChange={e => setForm(f => ({ ...f, allocatedJudge: e.target.value }))}
+                />
+              </Form.Group>
+            </Col>
+            <Col>
+              <Form.Group>
+                <Form.Label className="login-airbnb-label">Children involved</Form.Label>
+                <Form.Control
+                  className="login-airbnb-select"
+                  type="number"
+                  value={form.childrenInvolved ?? ''}
+                  onChange={e => setForm(f => ({ ...f, childrenInvolved: e.target.value === '' ? undefined : Number(e.target.value) }))}
+                />
+              </Form.Group>
+            </Col>
+          </Row>
+          <div className="d-flex gap-2">
+            <Button type="submit" className="login-airbnb-btn px-4">Save</Button>
+            <Button className="login-airbnb-outline px-4" onClick={() => navigate(existing ? `/cases/${existing.id}` : '/')}>Cancel</Button>
+          </div>
+        </Form>
+      </Card>
+    </div>
   )
 }
 
