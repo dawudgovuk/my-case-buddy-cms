@@ -444,7 +444,7 @@ function TeamInvitesTab({ caseId }: { caseId: string }) {
             <option value="Barrister">Barrister</option>
           </Form.Select>
         </Form.Group>
-        <Button variant="primary" onClick={generateInviteLink} className="mb-2 w-100">
+        <Button variant="primary" onClick={generateInviteLink} className="mb-2" block>
           Generate Invite Link
         </Button>
         {generatedInvite && (
@@ -552,25 +552,25 @@ export default function CaseDetails() {
   if (!caseId || !fc) return <div className="text-danger">Case not found.</div>;
 
   return (
-    <div className="mb-3" style={{ background: 'linear-gradient(120deg, #fff 0%, #f7f7f7 100%)', minHeight: '100vh' }}>
+    <div className="mb-3">
       <div className="container-fluid p-0">
         <div className="row mb-3 align-items-center">
           <div className="col">
-            <h4 style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontWeight: 800, color: 'var(--airbnb-coral)', fontSize: '2rem', letterSpacing: '-0.01em' }}>{fc.id} — {fc.title}</h4>
-            <div style={{ color: 'var(--airbnb-gray)' }} className="small mb-1">{fc.court} • {fc.caseType} • Started {fc.startedAt}</div>
+            <h4 style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontWeight: 800, color: 'var(--airbnb-coral)', letterSpacing: '-0.01em' }}>{fc.id} — {fc.title}</h4>
+            <div className="small mb-1" style={{ color: 'var(--airbnb-gray)' }}>{fc.court} • {fc.caseType} • Started {fc.startedAt}</div>
             <div className="d-flex gap-2 mb-2 flex-wrap">
-              <span style={{ background: 'var(--airbnb-green)', color: '#fff', fontWeight: 600, fontSize: '0.95em', borderRadius: 12, padding: '0.4em 0.9em' }}>{fc.status}</span>
-              <span style={{ background: 'var(--airbnb-coral)', color: '#fff', fontWeight: 600, fontSize: '0.95em', borderRadius: 12, padding: '0.4em 0.9em' }}>Parties: {fc.parties.length}</span>
-              <span style={{ background: 'var(--airbnb-yellow)', color: 'var(--airbnb-dark)', fontWeight: 600, fontSize: '0.95em', borderRadius: 12, padding: '0.4em 0.9em' }}>Hearings: {fc.hearings.length}</span>
+              <span className="badge" style={{ background: 'var(--airbnb-green)', color: '#fff', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>{fc.status}</span>
+              <span className="badge" style={{ background: 'var(--airbnb-coral)', color: '#fff', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>Parties: {fc.parties.length}</span>
+              <span className="badge" style={{ background: 'var(--airbnb-yellow)', color: 'var(--airbnb-dark)', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>Hearings: {fc.hearings.length}</span>
             </div>
           </div>
           <div className="col-auto d-flex gap-2">
-            <Button className="login-airbnb-outline" style={{ borderRadius: 16, fontWeight: 700, fontSize: '1.05rem' }} onClick={() => navigate(`/cases/${fc.id}/edit`)}>Edit</Button>
+            <Button variant="outline-primary" style={{ borderRadius: 12, fontWeight: 700, fontSize: '0.98rem'}} onClick={() => navigate(`/cases/${fc.id}/edit`)}>Edit</Button>
             <Button as="a" href="/" variant="link" style={{ color: 'var(--airbnb-coral)', fontWeight: 700 }}>Back to cases</Button>
           </div>
         </div>
-        <hr style={{ borderTop: '1.5px solid var(--airbnb-border)' }} />
-        <Card className="mb-3 login-airbnb-card" style={{ borderRadius: 20, border: '1px solid var(--airbnb-border)' }}>
+        <hr/>
+        <Card className="mb-3 login-airbnb-card">
           <Card.Body>
             <Tabs
               id="case-details-tabs"

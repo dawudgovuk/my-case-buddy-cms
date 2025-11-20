@@ -52,16 +52,7 @@ body {
   background: linear-gradient(135deg, #fff 0%, #f7f7f7 100%);
 }
 
-.login-airbnb-bg {
-  min-height: 100vh;
-  background: linear-gradient(120deg, #fff 0%, #f7f7f7 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .login-airbnb-card {
-  border-radius: 20px !important;
   box-shadow: 0 8px 32px rgba(72,72,72,0.08);
   border: 1px solid var(--airbnb-border);
   background: var(--airbnb-light);
@@ -70,17 +61,8 @@ body {
 .login-airbnb-header {
   background: var(--airbnb-coral);
   color: var(--airbnb-light);
-  border-radius: 20px 20px 0 0 !important;
   padding-top: 1.5rem;
   padding-bottom: 1rem;
-}
-
-.login-airbnb-title {
-  font-family: 'Montserrat', Arial, sans-serif;
-  font-weight: 800;
-  font-size: 2rem;
-  color: var(--airbnb-light);
-  letter-spacing: -0.01em;
 }
 
 .login-airbnb-sub {
@@ -94,7 +76,6 @@ body {
   border: none !important;
   color: var(--airbnb-light) !important;
   font-weight: 700;
-  border-radius: 20px !important;
   font-size: 1.1rem;
   box-shadow: 0 2px 8px rgba(255,90,95,0.08);
   transition: background 0.2s;
@@ -104,7 +85,6 @@ body {
 }
 
 .login-airbnb-outline {
-  border-radius: 20px !important;
   font-weight: 600;
   border: 1.5px solid var(--airbnb-border) !important;
   color: var(--airbnb-dark) !important;
@@ -118,17 +98,11 @@ body {
 
 .login-airbnb-label {
   color: var(--airbnb-dark);
-  font-weight: 700;
+  font-weight: 00;
   font-size: 1.1rem;
 }
 
 .login-airbnb-select {
-  border-radius: 10px;
-  border: 1.5px solid var(--airbnb-border);
   font-size: 1.1rem;
-  padding: 0.75rem 1rem;
-}
-
-.login-airbnb-divider {
-  border-top: 1.5px solid var(--airbnb-border);
+  padding: 0.2rem 0.2rem;
 }
