@@ -25,23 +25,22 @@ export default function LIPDashboard() {
   return (
     <Container fluid>
       <div className="mb-4">
-        <h1 className="display-4 fw-bold text-primary mb-2">
-          <FaGavel className="me-2" />
+        <h1>
           My Cases Dashboard
         </h1>
-        <p className="lead text-muted">
-          Welcome, <span className="fw-bold text-primary">{user.name}</span>. Here's an overview of your cases and their progress.
+        <p className="lead">
+          Welcome, <span className="fw-bold">{user.name}</span>. Here's an overview of your cases and their progress.
         </p>
       </div>
 
       {userCases.length === 0 ? (
         <Card className="text-center p-5">
           <Card.Body>
-            <FaGavel size={64} className="text-muted mb-3" />
-            <h3 className="mb-3">No Cases Yet</h3>
-            <p className="text-muted mb-4">Start managing your cases by creating your first one.</p>
-            <Button variant="primary" size="lg" onClick={() => navigate('/cases/new')}>
-              <FaPlus className="me-2" />
+            
+            <h3 className="mb-3 fw-bold">No Cases Yet</h3>
+            <p className="mb-4 text-secondary">Start managing your cases by creating your first one.</p>
+            <Button variant="primary" size="lg" className="fw-bold px-4 py-2" onClick={() => navigate('/cases/new')}>
+              
               Create Your First Case
             </Button>
           </Card.Body>
@@ -60,27 +59,27 @@ export default function LIPDashboard() {
                 <Card className="h-100 shadow-sm">
                   <Card.Body>
                     <div className="mb-3">
-                      <h5 className="fw-bold text-primary mb-2">
+                      <h5 className="fw-bold mb-2 text-primary">
                         {caseData.id} — {caseData.title}
                       </h5>
-                      <p className="text-muted small mb-2">
+                      <p className="small mb-2 text-secondary">
                         {caseData.court} • {caseData.caseType}
                       </p>
                       <div className="d-flex gap-2 flex-wrap">
-                        <Badge bg={caseData.status === 'Open' ? 'success' : caseData.status === 'Stayed' ? 'warning' : 'secondary'}>
+                        <Badge bg={caseData.status === 'Open' ? 'success' : caseData.status === 'Stayed' ? 'warning' : 'secondary'} className="fw-semibold px-3 py-2">
                           {caseData.status}
                         </Badge>
-                        <Badge bg="info">
-                          <FaCalendarAlt className="me-1" />
+                        <Badge bg="primary" className="fw-semibold px-3 py-2">
+                          
                           {caseData.hearings.length} hearings
                         </Badge>
                       </div>
                     </div>
 
                     {nextHearing && (
-                      <Alert variant="info" className="mb-3">
+                      <Alert variant="warning" className="mb-3 fw-semibold">
                         <div className="fw-bold mb-1">
-                          <FaCalendarAlt className="me-2" />
+                          
                           Next Hearing
                         </div>
                         <div className="small">
@@ -89,7 +88,7 @@ export default function LIPDashboard() {
                         </div>
                         {nextHearing.location && (
                           <div className="small mt-1">
-                            <FaMapMarkerAlt className="me-1" />
+                            
                             {nextHearing.location}
                           </div>
                         )}
@@ -102,7 +101,7 @@ export default function LIPDashboard() {
                     </div>
 
                     <Button variant="outline-primary" className="w-100" onClick={() => navigate(`/cases/${caseData.id}`)}>
-                      <FaEye className="me-2" />
+
                       View Case Details
                     </Button>
                   </Card.Body>

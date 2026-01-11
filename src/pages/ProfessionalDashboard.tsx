@@ -202,27 +202,25 @@ export default function ProfessionalDashboard() {
   return (
     <Container fluid>
       <div className="mb-4">
-        <h1 className="display-4 fw-bold text-primary mb-2">
-          <FaGavel className="me-2" />
+        <h1>
           Professional Dashboard
         </h1>
-        <p className="lead text-muted">
-          Welcome, <span className="fw-bold text-primary">{user.name}</span> ({user.role}). Manage your cases, hearings, and deadlines.
+        <p className="lead">
+          Welcome, <span className="fw-bold">{user.name}</span> ({user.role}). Manage your cases, hearings, and deadlines.
         </p>
       </div>
 
       <Row className="g-4 mb-4">
         <Col xs={12} lg={6}>
           <Card className="shadow-sm">
-            <Card.Header className="bg-primary text-white">
+            <Card.Header className="text-white bg-primary">
               <h5 className="mb-0">
-                <FaCalendarAlt className="me-2" />
                 Upcoming Hearings
               </h5>
             </Card.Header>
             <Card.Body>
               {upcomingHearings.length === 0 ? (
-                <Alert variant="info" className="mb-0">
+                <Alert variant="warning" className="mb-0 fw-semibold">
                   No upcoming hearings
                 </Alert>
               ) : (
@@ -233,34 +231,28 @@ export default function ProfessionalDashboard() {
                         <div className="fw-bold mb-1">
                           {item.hearing.type}
                           {isToday(new Date(item.hearing.date)) && (
-                            <Badge bg="warning" className="ms-2">
+                            <Badge bg="warning" className="ms-2 fw-semibold px-3 py-2">
                               Today
                             </Badge>
                           )}
                         </div>
-                        <div className="small text-muted mb-1">
-                          <strong>{item.caseTitle}</strong> ({item.caseId})
-                        </div>
                         <div className="small">
-                          <FaCalendarAlt className="me-1" />
                           {format(new Date(item.hearing.date), 'PPP')}
                           {item.hearing.time && ` at ${item.hearing.time}`}
                         </div>
                         {item.hearing.location && (
                           <div className="small">
-                            <FaMapMarkerAlt className="me-1" />
                             {item.hearing.location}
                           </div>
                         )}
                         {item.hearing.judge && (
                           <div className="small">
-                            <FaGavel className="me-1" />
                             {item.hearing.judge}
                           </div>
                         )}
                       </div>
                       <Button variant="outline-primary" size="sm" onClick={() => navigate(`/cases/${item.caseId}`)}>
-                        <FaEye className="me-1" />
+                        
                         View
                       </Button>
                     </ListGroup.Item>
@@ -273,24 +265,24 @@ export default function ProfessionalDashboard() {
 
         <Col xs={12} lg={6}>
           <Card className="shadow-sm">
-            <Card.Header className="bg-primary text-white">
+            <Card.Header className="text-white bg-primary">
               <h5 className="mb-0">
-                <FaFileAlt className="me-2" />
+                
                 Document Submission Deadlines
               </h5>
             </Card.Header>
             <Card.Body>
               {pendingDeadlines.length === 0 ? (
-                <Alert variant="success" className="mb-0">
-                  <FaCheckCircle className="me-2" />
+                <Alert variant="success" className="mb-0 fw-semibold">
+                  
                   No pending deadlines
                 </Alert>
               ) : (
                 <div>
                   {overdueDeadlines.length > 0 && (
                     <div className="mb-3">
-                      <h6 className="text-danger fw-bold mb-2">
-                        <FaExclamationTriangle className="me-1" />
+                      <h6 className="fw-bold mb-2 text-primary">
+                        
                         Overdue ({overdueDeadlines.length})
                       </h6>
                       {overdueDeadlines.map((deadline) => {
@@ -304,7 +296,7 @@ export default function ProfessionalDashboard() {
                               label={
                                 <div>
                                   <strong>{deadline.title}</strong>
-                                  <Badge bg="danger" className="ms-2">
+                                  <Badge bg="primary" className="ms-2 fw-semibold px-3 py-2">
                                     {days} days overdue
                                   </Badge>
                                   <div className="small text-muted mt-1">
@@ -322,7 +314,7 @@ export default function ProfessionalDashboard() {
                   {upcomingDeadlines.length > 0 && (
                     <div>
                       <h6 className="fw-bold mb-2">
-                        <FaClock className="me-1" />
+                        
                         Upcoming ({upcomingDeadlines.length})
                       </h6>
                       {upcomingDeadlines.map((deadline) => {
@@ -339,7 +331,7 @@ export default function ProfessionalDashboard() {
                                 <div>
                                   <strong>{deadline.title}</strong>
                                   {days <= 7 && (
-                                    <Badge bg={priorityColor} className="ms-2">
+                                    <Badge bg={priorityColor === 'danger' ? 'primary' : priorityColor === 'warning' ? 'warning' : 'success'} className={`ms-2 fw-semibold px-3 py-2${priorityColor === 'warning' ? ' text-dark' : ''}`}>
                                       {days <= 0 ? 'Due today' : `${days} days left`}
                                     </Badge>
                                   )}
@@ -362,9 +354,8 @@ export default function ProfessionalDashboard() {
       </Row>
 
       <Card className="shadow-sm">
-        <Card.Header className="bg-primary text-white">
+        <Card.Header>
           <h5 className="mb-0">
-            <FaGavel className="me-2" />
             My Assigned Cases
           </h5>
         </Card.Header>
@@ -378,21 +369,21 @@ export default function ProfessionalDashboard() {
               <Table hover responsive className="mb-0">
                 <thead>
                   <tr>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('caseId')}>
+                    <th onClick={() => handleSort('caseId')}>
                       Case ID {getSortIcon('caseId')}
                     </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('title')}>
+                    <th onClick={() => handleSort('title')}>
                       Title {getSortIcon('title')}
                     </th>
                     <th>Court & Type</th>
                     <th>Status</th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('nextHearing')}>
+                    <th onClick={() => handleSort('nextHearing')}>
                       Next Hearing {getSortIcon('nextHearing')}
                     </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('deadline')}>
+                    <th onClick={() => handleSort('deadline')}>
                       Next Deadline {getSortIcon('deadline')}
                     </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('priority')}>
+                    <th onClick={() => handleSort('priority')}>
                       Priority {getSortIcon('priority')}
                     </th>
                     <th>Actions</th>
@@ -422,22 +413,14 @@ export default function ProfessionalDashboard() {
                           </small>
                         </td>
                         <td>
-                          <Badge
-                            bg={
-                              caseData.status === 'Open'
-                                ? 'success'
-                                : caseData.status === 'Stayed'
-                                  ? 'warning'
-                                  : 'secondary'
-                            }
-                          >
+                          <Badge bg={caseData.status === 'Open' ? 'success' : caseData.status === 'Stayed' ? 'warning' : 'secondary'} className={`fw-semibold px-3 py-2${caseData.status === 'Stayed' ? ' text-dark' : ''}`}>
                             {caseData.status}
                           </Badge>
                         </td>
                         <td>
                           {nextHearing ? (
                             <small>
-                              <FaCalendarAlt className="me-1" />
+                              
                               {format(new Date(nextHearing.date), 'MMM d, yyyy')}
                               {nextHearing.time && <br />}
                               {nextHearing.time && <span className="text-muted">{nextHearing.time}</span>}
@@ -449,7 +432,7 @@ export default function ProfessionalDashboard() {
                         <td>
                           {nextDeadline ? (
                             <small>
-                              <FaFileAlt className="me-1" />
+                              
                               {format(new Date(nextDeadline.deadlineDate), 'MMM d, yyyy')}
                             </small>
                           ) : (
@@ -458,7 +441,7 @@ export default function ProfessionalDashboard() {
                         </td>
                         <td>
                           {nextDeadline ? (
-                            <Badge bg={priorityColor}>
+                            <Badge bg={priorityColor === 'danger' ? 'primary' : priorityColor === 'warning' ? 'warning' : 'success'} className={`fw-semibold px-3 py-2${priorityColor === 'warning' ? ' text-dark' : ''}`}>
                               {deadlineDays < 0
                                 ? `${Math.abs(deadlineDays)} days overdue`
                                 : deadlineDays <= 7
@@ -471,7 +454,7 @@ export default function ProfessionalDashboard() {
                         </td>
                         <td>
                           <Button variant="outline-primary" size="sm" onClick={() => navigate(`/cases/${caseData.id}`)}>
-                            <FaEye className="me-1" />
+
                             View
                           </Button>
                         </td>
