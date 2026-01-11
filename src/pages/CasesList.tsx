@@ -27,8 +27,8 @@ export default function CasesList() {
   return (
     <div className="container-fluid p-0">
       <div className="d-flex justify-content-between align-items-center mb-3">
-        <h4 className="mb-0" style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontWeight: 800, color: 'var(--airbnb-coral)', letterSpacing: '-0.01em' }}>Cases</h4>
-        <Button variant="primary" style={{ background: 'var(--airbnb-coral)', border: 'none', fontWeight: 700, fontSize: '1.05rem', padding: '0.5em 1.2em' }} href="/cases/new">+ New Case</Button>
+        <h1>Cases</h1>
+        <Button variant="primary" href="/cases/new">+ New Case</Button>
       </div>
       <Form.Group className="mb-3">
         <Form.Control
@@ -36,31 +36,31 @@ export default function CasesList() {
           placeholder="Case number, title, judge, status..."
           value={q}
           onChange={e => setQ(e.target.value)}
-          style={{ border: '1.5px solid var(--airbnb-border)', fontSize: '1.05rem', padding: '0.6em 1em' }}
+          
         />
       </Form.Group>
       {filtered.length === 0 && (
-        <Card className="mb-2 p-3 text-center" style={{ color: 'var(--airbnb-gray)', background: 'var(--airbnb-light)'}}>No cases found. Create your first case.</Card>
+        <Card className="mb-2 p-3 text-center">No cases found. Create your first case.</Card>
       )}
       {filtered.map((c) => (
-        <Card key={c.id} className="mb-2 p-3 d-flex flex-row align-items-center gap-3" style={{ background: 'var(--airbnb-light)', boxShadow: '0 2px 8px rgba(72,72,72,0.04)' }}>
-          <div className="flex-grow-1 min-width-0" style={{ cursor: 'pointer' }} onClick={() => navigate(`/cases/${c.id}`)}>
-            <div className="fw-bold text-truncate" style={{ color: 'var(--airbnb-coral)', fontWeight: 700 }}>{c.id} — {c.title}</div>
-            <div className="small text-truncate" style={{ color: 'var(--airbnb-gray)' }}>
+        <Card key={c.id} className="mb-2 p-3 d-flex flex-row align-items-center gap-3">
+          <div className="flex-grow-1 min-width-0" onClick={() => navigate(`/cases/${c.id}`)}>
+            <div className="fw-bold text-truncate">{c.id} — {c.title}</div>
+            <div className="small text-truncate">
               {c.court} • {c.caseType} • Judge: {c.allocatedJudge || 'Unassigned'}
             </div>
             <div className="d-flex gap-2 mt-1 flex-wrap">
-              <Badge style={{ background: c.status === 'Open' ? 'var(--airbnb-green)' : c.status === 'Concluded' ? 'var(--airbnb-gray)' : 'var(--airbnb-yellow)', color: c.status === 'Concluded' ? '#fff' : '#222', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>{c.status}</Badge>
+              <Badge bg={c.status === 'Open' ? 'success' : c.status === 'Concluded' ? 'secondary' : 'warning'} className="fw-semibold px-3 py-2">{c.status}</Badge>
               {typeof c.childrenInvolved === 'number' && (
-                <Badge style={{ background: 'var(--airbnb-yellow)', color: 'var(--airbnb-dark)', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>{c.childrenInvolved} child{c.childrenInvolved === 1 ? '' : 'ren'}</Badge>
+                <Badge bg="warning" className="fw-semibold px-3 py-2 text-dark">{c.childrenInvolved} child{c.childrenInvolved === 1 ? '' : 'ren'}</Badge>
               )}
-              <Badge style={{ background: 'var(--airbnb-coral)', color: '#fff', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>Parties: {c.parties.length}</Badge>
-              <Badge style={{ background: 'var(--airbnb-yellow)', color: 'var(--airbnb-dark)', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>Hearings: {c.hearings.length}</Badge>
+              <Badge bg="primary" className="fw-semibold px-3 py-2">Parties: {c.parties.length}</Badge>
+              <Badge bg="warning" className="fw-semibold px-3 py-2 text-dark">Hearings: {c.hearings.length}</Badge>
             </div>
           </div>
-          <div className="d-flex gap-2">
-                <Button variant="outline-primary" style={{fontWeight: 700, fontSize: '0.98rem' }} onClick={() => navigate(`/cases/${c.id}/edit`)}>Edit</Button>
-                <Button variant="outline-danger" style={{fontWeight: 700, fontSize: '0.98rem', color: 'var(--airbnb-coral)' }} onClick={() => remove(c.id)}>Delete</Button>
+              <div className="d-flex gap-2">
+                <Button variant="outline-primary" onClick={() => navigate(`/cases/${c.id}/edit`)}>Edit</Button>
+                <Button variant="outline-danger" onClick={() => remove(c.id)}>Delete</Button>
           </div>
         </Card>
       ))}

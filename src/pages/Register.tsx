@@ -69,13 +69,12 @@ export default function Register() {
   const bgColor = roleColors[userRole] || 'var(--airbnb-coral)'
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-50 py-5">
-      <Card className="shadow-lg border-0 login-airbnb-card" style={{ width: '100%', maxWidth: '500px' }}>
-        <Card.Header className="text-center py-4 login-airbnb-header" style={{ background: bgColor, color: 'var(--airbnb-light)' }}>
-          <h3 className="mb-0 login-airbnb-title">
-            <FaUserPlus className="me-2" />
+    <Container className="d-flex justify-content-center align-items-center min-vh-50">
+      <Card className="shadow-lg border-0" style={{ width: '100%', maxWidth: '500px' }}>
+        <Card.Header className="text-center">
+          <h1>
             Register as {userRole}
-          </h3>
+          </h1>
         </Card.Header>
         <Card.Body className="p-4">
           <Form onSubmit={handleSubmit}>
@@ -86,9 +85,9 @@ export default function Register() {
             )}
 
             <Form.Group className="mb-3">
-              <Form.Label className="fw-bold login-airbnb-label">Full Name</Form.Label>
+              <Form.Label className="fw-bold">Full Name</Form.Label>
               <Form.Control
-                className="login-airbnb-select"
+                
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -99,9 +98,9 @@ export default function Register() {
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label className="fw-bold login-airbnb-label">Email</Form.Label>
+              <Form.Label className="fw-bold">Email</Form.Label>
               <Form.Control
-                className="login-airbnb-select"
+                
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -114,12 +113,12 @@ export default function Register() {
             {(userRole === 'Solicitor' || userRole === 'Barrister') && (
               <>
                 <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold login-airbnb-label">
-                    <FaBuilding className="me-2" />
+                  <Form.Label className="fw-bold">
+                    
                     {userRole === 'Solicitor' ? 'Firm' : 'Chambers'}
                   </Form.Label>
                   <Form.Control
-                    className="login-airbnb-select"
+                    
                     type="text"
                     value={firm}
                     onChange={(e) => setFirm(e.target.value)}
@@ -129,12 +128,12 @@ export default function Register() {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold login-airbnb-label">
-                    <FaIdCard className="me-2" />
+                  <Form.Label className="fw-bold">
+                    
                     Registration Number
                   </Form.Label>
                   <Form.Control
-                    className="login-airbnb-select"
+                    
                     type="text"
                     value={registrationNumber}
                     onChange={(e) => setRegistrationNumber(e.target.value)}
@@ -148,14 +147,14 @@ export default function Register() {
 
             <Row className="g-2">
               <Col>
-                <Button type="submit" className="w-100 login-airbnb-btn" size="lg" style={{ background: bgColor, fontWeight: 700, fontSize: '1.1rem', padding: '0.7em 1.5em' }}>
-                  <FaUserPlus className="me-2" />
+                <Button type="submit" className="w-100" size="lg">
+                  
                   Register
                 </Button>
               </Col>
               <Col>
                 <Button variant="outline-secondary" size="lg" className="w-100" onClick={() => navigate('/login')}>
-                  <FaArrowLeft className="me-2" />
+
                   Back to Login
                 </Button>
               </Col>

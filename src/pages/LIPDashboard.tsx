@@ -25,23 +25,22 @@ export default function LIPDashboard() {
   return (
     <Container fluid>
       <div className="mb-4">
-        <h1 className="display-4 fw-bold mb-2">
-          <FaGavel className="me-2" />
+        <h1>
           My Cases Dashboard
         </h1>
-        <p className="lead" style={{ color: 'var(--airbnb-gray)' }}>
-          Welcome, <span style={{ color: 'var(--airbnb-green)', fontWeight: 700 }}>{user.name}</span>. Here's an overview of your cases and their progress.
+        <p className="lead">
+          Welcome, <span className="fw-bold">{user.name}</span>. Here's an overview of your cases and their progress.
         </p>
       </div>
 
       {userCases.length === 0 ? (
-        <Card className="text-center p-5" style={{ background: 'var(--airbnb-light)', border: '1px solid var(--airbnb-border)'}}>
+        <Card className="text-center p-5">
           <Card.Body>
-            <FaGavel size={64} style={{ color: 'var(--airbnb-gray)' }} className="mb-3" />
-            <h3 className="mb-3" style={{ color: 'var(--airbnb-dark)', fontWeight: 800 }}>No Cases Yet</h3>
-            <p className="mb-4" style={{ color: 'var(--airbnb-gray)' }}>Start managing your cases by creating your first one.</p>
-            <Button variant="primary" size="lg" style={{ background: 'var(--airbnb-coral)', border: 'none', fontWeight: 700, fontSize: '1.1rem', padding: '0.7em 1.5em' }} onClick={() => navigate('/cases/new')}>
-              <FaPlus className="me-2" />
+            
+            <h3 className="mb-3 fw-bold">No Cases Yet</h3>
+            <p className="mb-4 text-secondary">Start managing your cases by creating your first one.</p>
+            <Button variant="primary" size="lg" className="fw-bold px-4 py-2" onClick={() => navigate('/cases/new')}>
+              
               Create Your First Case
             </Button>
           </Card.Body>
@@ -57,30 +56,30 @@ export default function LIPDashboard() {
 
             return (
               <Col key={caseData.id} xs={12} md={6} lg={4}>
-                <Card className="h-100 shadow-sm" style={{ background: 'var(--airbnb-light)'}}>
+                <Card className="h-100 shadow-sm">
                   <Card.Body>
                     <div className="mb-3">
-                      <h5 className="fw-bold mb-2" style={{ color: 'var(--airbnb-coral)' }}>
+                      <h5 className="fw-bold mb-2 text-primary">
                         {caseData.id} — {caseData.title}
                       </h5>
-                      <p className="small mb-2" style={{ color: 'var(--airbnb-gray)' }}>
+                      <p className="small mb-2 text-secondary">
                         {caseData.court} • {caseData.caseType}
                       </p>
                       <div className="d-flex gap-2 flex-wrap">
-                        <Badge style={{ background: caseData.status === 'Open' ? 'var(--airbnb-green)' : caseData.status === 'Stayed' ? 'var(--airbnb-yellow)' : 'var(--airbnb-gray)', color: caseData.status === 'Stayed' ? '#222' : '#fff', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>
+                        <Badge bg={caseData.status === 'Open' ? 'success' : caseData.status === 'Stayed' ? 'warning' : 'secondary'} className="fw-semibold px-3 py-2">
                           {caseData.status}
                         </Badge>
-                        <Badge style={{ background: 'var(--airbnb-coral)', color: '#fff', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>
-                          <FaCalendarAlt className="me-1" />
+                        <Badge bg="primary" className="fw-semibold px-3 py-2">
+                          
                           {caseData.hearings.length} hearings
                         </Badge>
                       </div>
                     </div>
 
                     {nextHearing && (
-                      <Alert variant="info" className="mb-3" style={{ background: 'var(--airbnb-yellow)', color: 'var(--airbnb-dark)', border: 'none', fontWeight: 600 }}>
+                      <Alert variant="warning" className="mb-3 fw-semibold">
                         <div className="fw-bold mb-1">
-                          <FaCalendarAlt className="me-2" />
+                          
                           Next Hearing
                         </div>
                         <div className="small">
@@ -89,7 +88,7 @@ export default function LIPDashboard() {
                         </div>
                         {nextHearing.location && (
                           <div className="small mt-1">
-                            <FaMapMarkerAlt className="me-1" />
+                            
                             {nextHearing.location}
                           </div>
                         )}
@@ -97,12 +96,12 @@ export default function LIPDashboard() {
                     )}
 
                     <div className="mb-3">
-                      <h6 className="fw-bold mb-2" style={{ color: 'var(--airbnb-dark)' }}>Case Progress</h6>
+                      <h6 className="fw-bold mb-2">Case Progress</h6>
                       <CaseSteps stages={stages} currentStageIndex={currentIndex} />
                     </div>
 
-                    <Button variant="outline-primary" className="w-100" style={{ fontWeight: 700, fontSize: '1.05rem' }} onClick={() => navigate(`/cases/${caseData.id}`)}>
-                      <FaEye className="me-2" />
+                    <Button variant="outline-primary" className="w-100" onClick={() => navigate(`/cases/${caseData.id}`)}>
+
                       View Case Details
                     </Button>
                   </Card.Body>

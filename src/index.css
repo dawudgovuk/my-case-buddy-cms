@@ -1,5 +1,5 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
-/* @import 'semantic-ui-css/semantic.min.css'; */
+
 
 /* Parallax Navbar and Hero Styles */
 .parallax-hero {
@@ -37,72 +37,3 @@
   }
 }
 
-/* Airbnb Color Scheme */
-:root {
-  --airbnb-coral: #FF5A5F;
-  --airbnb-dark: #484848;
-  --airbnb-light: #fff;
-  --airbnb-gray: #767676;
-  --airbnb-green: #008489;
-  --airbnb-yellow: #FFB400;
-  --airbnb-border: #EBEBEB;
-}
-
-body {
-  background: linear-gradient(135deg, #fff 0%, #f7f7f7 100%);
-}
-
-.login-airbnb-card {
-  box-shadow: 0 8px 32px rgba(72,72,72,0.08);
-  border: 1px solid var(--airbnb-border);
-  background: var(--airbnb-light);
-}
-
-.login-airbnb-header {
-  background: var(--airbnb-coral);
-  color: var(--airbnb-light);
-  padding-top: 1.5rem;
-  padding-bottom: 1rem;
-}
-
-.login-airbnb-sub {
-  color: #fff6;
-  font-size: 1rem;
-  margin-top: 0.25rem;
-}
-
-.login-airbnb-btn {
-  background: var(--airbnb-coral) !important;
-  border: none !important;
-  color: var(--airbnb-light) !important;
-  font-weight: 700;
-  font-size: 1.1rem;
-  box-shadow: 0 2px 8px rgba(255,90,95,0.08);
-  transition: background 0.2s;
-}
-.login-airbnb-btn:hover {
-  background: #e04850 !important;
-}
-
-.login-airbnb-outline {
-  font-weight: 600;
-  border: 1.5px solid var(--airbnb-border) !important;
-  color: var(--airbnb-dark) !important;
-  background: var(--airbnb-light) !important;
-  transition: border 0.2s, color 0.2s;
-}
-.login-airbnb-outline:hover {
-  border-color: var(--airbnb-coral) !important;
-  color: var(--airbnb-coral) !important;
-}
-
-.login-airbnb-label {
-  color: var(--airbnb-dark);
-  font-weight: 00;
-  font-size: 1.1rem;
-}
-
-.login-airbnb-select {
-  font-size: 1.1rem;
-  padding: 0.2rem 0.2rem;
-}

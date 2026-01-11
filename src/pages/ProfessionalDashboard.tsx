@@ -202,27 +202,25 @@ export default function ProfessionalDashboard() {
   return (
     <Container fluid>
       <div className="mb-4">
-        <h1 className="display-4 fw-bold mb-2">
-          <FaGavel className="me-2" />
+        <h1>
           Professional Dashboard
         </h1>
-        <p className="lead" style={{ color: 'var(--airbnb-gray)' }}>
-          Welcome, <span style={{ color: 'var(--airbnb-green)', fontWeight: 700 }}>{user.name}</span> ({user.role}). Manage your cases, hearings, and deadlines.
+        <p className="lead">
+          Welcome, <span className="fw-bold">{user.name}</span> ({user.role}). Manage your cases, hearings, and deadlines.
         </p>
       </div>
 
       <Row className="g-4 mb-4">
         <Col xs={12} lg={6}>
-          <Card className="shadow-sm" style={{ background: 'var(--airbnb-light)', border: '1px solid var(--airbnb-border)' }}>
-            <Card.Header className="text-white" style={{ background: 'var(--airbnb-coral)' }}>
-              <h5 className="mb-0" style={{ color: 'var(--airbnb-light)' }}>
-                <FaCalendarAlt className="me-2" />
+          <Card className="shadow-sm">
+            <Card.Header className="text-white bg-primary">
+              <h5 className="mb-0">
                 Upcoming Hearings
               </h5>
             </Card.Header>
             <Card.Body>
               {upcomingHearings.length === 0 ? (
-                <Alert variant="info" className="mb-0" style={{ background: 'var(--airbnb-yellow)', color: 'var(--airbnb-dark)', fontWeight: 600 }}>
+                <Alert variant="warning" className="mb-0 fw-semibold">
                   No upcoming hearings
                 </Alert>
               ) : (
@@ -233,34 +231,28 @@ export default function ProfessionalDashboard() {
                         <div className="fw-bold mb-1">
                           {item.hearing.type}
                           {isToday(new Date(item.hearing.date)) && (
-                            <Badge style={{ background: 'var(--airbnb-yellow)', color: 'var(--airbnb-dark)', fontWeight: 600, padding: '0.2em 0.7em' }} className="ms-2">
+                            <Badge bg="warning" className="ms-2 fw-semibold px-3 py-2">
                               Today
                             </Badge>
                           )}
                         </div>
-                        <div className="small text-muted mb-1">
-                          <strong>{item.caseTitle}</strong> ({item.caseId})
-                        </div>
                         <div className="small">
-                          <FaCalendarAlt className="me-1" />
                           {format(new Date(item.hearing.date), 'PPP')}
                           {item.hearing.time && ` at ${item.hearing.time}`}
                         </div>
                         {item.hearing.location && (
                           <div className="small">
-                            <FaMapMarkerAlt className="me-1" />
                             {item.hearing.location}
                           </div>
                         )}
                         {item.hearing.judge && (
                           <div className="small">
-                            <FaGavel className="me-1" />
                             {item.hearing.judge}
                           </div>
                         )}
                       </div>
-                      <Button variant="outline-primary" size="sm" style={{ fontWeight: 700, fontSize: '0.98rem' }} onClick={() => navigate(`/cases/${item.caseId}`)}>
-                        <FaEye className="me-1" />
+                      <Button variant="outline-primary" size="sm" onClick={() => navigate(`/cases/${item.caseId}`)}>
+                        
                         View
                       </Button>
                     </ListGroup.Item>
@@ -272,25 +264,25 @@ export default function ProfessionalDashboard() {
         </Col>
 
         <Col xs={12} lg={6}>
-          <Card className="shadow-sm" style={{ background: 'var(--airbnb-light)'}}>
-            <Card.Header className="text-white" style={{ background: 'var(--airbnb-coral)'}}>
-              <h5 className="mb-0" style={{ color: 'var(--airbnb-light)' }}>
-                <FaFileAlt className="me-2" />
+          <Card className="shadow-sm">
+            <Card.Header className="text-white bg-primary">
+              <h5 className="mb-0">
+                
                 Document Submission Deadlines
               </h5>
             </Card.Header>
             <Card.Body>
               {pendingDeadlines.length === 0 ? (
-                <Alert variant="success" className="mb-0" style={{ background: 'var(--airbnb-green)', color: 'var(--airbnb-light)', fontWeight: 600 }}>
-                  <FaCheckCircle className="me-2" />
+                <Alert variant="success" className="mb-0 fw-semibold">
+                  
                   No pending deadlines
                 </Alert>
               ) : (
                 <div>
                   {overdueDeadlines.length > 0 && (
                     <div className="mb-3">
-                      <h6 className="fw-bold mb-2" style={{ color: 'var(--airbnb-coral)' }}>
-                        <FaExclamationTriangle className="me-1" />
+                      <h6 className="fw-bold mb-2 text-primary">
+                        
                         Overdue ({overdueDeadlines.length})
                       </h6>
                       {overdueDeadlines.map((deadline) => {
@@ -304,7 +296,7 @@ export default function ProfessionalDashboard() {
                               label={
                                 <div>
                                   <strong>{deadline.title}</strong>
-                                  <Badge style={{ background: 'var(--airbnb-coral)', color: '#fff', fontWeight: 600, padding: '0.2em 0.7em' }} className="ms-2">
+                                  <Badge bg="primary" className="ms-2 fw-semibold px-3 py-2">
                                     {days} days overdue
                                   </Badge>
                                   <div className="small text-muted mt-1">
@@ -321,8 +313,8 @@ export default function ProfessionalDashboard() {
 
                   {upcomingDeadlines.length > 0 && (
                     <div>
-                      <h6 className="fw-bold mb-2" style={{ color: 'var(--airbnb-dark)' }}>
-                        <FaClock className="me-1" />
+                      <h6 className="fw-bold mb-2">
+                        
                         Upcoming ({upcomingDeadlines.length})
                       </h6>
                       {upcomingDeadlines.map((deadline) => {
@@ -339,7 +331,7 @@ export default function ProfessionalDashboard() {
                                 <div>
                                   <strong>{deadline.title}</strong>
                                   {days <= 7 && (
-                                    <Badge style={{ background: priorityColor === 'danger' ? 'var(--airbnb-coral)' : priorityColor === 'warning' ? 'var(--airbnb-yellow)' : 'var(--airbnb-green)', color: priorityColor === 'warning' ? 'var(--airbnb-dark)' : '#fff', fontWeight: 600, padding: '0.2em 0.7em' }} className="ms-2">
+                                    <Badge bg={priorityColor === 'danger' ? 'primary' : priorityColor === 'warning' ? 'warning' : 'success'} className={`ms-2 fw-semibold px-3 py-2${priorityColor === 'warning' ? ' text-dark' : ''}`}>
                                       {days <= 0 ? 'Due today' : `${days} days left`}
                                     </Badge>
                                   )}
@@ -361,10 +353,9 @@ export default function ProfessionalDashboard() {
         </Col>
       </Row>
 
-      <Card className="shadow-sm" style={{ background: 'var(--airbnb-light)' }}>
-        <Card.Header className="text-white" style={{ background: 'var(--airbnb-coral)' }}>
-          <h5 className="mb-0" style={{ color: 'var(--airbnb-light)' }}>
-            <FaGavel className="me-2" />
+      <Card className="shadow-sm">
+        <Card.Header>
+          <h5 className="mb-0">
             My Assigned Cases
           </h5>
         </Card.Header>
@@ -378,21 +369,21 @@ export default function ProfessionalDashboard() {
               <Table hover responsive className="mb-0">
                 <thead>
                   <tr>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('caseId')}>
+                    <th onClick={() => handleSort('caseId')}>
                       Case ID {getSortIcon('caseId')}
                     </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('title')}>
+                    <th onClick={() => handleSort('title')}>
                       Title {getSortIcon('title')}
                     </th>
                     <th>Court & Type</th>
                     <th>Status</th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('nextHearing')}>
+                    <th onClick={() => handleSort('nextHearing')}>
                       Next Hearing {getSortIcon('nextHearing')}
                     </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('deadline')}>
+                    <th onClick={() => handleSort('deadline')}>
                       Next Deadline {getSortIcon('deadline')}
                     </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('priority')}>
+                    <th onClick={() => handleSort('priority')}>
                       Priority {getSortIcon('priority')}
                     </th>
                     <th>Actions</th>
@@ -422,26 +413,14 @@ export default function ProfessionalDashboard() {
                           </small>
                         </td>
                         <td>
-                          <Badge
-                            style={{
-                              background: caseData.status === 'Open'
-                                ? 'var(--airbnb-green)'
-                                : caseData.status === 'Stayed'
-                                  ? 'var(--airbnb-yellow)'
-                                  : 'var(--airbnb-gray)',
-                              color: caseData.status === 'Stayed' ? '#222' : '#fff',
-                              fontWeight: 600,
-                              fontSize: '0.95em',
-                              padding: '0.3em 0.9em',
-                            }}
-                          >
+                          <Badge bg={caseData.status === 'Open' ? 'success' : caseData.status === 'Stayed' ? 'warning' : 'secondary'} className={`fw-semibold px-3 py-2${caseData.status === 'Stayed' ? ' text-dark' : ''}`}>
                             {caseData.status}
                           </Badge>
                         </td>
                         <td>
                           {nextHearing ? (
                             <small>
-                              <FaCalendarAlt className="me-1" />
+                              
                               {format(new Date(nextHearing.date), 'MMM d, yyyy')}
                               {nextHearing.time && <br />}
                               {nextHearing.time && <span className="text-muted">{nextHearing.time}</span>}
@@ -453,7 +432,7 @@ export default function ProfessionalDashboard() {
                         <td>
                           {nextDeadline ? (
                             <small>
-                              <FaFileAlt className="me-1" />
+                              
                               {format(new Date(nextDeadline.deadlineDate), 'MMM d, yyyy')}
                             </small>
                           ) : (
@@ -462,12 +441,7 @@ export default function ProfessionalDashboard() {
                         </td>
                         <td>
                           {nextDeadline ? (
-                            <Badge style={{
-                              background: priorityColor === 'danger' ? 'var(--airbnb-coral)' : priorityColor === 'warning' ? 'var(--airbnb-yellow)' : 'var(--airbnb-green)',
-                              color: priorityColor === 'warning' ? 'var(--airbnb-dark)' : '#fff',
-                              fontWeight: 600,
-                              padding: '0.2em 0.7em',
-                            }}>
+                            <Badge bg={priorityColor === 'danger' ? 'primary' : priorityColor === 'warning' ? 'warning' : 'success'} className={`fw-semibold px-3 py-2${priorityColor === 'warning' ? ' text-dark' : ''}`}>
                               {deadlineDays < 0
                                 ? `${Math.abs(deadlineDays)} days overdue`
                                 : deadlineDays <= 7
@@ -480,7 +454,7 @@ export default function ProfessionalDashboard() {
                         </td>
                         <td>
                           <Button variant="outline-primary" size="sm" onClick={() => navigate(`/cases/${caseData.id}`)}>
-                            <FaEye className="me-1" />
+
                             View
                           </Button>
                         </td>

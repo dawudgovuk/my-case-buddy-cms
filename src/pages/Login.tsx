@@ -26,22 +26,21 @@ export default function Login() {
 
   return (
     <Container className="d-flex justify-content-center align-items-center min-vh-50 py-5">
-      <Card className="shadow-lg border-0 login-airbnb-card" style={{ width: '100%', maxWidth: '600px' }}>
-        <Card.Header className="text-center py-4 login-airbnb-header" style={{ background: 'var(--airbnb-coral)', color: 'var(--airbnb-light)' }}>
-          <h2 className="mb-0">
-            <FaGavel className="me-2" />
+      <Card className="shadow-lg border-0">
+        <Card.Header className="text-center py-4">
+          <h1>
             MyCase Buddy
-          </h2>
-          <p className="mb-0 mt-2 login-airbnb-sub">Sign in to manage your cases</p>
+          </h1>
+          <p className="mb-0 mt-2">Sign in to manage your cases</p>
         </Card.Header>
         <Card.Body className="p-4">
           <Form onSubmit={onSubmit}>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-bold login-airbnb-label">
-                <FaSignInAlt className="me-2" />
+              <Form.Label className="fw-bold">
+                
                 Choose User
               </Form.Label>
-              <Form.Select value={userId} onChange={(e) => setUserId(e.target.value)} required size="lg" className="login-airbnb-select">
+              <Form.Select value={userId} onChange={(e) => setUserId(e.target.value)} required size="lg">
                 <option value="">Select a user...</option>
                 {users.map((u) => (
                   <option key={u.id} value={u.id}>
@@ -50,8 +49,8 @@ export default function Login() {
                 ))}
               </Form.Select>
             </Form.Group>
-            <Button type="submit" variant="primary" size="lg" className="w-100 mb-3 login-airbnb-btn">
-              <FaSignInAlt className="me-2" />
+            <Button type="submit" variant="primary" size="lg" className="w-100 mb-3">
+              
               Sign In
             </Button>
           </Form>
@@ -65,51 +64,42 @@ export default function Login() {
             <Col xs={6} sm={6}>
               <Button
                 variant="outline-primary"
-                className="w-100 login-airbnb-outline"
+                className="w-100"
                 onClick={() => navigate('/register/LIP')}
                 size="sm"
                 
               >
-                <FaUserPlus className="me-1" />
+                
                 LIP
               </Button>
             </Col>
             <Col xs={6} sm={6}>
               <Button
                 variant="outline-success"
-                className="w-100 login-airbnb-outline"
+                className="w-100"
                 onClick={() => navigate('/register/McKenzieFriend')}
                 size="sm"
-                style={{ color: 'var(--airbnb-green)', borderColor: 'var(--airbnb-green)' }}
-                style={{ color: 'var(--airbnb-green)', borderColor: 'var(--airbnb-green)' }}
               >
-                <FaHandshake className="me-1" />
                 McKenzie Friend
               </Button>
             </Col>
             <Col xs={6} sm={6}>
               <Button
                 variant="outline-info"
-                className="w-100 login-airbnb-outline"
+                className="w-100"
                 onClick={() => navigate('/register/Solicitor')}
                 size="sm"
-                style={{ color: 'var(--airbnb-coral)', borderColor: 'var(--airbnb-coral)' }}
-                style={{ color: 'var(--airbnb-coral)', borderColor: 'var(--airbnb-coral)' }}
               >
-                <FaGavel className="me-1" />
                 Solicitor
               </Button>
             </Col>
             <Col xs={6} sm={6}>
               <Button
                 variant="outline-warning"
-                className="w-100 login-airbnb-outline"
+                className="w-100"
                 onClick={() => navigate('/register/Barrister')}
                 size="sm"
-                style={{ color: 'var(--airbnb-yellow)', borderColor: 'var(--airbnb-yellow)' }}
-                style={{ color: 'var(--airbnb-yellow)', borderColor: 'var(--airbnb-yellow)' }}
               >
-                <FaBalanceScale className="me-1" />
                 Barrister
               </Button>
             </Col>

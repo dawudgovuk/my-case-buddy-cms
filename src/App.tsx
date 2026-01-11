@@ -76,18 +76,18 @@ function Shell() {
                         </Nav.Link>
                       </>
                     )}
-                    <Dropdown align="end">
-                      <Dropdown.Toggle variant="link" className="text-decoration-none d-flex align-items-center">
-                        <FaUser className="me-1" />
-                        {user.name} ({user.role})
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu>
-                        <Dropdown.Item onClick={handleLogout}>
-                          <FaSignOutAlt className="me-2" />
-                          Logout
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
+                      <Dropdown align="end">
+                        <Dropdown.Toggle variant="link" className="text-decoration-none d-flex align-items-center">
+                          <FaUser className="me-1" />
+                          {user.name} ({user.role})
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu>
+                          <Dropdown.Item onClick={handleLogout}>
+                            <FaSignOutAlt className="me-2" />
+                            Logout
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
                   </>
                 ) : (
                   <Nav.Link onClick={() => navigate('/login')}>Login</Nav.Link>

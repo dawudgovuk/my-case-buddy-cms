@@ -556,28 +556,27 @@ export default function CaseDetails() {
       <div className="container-fluid p-0">
         <div className="row mb-3 align-items-center">
           <div className="col">
-            <h4 style={{ fontFamily: 'Montserrat, Arial, sans-serif', fontWeight: 800, color: 'var(--airbnb-coral)', letterSpacing: '-0.01em' }}>{fc.id} — {fc.title}</h4>
-            <div className="small mb-1" style={{ color: 'var(--airbnb-gray)' }}>{fc.court} • {fc.caseType} • Started {fc.startedAt}</div>
+            <h4>{fc.id} — {fc.title}</h4>
+            <div className="small mb-1">{fc.court} • {fc.caseType} • Started {fc.startedAt}</div>
             <div className="d-flex gap-2 mb-2 flex-wrap">
-              <span className="badge" style={{ background: 'var(--airbnb-green)', color: '#fff', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>{fc.status}</span>
-              <span className="badge" style={{ background: 'var(--airbnb-coral)', color: '#fff', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>Parties: {fc.parties.length}</span>
-              <span className="badge" style={{ background: 'var(--airbnb-yellow)', color: 'var(--airbnb-dark)', fontWeight: 600, fontSize: '0.95em', padding: '0.3em 0.9em' }}>Hearings: {fc.hearings.length}</span>
+              <span className="badge bg-success fw-semibold px-3 py-2">{fc.status}</span>
+              <span className="badge bg-primary fw-semibold px-3 py-2">Parties: {fc.parties.length}</span>
+              <span className="badge bg-warning text-dark fw-semibold px-3 py-2">Hearings: {fc.hearings.length}</span>
             </div>
           </div>
           <div className="col-auto d-flex gap-2">
-            <Button variant="outline-primary" style={{ borderRadius: 12, fontWeight: 700, fontSize: '0.98rem'}} onClick={() => navigate(`/cases/${fc.id}/edit`)}>Edit</Button>
-            <Button as="a" href="/" variant="link" style={{ color: 'var(--airbnb-coral)', fontWeight: 700 }}>Back to cases</Button>
+            <Button variant="outline-primary" onClick={() => navigate(`/cases/${fc.id}/edit`)}>Edit</Button>
+            <Button as="a" href="/" variant="link">Back to cases</Button>
           </div>
         </div>
-        <hr/>
-        <Card className="mb-3 login-airbnb-card">
+        <Card className="mb-3">
           <Card.Body>
             <Tabs
               id="case-details-tabs"
               activeKey={tab}
               onSelect={(k: string | null) => setTab(Number(k))}
               className="mb-3"
-              style={{ fontWeight: 700 }}
+
             >
               <Tab eventKey={0} title="Parties">
                 <PartiesTab caseId={fc.id} />
