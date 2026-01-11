@@ -198,7 +198,11 @@ function generateCases(userIds: {
       id: generateId('PTY'),
       role: 'Applicant',
       firstName: applicantFirstName,
-      lastName: applicantLastName
+      lastName: applicantLastName,
+      dateOfBirth: randomDate(new Date(1970, 0, 1), new Date(2000, 0, 1)),
+      address: `${Math.floor(Math.random()*200+1)} ${randomElement(['Main St','High St','Park Ave','Station Rd','Church St'])}, London`,
+      contactEmail: `applicant.${applicantFirstName.toLowerCase()}.${applicantLastName.toLowerCase()}@example.com`,
+      contactPhone: `07${Math.floor(Math.random()*900000000+100000000)}`
     })
     
     if (Math.random() > 0.2) {
@@ -208,18 +212,27 @@ function generateCases(userIds: {
         id: generateId('PTY'),
         role: 'Respondent',
         firstName: respondentFirstName,
-        lastName: respondentLastName
+        lastName: respondentLastName,
+        dateOfBirth: randomDate(new Date(1970, 0, 1), new Date(2000, 0, 1)),
+        address: `${Math.floor(Math.random()*200+1)} ${randomElement(['Main St','High St','Park Ave','Station Rd','Church St'])}, London`,
+        contactEmail: `respondent.${respondentFirstName.toLowerCase()}.${respondentLastName.toLowerCase()}@example.com`,
+        contactPhone: `07${Math.floor(Math.random()*900000000+100000000)}`
       })
     }
     
     if (caseType === 'Public Law (Care Proceedings)' || caseType === 'Private Law (Child Arrangements)') {
       const numChildren = Math.floor(Math.random() * 3) + 1
       for (let j = 0; j < numChildren; j++) {
+        const childFirstName = randomElement(firstNames)
         parties.push({
           id: generateId('PTY'),
           role: 'Child',
-          firstName: randomElement(firstNames),
-          lastName: applicantLastName
+          firstName: childFirstName,
+          lastName: applicantLastName,
+          dateOfBirth: randomDate(new Date(2010, 0, 1), new Date(2022, 0, 1)),
+          address: `${Math.floor(Math.random()*200+1)} ${randomElement(['Main St','High St','Park Ave','Station Rd','Church St'])}, London`,
+          contactEmail: `child.${childFirstName.toLowerCase()}.${applicantLastName.toLowerCase()}@example.com`,
+          contactPhone: `07${Math.floor(Math.random()*900000000+100000000)}`
         })
       }
     }

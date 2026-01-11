@@ -26,6 +26,7 @@ export interface Party {
   firstName: string;
   lastName: string;
   dateOfBirth?: string; // ISO date
+  address?: string;
   solicitorFirm?: string;
   solicitorContact?: string;
   contactEmail?: string;

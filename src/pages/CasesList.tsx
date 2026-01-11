@@ -51,10 +51,14 @@ export default function CasesList() {
             </div>
             <div className="d-flex gap-2 mt-1 flex-wrap">
               <Badge bg={c.status === 'Open' ? 'success' : c.status === 'Concluded' ? 'secondary' : 'warning'} className="fw-semibold px-3 py-2">{c.status}</Badge>
-              {typeof c.childrenInvolved === 'number' && (
-                <Badge bg="warning" className="fw-semibold px-3 py-2 text-dark">{c.childrenInvolved} child{c.childrenInvolved === 1 ? '' : 'ren'}</Badge>
+              {Array.isArray(c.parties) && c.parties.filter(p => p.role === 'Child').length > 0 && (
+                <Badge bg="info" className="fw-semibold px-3 py-2">
+                  {c.parties.filter(p => p.role === 'Child').length} child{c.parties.filter(p => p.role === 'Child').length === 1 ? '' : 'ren'}
+                </Badge>
               )}
-              <Badge bg="primary" className="fw-semibold px-3 py-2">Parties: {c.parties.length}</Badge>
+              <Badge bg="primary" className="fw-semibold px-3 py-2">
+                Parties: {c.parties.filter(p => p.role !== 'Child' || (p.role === 'Child' && p.solicitorFirm)).length}
+              </Badge>
               <Badge bg="warning" className="fw-semibold px-3 py-2 text-dark">Hearings: {c.hearings.length}</Badge>
             </div>
           </div>

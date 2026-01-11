@@ -170,15 +170,48 @@ Reviewing the current setup, then switching to React Bootstrap and implementing 
    - App: Bootstrap navbar with icons
    - All pages use Bootstrap components
 
-### Next steps
 
-1. Run npm install to install the new dependencies:
-   ```bash
-   npm install
-   ```
+## React Bootstrap and Ant Design UX Enhancements and Form Improvements - Changelog (11 January 2026)
 
-2. The remaining pages (CaseDetails, CaseForm, CasesList, InviteAccept) still use Material-UI. They will need similar updates, but the core structure is in place.
+### `src/pages/CaseDetails.tsx`
+- **UI/UX Enhancements:**
+   - Added inline editing and deletion for parties, hearings, documents, and orders using new `Editable*Card` components.
+   - Improved tab structure: "Case Detail" tab now uses a Bootstrap Accordion for summary, parties, children, hearings, orders, documents, and notes.
+   - Added Ant Design Steps component for visual case progress with icons.
+   - Enhanced party/child grouping: children without a solicitor are shown separately.
+   - Badges for parties and children now reflect dynamic counts, with parties count excluding children without a solicitor.
+   - Added more detailed fields for parties (DOB, address, contact info).
+   - Hearings location field now uses an autocomplete datalist populated from the courts CSV.
+- **Logic:**
+   - Filtering logic for parties and children improved for accurate badge counts and display.
 
-3. All components are responsive using Bootstrap's grid system and responsive utilities.
+### `src/pages/CaseForm.tsx`
+- **Form Improvements:**
+   - Removed manual "Children involved" input; now dynamically displays the count of children added.
+   - Added sections to add parties and children with detailed fields (DOB, address, contact info).
+   - Lists of current parties and children are shown with remove buttons.
+   - Improved state management for adding/removing parties and children.
 
-The app now uses Bootstrap and Semantic UI, with a more colorful design, sortable tables, traffic light color coding, and improved responsiveness. The linter errors are expected until `npm install` is run.
+### `src/pages/CasesList.tsx`
+- **List Display:**
+   - Badges for children and parties now use dynamic counts.
+   - Parties badge excludes children without a solicitor.
+   - Children badge shows count if any children are present.
+
+### `src/seed.ts`
+- **Seed Data:**
+   - Parties and children now include additional fields: date of birth, address, contact email, and phone.
+   - Randomized values for new fields in generated cases.
+
+### `src/types/domain.ts`
+- **Type Updates:**
+   - `Party` interface now includes `address` and `contactPhone` fields for richer data.
+
+### `package.json` & `package-lock.json`
+- **Dependencies:**
+   - Updated to include new or upgraded packages (e.g., Ant Design icons, possibly others for UI improvements).
+
+---
+
+**Summary:**  
+These changes collectively improve the UI/UX for managing parties, children, hearings, and other case details, ensure dynamic and accurate counts, and enrich the data model for parties and children. The court location dropdown is now dynamically populated from a CSV, and the codebase is better documented and structured for future enhancements.
