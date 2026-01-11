@@ -1,6 +1,5 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
-
 /* Parallax Navbar and Hero Styles */
 .parallax-hero {
   position: relative;
@@ -36,4 +35,3 @@
     height: 64px;
   }
 }
-
