@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Row, Col, Form } from 'react-bootstrap'
 import TabNav, { type TabItem } from '../common/TabNav'
 import Logo from '../common/Logo'
+import AppHeader from '../common/AppHeader'
 import UpcomingHearingsCard, { type HearingItem } from '../dashboard/UpcomingHearingsCard'
 import DeadlinesCard from '../dashboard/DeadlinesCard'
 import type { DocumentDeadline } from '../../types/domain'
@@ -107,6 +108,17 @@ export function LogoPreview() {
         </div>
       </Col>
     </Row>
+  )
+}
+
+export function AppHeaderPreview() {
+  return (
+    <div className="border rounded overflow-hidden shadow-sm">
+      <div className="p-2 bg-light border-bottom small text-muted">
+        Live Responsive Navigation Bar (Role-Aware, Sticky, Accessible):
+      </div>
+      <AppHeader />
+    </div>
   )
 }
 

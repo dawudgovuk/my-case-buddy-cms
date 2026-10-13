@@ -10,6 +10,7 @@ import {
 import {
   TabNavPreview,
   LogoPreview,
+  AppHeaderPreview,
   UpcomingHearingsPreview,
   DeadlinesPreview,
 } from './WidgetPreviews'
@@ -502,6 +503,21 @@ export const COMPONENT_CATALOG: ComponentItem[] = [
     codeSnippet: `<Logo />`,
     propsDoc: [],
     renderPreview: () => createElement(LogoPreview),
+  },
+  {
+    id: 'app-header',
+    name: 'Application Header (Navbar)',
+    category: 'Navigation & Brand',
+    filePath: 'src/components/common/AppHeader.tsx',
+    importStatement: "import AppHeader from '../components/common/AppHeader'",
+    description:
+      'Sticky top navigation bar featuring responsive brand logo, role-aware routing, active path highlighting, user profile dropdown, and mobile menu.',
+    badges: ['Layout Component', 'Role-Aware', 'Responsive', 'Accessible'],
+    codeSnippet: `<AppHeader />`,
+    propsDoc: [
+      { name: 'className', type: 'string', required: false, description: 'Optional custom CSS class name' },
+    ],
+    renderPreview: () => createElement(AppHeaderPreview),
   },
 
   // 8. Dashboard Widgets

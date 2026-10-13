@@ -1,37 +1,31 @@
 @import 'bootstrap/dist/css/bootstrap.min.css';
 
-/* Parallax Navbar and Hero Styles */
-.parallax-hero {
-  position: relative;
-  height: 96px;
-  width: 100%;
-  overflow: hidden;
-  z-index: 0;
-}
-.parallax-hero-bg {
-  position: absolute;
+/* Application Navbar & Shell Styles */
+.app-navbar {
+  position: sticky;
   top: 0;
-  left: 0;
-  width: 100%;
-  height: 96px;
-  background-attachment: fixed;
-  z-index: 1;
-  opacity: 0.85;
+  z-index: 1030;
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
-.parallax-navbar {
-  background: transparent !important;
-  transition: background 0.4s, box-shadow 0.4s, transform 0.4s cubic-bezier(0.4,0,0.2,1);
-  z-index: 10;
+
+.app-navbar .nav-link {
+  color: #495057;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
-.parallax-navbar-solid {
-  box-shadow: 0 2px 12px rgba(39,106,123,0.10);
+
+.app-navbar .nav-link:hover {
+  color: #0d6efd;
+  background-color: rgba(13, 110, 253, 0.05);
 }
-.parallax-navbar-hide {
-  transform: translateY(-110%);
-  transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+
+.app-navbar .nav-link.active {
+  color: #0d6efd !important;
+  background-color: rgba(13, 110, 253, 0.08);
+  font-weight: 600;
 }
-@media (max-width: 768px) {
-  .parallax-hero, .parallax-hero-bg {
-    height: 64px;
-  }
-}
+

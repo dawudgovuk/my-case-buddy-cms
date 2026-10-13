@@ -1,127 +1,25 @@
-import { useState, useEffect, useRef } from 'react'
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { Navbar, Nav, Container, Dropdown } from 'react-bootstrap'
-import { FaUser, FaSignOutAlt, FaHome, FaPlus, FaGavel, FaHandshake, FaPuzzlePiece } from 'react-icons/fa'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { Container } from 'react-bootstrap'
 import CasesList from './pages/CasesList'
 import CaseForm from './pages/CaseForm'
-import { useAuthStore } from './store/authStore';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import InviteAccept from './pages/InviteAccept';
-import LIPDashboard from './pages/LIPDashboard';
-import ProfessionalDashboard from './pages/ProfessionalDashboard';
-import CaseDetails from './pages/CaseDetails';
-import VerifyEmail from './pages/VerifyEmail';
-import PeerDirectory from './pages/PeerDirectory';
-import ComponentShowcase from './pages/ComponentShowcase';
-import Logo from './components/common/Logo';
+import { useAuthStore } from './store/authStore'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import InviteAccept from './pages/InviteAccept'
+import LIPDashboard from './pages/LIPDashboard'
+import ProfessionalDashboard from './pages/ProfessionalDashboard'
+import CaseDetails from './pages/CaseDetails'
+import VerifyEmail from './pages/VerifyEmail'
+import PeerDirectory from './pages/PeerDirectory'
+import ComponentShowcase from './pages/ComponentShowcase'
+import AppHeader from './components/common/AppHeader'
 
 function Shell() {
-  const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
-  const [scrolled, setScrolled] = useState(false)
-  const [hideNav, setHideNav] = useState(false)
-  const lastScrollY = useRef(0)
-  const parallaxRef = useRef<HTMLDivElement>(null)
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40)
-      if (window.scrollY > lastScrollY.current && window.scrollY > 80) {
-        setHideNav(true)
-      } else {
-        setHideNav(false)
-      }
-      lastScrollY.current = window.scrollY
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const { user } = useAuthStore()
 
   return (
     <div className="d-flex flex-column min-vh-100">
-      <div ref={parallaxRef} className="parallax-hero">
-        <Navbar
-          expand="lg"
-          className={`parallax-navbar shadow-sm${scrolled ? ' parallax-navbar-solid' : ''}${hideNav ? ' parallax-navbar-hide' : ''}`}
-          fixed="top"
-        >
-          <Container>
-            <Navbar.Brand
-              onClick={() => navigate(user ? (user.role === 'LIP' ? '/dashboard' : '/professional-dashboard') : '/login')}
-              style={{ cursor: 'pointer' }}
-            >
-              <Logo />
-            </Navbar.Brand>
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav">
-              <Nav className="ms-auto align-items-center">
-                {user ? (
-                  <>
-                    <Nav.Link onClick={() => navigate(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}>
-                      <FaHome className="me-1" />
-                      Dashboard
-                    </Nav.Link>
-                    {user.role === 'LIP' && (
-                      <>
-                        <Nav.Link onClick={() => navigate('/')}> 
-                          <FaGavel className="me-1" />
-                          Cases
-                        </Nav.Link>
-                        <Nav.Link onClick={() => navigate('/cases/new')}>
-                          <FaPlus className="me-1" />
-                          New Case
-                        </Nav.Link>
-                        <Nav.Link onClick={() => navigate('/peer-directory')}>
-                          <FaHandshake className="me-1" />
-                          Legal Supporters
-                        </Nav.Link>
-                      </>
-                    )}
-                    {user.role !== 'LIP' && (
-                      <Nav.Link onClick={() => navigate('/peer-directory')}>
-                        <FaHandshake className="me-1" />
-                        Directory
-                      </Nav.Link>
-                    )}
-                    <Nav.Link onClick={() => navigate('/components')} className="d-flex align-items-center gap-1">
-                      <FaPuzzlePiece />
-                      <span>Components</span>
-                    </Nav.Link>
-                    <Dropdown align="end">
-                      <Dropdown.Toggle variant="link" className="text-decoration-none d-flex align-items-center">
-                        <FaUser className="me-1" />
-                        {user.name} ({user.role})
-                        {user.role !== 'LIP' && (user.isVerified ? ' ✓' : ' (Unverified)')}
-                      </Dropdown.Toggle>
-                      <Dropdown.Menu>
-                        <Dropdown.Item onClick={handleLogout}>
-                          <FaSignOutAlt className="me-2" />
-                          Logout
-                        </Dropdown.Item>
-                      </Dropdown.Menu>
-                    </Dropdown>
-                  </>
-                ) : (
-                  <>
-                    <Nav.Link onClick={() => navigate('/components')} className="d-flex align-items-center gap-1">
-                      <FaPuzzlePiece />
-                      <span>Components</span>
-                    </Nav.Link>
-                    <Nav.Link onClick={() => navigate('/login')}>Login</Nav.Link>
-                  </>
-                )}
-              </Nav>
-            </Navbar.Collapse>
-          </Container>
-        </Navbar>
-        <div className="parallax-hero-bg" />
-      </div>
+      <AppHeader />
 
       <Container className="py-4 flex-grow-1">
         <Routes>
@@ -180,7 +78,7 @@ function Shell() {
         </Routes>
       </Container>
 
-      <footer className="bg-light text-center py-3 mt-auto">
+      <footer className="bg-light text-center py-3 mt-auto border-top">
         <small className="text-muted">For demonstration purposes only. Not legal advice or a court system.</small>
       </footer>
     </div>
@@ -190,3 +88,4 @@ function Shell() {
 export default function App() {
   return <Shell />
 }
+
