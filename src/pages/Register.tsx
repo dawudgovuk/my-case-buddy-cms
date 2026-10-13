@@ -2,30 +2,35 @@ import { Container, Card, Form, Button, Alert, Row, Col } from 'react-bootstrap'
 import { useState } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useNavigate, useParams } from 'react-router-dom'
-import type { UserRole } from '../types/domain'
+import type { User, UserRole } from '../types/domain'
 import { saveUsers, listUsers } from '../services/auth'
 import { generateId } from '../services/storage'
-import { FaUserPlus, FaArrowLeft, FaBuilding, FaIdCard } from 'react-icons/fa'
+
+const VALID_ROLES: UserRole[] = ['LIP', 'McKenzieFriend', 'Solicitor', 'Barrister']
+
+function isValidRole(r: string | undefined): r is UserRole {
+  return typeof r === 'string' && VALID_ROLES.includes(r as UserRole)
+}
 
 export default function Register() {
   const navigate = useNavigate()
   const { role } = useParams<{ role: string }>()
-  const { users, login } = useAuthStore()
+  const { login } = useAuthStore()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [firm, setFirm] = useState('')
   const [registrationNumber, setRegistrationNumber] = useState('')
   const [error, setError] = useState('')
 
-  const userRole = role as UserRole | undefined
-
-  if (!userRole || !['LIP', 'McKenzieFriend', 'Solicitor', 'Barrister'].includes(userRole)) {
+  if (!isValidRole(role)) {
     return (
       <Container className="d-flex justify-content-center align-items-center min-vh-100">
         <Alert variant="danger">Invalid registration type</Alert>
       </Container>
     )
   }
+
+  const userRole: UserRole = role
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -42,7 +47,7 @@ export default function Register() {
       return
     }
 
-    const newUser = {
+    const newUser: User = {
       id: generateId('user'),
       name: name.trim(),
       email: email.trim(),
@@ -51,7 +56,7 @@ export default function Register() {
       ...(registrationNumber.trim() && { registrationNumber: registrationNumber.trim() }),
     }
 
-    const updatedUsers = [...existingUsers, newUser]
+    const updatedUsers: User[] = [...existingUsers, newUser]
     saveUsers(updatedUsers)
     useAuthStore.setState({ users: updatedUsers })
 
