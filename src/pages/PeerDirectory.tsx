@@ -1,10 +1,11 @@
 import { useState, useMemo } from 'react'
-import { Container, Row, Col, Card, Badge, Button, Form, Modal, Alert } from 'react-bootstrap'
+import { Container, Row, Col, Card, Button, Form, Modal, Alert } from 'react-bootstrap'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
 import { listUsers } from '../services/auth'
-import type { UserRole, FamilyCase } from '../types/domain'
-import { FaUserCheck, FaHandshake, FaBalanceScale, FaBuilding, FaIdCard, FaPaperPlane } from 'react-icons/fa'
+import type { FamilyCase } from '../types/domain'
+import { FaHandshake, FaBalanceScale, FaPaperPlane } from 'react-icons/fa'
+import PeerSupporterCard from '../components/directory/PeerSupporterCard'
 
 export default function PeerDirectory() {
   const { user } = useAuthStore()
@@ -59,13 +60,6 @@ export default function PeerDirectory() {
     togglePeerSupport(selectedCaseId, true, requestNote.trim() || 'Peer support requested from legal directory')
     setSuccessMessage('Peer support request sent! The case has been flagged for peer review.')
     setRequestTargetUser(null)
-  }
-
-  const roleBadgeColor: Record<UserRole, string> = {
-    LIP: 'secondary',
-    McKenzieFriend: 'success',
-    Solicitor: 'primary',
-    Barrister: 'warning',
   }
 
   return (
@@ -146,47 +140,11 @@ export default function PeerDirectory() {
         <Row className="g-4">
           {filtered.map((pro) => (
             <Col key={pro.id} xs={12} md={6} lg={4}>
-              <Card className="h-100 shadow-sm border-0 d-flex flex-column">
-                <Card.Header className="bg-white border-bottom-0 pt-3 pb-0 d-flex justify-content-between align-items-start">
-                  <div>
-                    <Badge bg={roleBadgeColor[pro.role] || 'primary'} className="me-2 px-2 py-1">
-                      {pro.role}
-                    </Badge>
-                    <Badge bg="success" className="px-2 py-1">
-                      <FaUserCheck className="me-1" />
-                      Verified by Email
-                    </Badge>
-                  </div>
-                </Card.Header>
-                <Card.Body className="d-flex flex-column pt-2">
-                  <h5 className="fw-bold mb-1 text-primary">{pro.name}</h5>
-                  {pro.firm && (
-                    <div className="small text-muted mb-1 d-flex align-items-center">
-                      <FaBuilding className="me-2 text-secondary" />
-                      <span>{pro.firm}</span>
-                    </div>
-                  )}
-                  {pro.registrationNumber && (
-                    <div className="small text-muted mb-2 d-flex align-items-center">
-                      <FaIdCard className="me-2 text-secondary" />
-                      <span>Reg: {pro.registrationNumber}</span>
-                    </div>
-                  )}
-                  <p className="small text-secondary flex-grow-1 mt-2">
-                    {pro.bio || 'Verified legal professional ready to provide peer-to-peer case guidance and document support.'}
-                  </p>
-                  {user && user.role === 'LIP' && (
-                    <Button
-                      variant="outline-primary"
-                      className="mt-3 w-100 d-flex align-items-center justify-content-center gap-2"
-                      onClick={() => handleOpenRequestModal(pro.id)}
-                    >
-                      <FaHandshake />
-                      <span>Request Peer Support</span>
-                    </Button>
-                  )}
-                </Card.Body>
-              </Card>
+              <PeerSupporterCard
+                professional={pro}
+                onRequestSupport={user?.role === 'LIP' ? handleOpenRequestModal : undefined}
+                showRequestButton={user?.role === 'LIP'}
+              />
             </Col>
           ))}
         </Row>

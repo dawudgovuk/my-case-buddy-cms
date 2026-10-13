@@ -3,7 +3,8 @@ import { Card, Badge, Button, Alert, Row, Col, Form } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import type { FamilyCase, User } from '../../types/domain'
 import { useCasesStore } from '../../store/casesStore'
-import { FaLock, FaEnvelopeOpenText, FaEye, FaUserPlus, FaBalanceScale, FaCheckCircle, FaHandshake } from 'react-icons/fa'
+import { FaEye, FaUserPlus, FaBalanceScale, FaHandshake } from 'react-icons/fa'
+import VerificationGateCard from '../verification/VerificationGateCard'
 
 interface PeerSupportCasesTabProps {
   user: User
@@ -41,7 +42,7 @@ export default function PeerSupportCasesTab({ user, cases }: PeerSupportCasesTab
       ...(caseData.members || []),
       {
         userId: user.id,
-        role: user.role === 'Barrister' ? 'Barrister' as const : user.role === 'Solicitor' ? 'Solicitor' as const : 'McKenzieFriend' as const,
+        role: user.role === 'Barrister' ? ('Barrister' as const) : user.role === 'Solicitor' ? ('Solicitor' as const) : ('McKenzieFriend' as const),
         invitedAt: new Date().toISOString(),
       },
     ]
@@ -68,41 +69,11 @@ export default function PeerSupportCasesTab({ user, cases }: PeerSupportCasesTab
     const tokenToUse = user.verificationToken || 'demo_token_verify_now'
 
     return (
-      <Card className="shadow-sm border-0 p-4 text-center my-3">
-        <Card.Body>
-          <div className="text-warning mb-3">
-            <FaLock size={48} />
-          </div>
-          <h4 className="fw-bold text-dark mb-2">Email Verification Required</h4>
-          <p className="text-secondary mx-auto mb-4" style={{ maxWidth: '600px' }}>
-            In compliance with Family Procedure Rules and UK GDPR safeguarding, Solicitors, Barristers, and McKenzie
-            Friends must verify their email address before they can view other people&apos;s cases or access peer support requests.
-          </p>
-
-          <Alert variant="warning" className="text-start mx-auto mb-4" style={{ maxWidth: '600px' }}>
-            <div className="d-flex align-items-center gap-2 mb-2">
-              <FaEnvelopeOpenText className="text-warning" />
-              <strong>Verification email sent to:</strong>
-            </div>
-            <div className="fw-bold mb-2">{user.email}</div>
-            <div className="small text-muted">
-              Please click the link sent to your inbox to unlock peer case access.
-            </div>
-          </Alert>
-
-          <div className="d-flex justify-content-center gap-3">
-            <Button
-              variant="primary"
-              size="lg"
-              className="d-flex align-items-center gap-2"
-              onClick={() => navigate(`/verify-email/${tokenToUse}`)}
-            >
-              <FaCheckCircle />
-              <span>Simulate Email Verification Link Now</span>
-            </Button>
-          </div>
-        </Card.Body>
-      </Card>
+      <VerificationGateCard
+        userEmail={user.email}
+        verificationToken={tokenToUse}
+        onVerifyClick={(token) => navigate(`/verify-email/${token}`)}
+      />
     )
   }
 

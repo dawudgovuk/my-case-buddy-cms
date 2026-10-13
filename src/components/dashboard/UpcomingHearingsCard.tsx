@@ -1,6 +1,6 @@
-import { Card, ListGroup, Badge, Button, Alert } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
+import { Card, ListGroup, Badge, Alert } from 'react-bootstrap'
 import { format, isToday } from 'date-fns'
+import { ViewCaseButton } from '../common/CaseCardButtons'
 
 export interface HearingItem {
   caseId: string
@@ -20,8 +20,6 @@ interface UpcomingHearingsCardProps {
 }
 
 export default function UpcomingHearingsCard({ hearings }: UpcomingHearingsCardProps) {
-  const navigate = useNavigate()
-
   return (
     <Card className="shadow-sm border-0 h-100">
       <Card.Header className="text-white bg-primary">
@@ -55,9 +53,13 @@ export default function UpcomingHearingsCard({ hearings }: UpcomingHearingsCardP
                   {item.hearing.location && <div className="small text-secondary">{item.hearing.location}</div>}
                   {item.hearing.judge && <div className="small text-secondary">Judge: {item.hearing.judge}</div>}
                 </div>
-                <Button variant="outline-primary" size="sm" onClick={() => navigate(`/cases/${item.caseId}`)}>
-                  View
-                </Button>
+                <ViewCaseButton
+                  caseId={item.caseId}
+                  variant="outline-primary"
+                  size="sm"
+                  label="View"
+                  fullWidth={false}
+                />
               </ListGroup.Item>
             ))}
           </ListGroup>

@@ -8,7 +8,7 @@ import UpcomingHearingsCard, { type HearingItem } from '../components/dashboard/
 import DeadlinesCard from '../components/dashboard/DeadlinesCard'
 import AssignedCasesTab from '../components/dashboard/AssignedCasesTab'
 import PeerSupportCasesTab from '../components/dashboard/PeerSupportCasesTab'
-import TabNav, { type TabItem } from '../components/TabNav'
+import TabNav, { type TabItem } from '../components/common/TabNav'
 import { FaUserCheck, FaExclamationCircle, FaHandshake, FaGavel, FaCalendarAlt } from 'react-icons/fa'
 
 type DashboardTab = 'peer' | 'assigned' | 'schedule'

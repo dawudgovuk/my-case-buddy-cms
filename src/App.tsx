@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { Navbar, Nav, Container, Dropdown } from 'react-bootstrap'
-import { FaUser, FaSignOutAlt, FaHome, FaPlus, FaGavel, FaHandshake } from 'react-icons/fa'
+import { FaUser, FaSignOutAlt, FaHome, FaPlus, FaGavel, FaHandshake, FaPuzzlePiece } from 'react-icons/fa'
 import CasesList from './pages/CasesList'
 import CaseForm from './pages/CaseForm'
 import { useAuthStore } from './store/authStore';
@@ -13,7 +13,8 @@ import ProfessionalDashboard from './pages/ProfessionalDashboard';
 import CaseDetails from './pages/CaseDetails';
 import VerifyEmail from './pages/VerifyEmail';
 import PeerDirectory from './pages/PeerDirectory';
-import Logo from './components/Logo';
+import ComponentShowcase from './pages/ComponentShowcase';
+import Logo from './components/common/Logo';
 
 function Shell() {
   const navigate = useNavigate()
@@ -88,22 +89,32 @@ function Shell() {
                         Directory
                       </Nav.Link>
                     )}
-                      <Dropdown align="end">
-                        <Dropdown.Toggle variant="link" className="text-decoration-none d-flex align-items-center">
-                          <FaUser className="me-1" />
-                          {user.name} ({user.role})
-                          {user.role !== 'LIP' && (user.isVerified ? ' ✓' : ' (Unverified)')}
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                          <Dropdown.Item onClick={handleLogout}>
-                            <FaSignOutAlt className="me-2" />
-                            Logout
-                          </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
+                    <Nav.Link onClick={() => navigate('/components')} className="d-flex align-items-center gap-1">
+                      <FaPuzzlePiece />
+                      <span>Components</span>
+                    </Nav.Link>
+                    <Dropdown align="end">
+                      <Dropdown.Toggle variant="link" className="text-decoration-none d-flex align-items-center">
+                        <FaUser className="me-1" />
+                        {user.name} ({user.role})
+                        {user.role !== 'LIP' && (user.isVerified ? ' ✓' : ' (Unverified)')}
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        <Dropdown.Item onClick={handleLogout}>
+                          <FaSignOutAlt className="me-2" />
+                          Logout
+                        </Dropdown.Item>
+                      </Dropdown.Menu>
+                    </Dropdown>
                   </>
                 ) : (
-                  <Nav.Link onClick={() => navigate('/login')}>Login</Nav.Link>
+                  <>
+                    <Nav.Link onClick={() => navigate('/components')} className="d-flex align-items-center gap-1">
+                      <FaPuzzlePiece />
+                      <span>Components</span>
+                    </Nav.Link>
+                    <Nav.Link onClick={() => navigate('/login')}>Login</Nav.Link>
+                  </>
                 )}
               </Nav>
             </Navbar.Collapse>
@@ -164,6 +175,7 @@ function Shell() {
           <Route path="/cases/new" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
           <Route path="/cases/:caseId" element={user ? <CaseDetails /> : <Navigate to="/login" replace />} />
           <Route path="/cases/:caseId/edit" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
+          <Route path="/components" element={<ComponentShowcase />} />
           <Route path="*" element={<div className="text-center py-5">Page not found</div>} />
         </Routes>
       </Container>
