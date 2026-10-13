@@ -1,6 +1,6 @@
 import { loadSnapshot, upsertCase, generateId } from './services/storage'
 import { saveUsers, listUsers } from './services/auth'
-import type { FamilyCase, CaseType, CourtType, CaseStatus, Party, Hearing, HearingType, OrderRecord, OrderType, DocumentRecord } from './types/domain'
+import type { FamilyCase, CaseType, CourtType, CaseStatus, Party, Hearing, HearingType, OrderRecord, OrderType, DocumentRecord, User, CaseMember } from './types/domain'
 
 const firstNames = [
   'Alice', 'Bob', 'Charlie', 'Diana', 'Edward', 'Fiona', 'George', 'Hannah', 'Ian', 'Julia',
@@ -73,8 +73,8 @@ function randomStatus(): CaseStatus {
   return 'Concluded'
 }
 
-function generateUsers() {
-  const users: any[] = []
+function generateUsers(): User[] {
+  const users: User[] = []
   const usedNames = new Set<string>()
   
   function getUniqueName(): { firstName: string; lastName: string } {
@@ -99,31 +99,42 @@ function generateUsers() {
       id: `u_lip_${i + 1}`,
       name: `${firstName} ${lastName}`,
       email: `lip.${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
-      role: 'LIP'
+      role: 'LIP',
+      isVerified: true
     })
   }
   
-  // Generate 15 McKenzie Friends
+  // Generate 15 McKenzie Friends (first one unverified for demonstration testing)
   for (let i = 0; i < 15; i++) {
     const { firstName, lastName } = getUniqueName()
+    const isUnverified = i === 0
     users.push({
       id: `u_mf_${i + 1}`,
-      name: `${firstName} ${lastName}`,
+      name: `${firstName} ${lastName}${isUnverified ? ' (Pending Verification)' : ''}`,
       email: `mf.${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
-      role: 'McKenzieFriend'
+      role: 'McKenzieFriend',
+      isVerified: !isUnverified,
+      ...(isUnverified && { verificationToken: 'demo_token_mf_unverified' }),
+      bio: 'Experienced McKenzie Friend helping litigants prepare court statements and cross-examination questions.',
+      yearsExperience: 4 + (i % 8)
     })
   }
   
   // Generate 15 Solicitors
   for (let i = 0; i < 15; i++) {
     const { firstName, lastName } = getUniqueName()
+    const isUnverified = i === 0
     users.push({
       id: `u_sol_${i + 1}`,
-      name: `${firstName} ${lastName}`,
+      name: `${firstName} ${lastName}${isUnverified ? ' (Pending Verification)' : ''}`,
       email: `solicitor.${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
       role: 'Solicitor',
       firm: randomElement(firms),
-      registrationNumber: `SOL-${String(i + 1).padStart(6, '0')}`
+      registrationNumber: `SOL-${String(i + 1).padStart(6, '0')}`,
+      isVerified: !isUnverified,
+      ...(isUnverified && { verificationToken: 'demo_token_sol_unverified' }),
+      bio: 'Specialist family and child proceedings solicitor available for peer document review and support.',
+      yearsExperience: 5 + (i % 12)
     })
   }
   
@@ -136,7 +147,10 @@ function generateUsers() {
       email: `barrister.${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
       role: 'Barrister',
       firm: randomElement(chambers),
-      registrationNumber: `BAR-${String(i + 1).padStart(6, '0')}`
+      registrationNumber: `BAR-${String(i + 1).padStart(6, '0')}`,
+      isVerified: true,
+      bio: 'Family Law Barrister offering peer guidance on advocacy, skeleton arguments, and dispute resolution.',
+      yearsExperience: 6 + (i % 15)
     })
   }
   
@@ -166,7 +180,7 @@ function generateCases(userIds: {
     
     // Determine case ownership and assignments
     const owner = randomElement(userIds.lips)
-    const members: any[] = [{ userId: owner, role: 'Owner' }]
+    const members: CaseMember[] = [{ userId: owner, role: 'Owner' }]
     
     // 30% of cases have no additional members (unassigned)
     // 70% have professionals assigned
@@ -304,6 +318,14 @@ function generateCases(userIds: {
       }],
       members,
       currentStage,
+      seekingPeerSupport: i % 3 === 0, // 1 in 3 cases open for peer support
+      peerSupportNote: i % 3 === 0 ? randomElement([
+        'Litigant in Person seeking peer assistance with C100 bundle indexing and hearing preparation.',
+        'Respondent seeking guidance from an experienced McKenzie Friend or Solicitor regarding non-molestation undertaking.',
+        'Looking for peer review of draft witness statement ahead of upcoming directions hearing.',
+        'Requesting peer advice on disclosure documents and chronology drafting.'
+      ]) : undefined,
+      peerSupportRequestedAt: i % 3 === 0 ? startedAt : undefined,
       lastUpdatedAt: new Date().toISOString()
     })
   }

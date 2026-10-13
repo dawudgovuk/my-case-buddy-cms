@@ -1,5 +1,24 @@
 # Change Log
 
+## [Unreleased] - Peer-to-Peer Legal Support & Professional Email Verification
+
+### Features & Capabilities Added:
+1. **Peer-to-Peer Support Directory (`/peer-directory`)**:
+   - Directory enabling Litigants in Person to discover, filter, and connect with verified Solicitors, Barristers, and McKenzie Friends.
+   - Filter by legal role and real-time search by legal practitioner name, firm, or chambers.
+   - Case support modal allowing LIPs to request peer review on their cases.
+2. **Professional Email Link Verification (`/verify-email/:token`)**:
+   - Registration flow for legal professionals now mandates email verification to protect court data confidentiality.
+   - Token-based verification endpoint validating professional status and upgrading credentials to `isVerified: true`.
+   - Clear verification pending gate with simulation links for seamless demonstration and testing.
+3. **Peer Support Case Visibility on Professional Dashboard**:
+   - Access gate protecting other people's cases until email verification is confirmed.
+   - Dedicated "Peer Support Cases" tab for verified legal professionals displaying cases where LIPs requested help.
+   - Ability to review case metadata, notes, and join as a peer support team member.
+4. **Architecture & SOLID Modularization**:
+   - Decomposed oversized `ProfessionalDashboard.tsx` (473 lines -> 151 lines) into single-responsibility subcomponents (`UpcomingHearingsCard`, `DeadlinesCard`, `AssignedCasesTab`, `PeerSupportCasesTab`).
+   - Clean TypeScript types with zero `any` and all lint checks passing.
+
 ## Change log (11 November 2025)
 
 ### Dashboards, Registration and invite link for Solicitors and Barristers

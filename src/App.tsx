@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { Navbar, Nav, Container, Dropdown } from 'react-bootstrap'
-import { FaUser, FaSignOutAlt, FaHome, FaPlus, FaGavel } from 'react-icons/fa'
+import { FaUser, FaSignOutAlt, FaHome, FaPlus, FaGavel, FaHandshake } from 'react-icons/fa'
 import CasesList from './pages/CasesList'
 import CaseForm from './pages/CaseForm'
 import { useAuthStore } from './store/authStore';
@@ -11,6 +11,8 @@ import InviteAccept from './pages/InviteAccept';
 import LIPDashboard from './pages/LIPDashboard';
 import ProfessionalDashboard from './pages/ProfessionalDashboard';
 import CaseDetails from './pages/CaseDetails';
+import VerifyEmail from './pages/VerifyEmail';
+import PeerDirectory from './pages/PeerDirectory';
 import Logo from './components/Logo';
 
 function Shell() {
@@ -74,12 +76,23 @@ function Shell() {
                           <FaPlus className="me-1" />
                           New Case
                         </Nav.Link>
+                        <Nav.Link onClick={() => navigate('/peer-directory')}>
+                          <FaHandshake className="me-1" />
+                          Legal Supporters
+                        </Nav.Link>
                       </>
+                    )}
+                    {user.role !== 'LIP' && (
+                      <Nav.Link onClick={() => navigate('/peer-directory')}>
+                        <FaHandshake className="me-1" />
+                        Directory
+                      </Nav.Link>
                     )}
                       <Dropdown align="end">
                         <Dropdown.Toggle variant="link" className="text-decoration-none d-flex align-items-center">
                           <FaUser className="me-1" />
                           {user.name} ({user.role})
+                          {user.role !== 'LIP' && (user.isVerified ? ' ✓' : ' (Unverified)')}
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                           <Dropdown.Item onClick={handleLogout}>
@@ -103,6 +116,8 @@ function Shell() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register/:role" element={<Register />} />
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/peer-directory" element={user ? <PeerDirectory /> : <Navigate to="/login" replace />} />
           <Route path="/invite/:token" element={<InviteAccept />} />
           <Route
             path="/dashboard"

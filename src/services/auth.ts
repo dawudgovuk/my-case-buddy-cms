@@ -35,4 +35,48 @@ export function saveUsers(users: User[]) {
   localStorage.setItem(USERS_KEY, JSON.stringify(users))
 }
 
+export function findUserById(userId: string): User | undefined {
+  return listUsers().find((u) => u.id === userId)
+}
+
+export function findUserByToken(token: string): User | undefined {
+  if (!token) return undefined
+  return listUsers().find((u) => u.verificationToken === token)
+}
+
+export function verifyUserToken(token: string): { success: boolean; user?: User; error?: string } {
+  const users = listUsers()
+  const index = users.findIndex((u) => u.verificationToken === token)
+  if (index === -1) {
+    return { success: false, error: 'Invalid or expired verification token' }
+  }
+
+  const existingUser = users[index]
+  const updatedUser: User = {
+    ...existingUser,
+    isVerified: true,
+    verificationToken: undefined,
+  }
+
+  users[index] = updatedUser
+  saveUsers(users)
+
+  // Update current session if the verified user is currently logged in
+  const currentUser = getCurrentUser()
+  if (currentUser && currentUser.id === updatedUser.id) {
+    setCurrentUser(updatedUser)
+  }
+
+  return { success: true, user: updatedUser }
+}
+
+export function getVerifiedProfessionals(): User[] {
+  return listUsers().filter(
+    (u) =>
+      (u.role === 'Solicitor' || u.role === 'Barrister' || u.role === 'McKenzieFriend') &&
+      Boolean(u.isVerified)
+  )
+}
+
+
 

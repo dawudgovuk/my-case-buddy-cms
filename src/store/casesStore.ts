@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { FamilyCase } from '../types/domain';
-import { loadSnapshot, upsertCase, deleteCase, getCase } from '../services/storage';
+import { loadSnapshot, upsertCase, deleteCase, getCase, toggleCasePeerSupport } from '../services/storage';
 
 interface CasesState {
   cases: FamilyCase[];
@@ -8,6 +8,7 @@ interface CasesState {
   addOrUpdate: (fc: FamilyCase) => void;
   remove: (caseId: string) => void;
   getById: (caseId: string) => FamilyCase | undefined;
+  togglePeerSupport: (caseId: string, seeking: boolean, note?: string) => void;
 }
 
 export const useCasesStore = create<CasesState>((set, get) => ({
@@ -25,6 +26,10 @@ export const useCasesStore = create<CasesState>((set, get) => ({
   },
   getById: (caseId: string) => {
     return getCase(caseId) ?? get().cases.find((c) => c.id === caseId);
+  },
+  togglePeerSupport: (caseId: string, seeking: boolean, note?: string) => {
+    toggleCasePeerSupport(caseId, seeking, note);
+    set({ cases: loadSnapshot().cases });
   },
 }));
 
