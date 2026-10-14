@@ -78,10 +78,17 @@ export const useCasesStore = create<CasesState>((set, get) => ({
     if (get().isStrapiMode) {
       const isExisting = loadSnapshot().cases.some((c) => c.id === fc.id);
       const action = isExisting ? updateStrapiCase(fc) : createStrapiCase(fc);
-      action.catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : 'Strapi sync failed';
-        set({ strapiError: message });
-      });
+      action
+        .then((savedCase) => {
+          if (savedCase) {
+            upsertCase(savedCase);
+            set({ cases: loadSnapshot().cases });
+          }
+        })
+        .catch((err: unknown) => {
+          const message = err instanceof Error ? err.message : 'Strapi sync failed';
+          set({ strapiError: message });
+        });
     }
   },
 

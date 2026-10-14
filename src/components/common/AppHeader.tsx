@@ -161,19 +161,6 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                   </Badge>
                 </Nav.Link>
 
-                {/* Support & Knowledge Base link */}
-                <Nav.Link
-                  href="https://support.mycourtbuddy.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setExpanded(false)}
-                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded text-secondary"
-                  title="MyCourtBuddy Support & Knowledge Base (Case Law, Guidance, FAQ)"
-                >
-                  <FaLifeRing size={14} className="text-info" />
-                  <span>{t('common.support')}</span>
-                  <FaExternalLinkAlt size={10} className="text-muted ms-1" />
-                </Nav.Link>
 
                 {/* Responsive Mobile / Desktop Controls (Language + User Profile) */}
                 <div className="d-flex align-items-center justify-content-between gap-2 ms-xl-2 pt-2 pt-xl-0 border-top border-top-xl-0">

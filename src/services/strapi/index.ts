@@ -3,3 +3,7 @@ export * from './strapiClient';
 export * from './strapiAdapters';
 export * from './casesApiService';
 export * from './migrationService';
+export * from './invitesApiService';
+export * from './deadlinesApiService';
+export * from './professionalsApiService';
+export * from './authApiService';

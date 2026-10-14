@@ -9,11 +9,13 @@ export interface NextHearingBannerProps {
 export default function NextHearingBanner({ hearing, className = '' }: NextHearingBannerProps) {
   return (
     <div
-      className={`next-hearing-banner p-3 rounded-3 mb-3 ${className}`}
+      className={`next-hearing-banner p-3 rounded-3 mb-3 d-flex flex-column justify-content-between ${className}`}
       style={{
         backgroundColor: '#fffdfa',
         border: '1px solid #fef3c7',
         borderLeft: '4px solid #f59e0b',
+        height: '104px',
+        boxSizing: 'border-box',
       }}
     >
       <div className="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">

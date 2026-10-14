@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { getInviteByToken, updateInvite, getCase } from '../services/storage'
 import { useCasesStore } from '../store/casesStore'
+import { fetchStrapiInviteByToken, acceptStrapiInvite } from '../services/strapi'
 import { useTranslation } from '../hooks/useTranslation'
 import type { CaseInvite } from '../types/domain'
 import { Card, Button, Alert, Container, Row, Col } from 'react-bootstrap'
@@ -11,7 +12,7 @@ export default function InviteAccept() {
   const navigate = useNavigate()
   const { token } = useParams<{ token: string }>()
   const { user } = useAuthStore()
-  const { addOrUpdate } = useCasesStore()
+  const { addOrUpdate, isStrapiMode } = useCasesStore()
   const { t } = useTranslation()
   const [invite, setInvite] = useState<CaseInvite | null>(null)
   const [error, setError] = useState('')
@@ -25,26 +26,41 @@ export default function InviteAccept() {
     }
 
     const foundInvite = getInviteByToken(token)
-    if (!foundInvite) {
-      setError(t('inviteAccept.notFoundOrExpired'))
-      setLoading(false)
-      return
-    }
+    if (foundInvite) {
+      if (foundInvite.usedAt) {
+        setError(t('inviteAccept.alreadyUsed'))
+        setLoading(false)
+        return
+      }
 
-    if (foundInvite.usedAt) {
-      setError(t('inviteAccept.alreadyUsed'))
-      setLoading(false)
-      return
-    }
+      if (foundInvite.expiresAt && new Date(foundInvite.expiresAt) < new Date()) {
+        setError(t('inviteAccept.hasExpired'))
+        setLoading(false)
+        return
+      }
 
-    if (foundInvite.expiresAt && new Date(foundInvite.expiresAt) < new Date()) {
-      setError(t('inviteAccept.hasExpired'))
+      setInvite(foundInvite)
       setLoading(false)
-      return
+    } else {
+      // Check Strapi API if not found in local storage
+      fetchStrapiInviteByToken(token)
+        .then((strapiInv) => {
+          if (!strapiInv) {
+            setError(t('inviteAccept.notFoundOrExpired'))
+          } else if (strapiInv.usedAt) {
+            setError(t('inviteAccept.alreadyUsed'))
+          } else if (strapiInv.expiresAt && new Date(strapiInv.expiresAt) < new Date()) {
+            setError(t('inviteAccept.hasExpired'))
+          } else {
+            setInvite(strapiInv)
+          }
+          setLoading(false)
+        })
+        .catch(() => {
+          setError(t('inviteAccept.notFoundOrExpired'))
+          setLoading(false)
+        })
     }
-
-    setInvite(foundInvite)
-    setLoading(false)
   }, [token, t])
 
   function handleAccept() {
@@ -85,11 +101,18 @@ export default function InviteAccept() {
 
     addOrUpdate(updatedCase)
 
-    // Mark invite as used
+    // Mark invite as used locally
     updateInvite(invite.id, {
       usedAt: new Date().toISOString(),
       usedBy: user.id,
     })
+
+    // Sync redemption to Strapi backend if in Strapi mode
+    if (isStrapiMode && invite.token) {
+      acceptStrapiInvite(invite.token).catch(() => {
+        // Non-blocking fallback
+      })
+    }
 
     // Navigate to case
     navigate(`/cases/${invite.caseId}`)

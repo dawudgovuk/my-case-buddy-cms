@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
 import { getDeadlinesForUser, updateDeadline } from '../services/storage'
+import { fetchStrapiDeadlines, updateStrapiDeadlineStatus } from '../services/strapi'
 import type { DocumentDeadline } from '../types/domain'
 import UpcomingHearingsCard, { type HearingItem } from '../components/dashboard/UpcomingHearingsCard'
 import DeadlinesCard from '../components/dashboard/DeadlinesCard'
@@ -21,7 +22,7 @@ type DashboardTab = 'peer' | 'assigned' | 'schedule'
 export default function ProfessionalDashboard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { cases } = useCasesStore()
+  const { cases, isStrapiMode } = useCasesStore()
   const { t } = useTranslation()
   const [deadlines, setDeadlines] = useState<DocumentDeadline[]>([])
   const [activeTab, setActiveTab] = useState<DashboardTab>('peer')
@@ -32,7 +33,17 @@ export default function ProfessionalDashboard() {
     if (!user) return
     const userDeadlines = getDeadlinesForUser(user.id)
     setDeadlines(userDeadlines)
-  }, [user])
+
+    if (isStrapiMode) {
+      fetchStrapiDeadlines({ assignedTo: user.id })
+        .then((strapiDeadlines) => {
+          if (strapiDeadlines && strapiDeadlines.length > 0) {
+            setDeadlines(strapiDeadlines)
+          }
+        })
+        .catch(() => {})
+    }
+  }, [user, isStrapiMode])
 
   const userCases = useMemo(() => {
     if (!user) return []
@@ -109,6 +120,12 @@ export default function ProfessionalDashboard() {
           : d
       )
     )
+
+    if (isStrapiMode) {
+      updateStrapiDeadlineStatus(deadlineId, newStatus).catch(() => {
+        // Fallback without disruption
+      })
+    }
   }
 
   function handleVerifyClick() {

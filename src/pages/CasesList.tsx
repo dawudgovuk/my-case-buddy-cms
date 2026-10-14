@@ -177,6 +177,9 @@ export default function CasesList() {
             <Col key={c.id} xs={12} md={6} lg={4} className="d-flex">
               <CaseCard
                 caseData={c}
+                buttonLayout="vertical"
+                progressComponent="timeline"
+                timelineDefaultExpanded={false}
                 onViewDetails={(id) => navigate(`/cases/${id}`)}
                 onEdit={(id) => navigate(`/cases/${id}/edit`)}
                 onTogglePeerSupport={(id, cur) =>

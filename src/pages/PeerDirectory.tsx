@@ -1,31 +1,68 @@
-import { useState, useMemo } from 'react'
-import { Container, Row, Col, Card, Button, Form, Alert } from 'react-bootstrap'
+import { useState, useMemo, useEffect } from 'react'
+import { Container, Row, Col, Card, Alert } from 'react-bootstrap'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
 import { useTranslation } from '../hooks/useTranslation'
 import { listUsers } from '../services/auth'
-import { FaHandshake, FaBalanceScale } from 'react-icons/fa'
+import { fetchStrapiProfessionals } from '../services/strapi'
+import type { User } from '../types/domain'
+import {
+  FaHandshake,
+  FaBalanceScale,
+  FaSearch,
+  FaTimes,
+  FaUserCheck,
+  FaUsers,
+  FaGavel,
+} from 'react-icons/fa'
 import PeerSupporterCard from '../components/directory/PeerSupporterCard'
 import PeerSupportRequestModal from '../components/directory/PeerSupportRequestModal'
 
 export default function PeerDirectory() {
   const { user } = useAuthStore()
-  const { cases, togglePeerSupport } = useCasesStore()
+  const { cases, togglePeerSupport, isStrapiMode } = useCasesStore()
   const { t } = useTranslation()
 
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [requestTargetUser, setRequestTargetUser] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
+  const [strapiPros, setStrapiPros] = useState<User[]>([])
 
-  // Only legal professionals (Solicitor, Barrister, McKenzieFriend) who are verified
+  useEffect(() => {
+    if (isStrapiMode) {
+      fetchStrapiProfessionals().then((pros) => {
+        if (pros && pros.length > 0) {
+          setStrapiPros(pros)
+        }
+      }).catch(() => {})
+    }
+  }, [isStrapiMode])
+
+  // Legal professionals (Solicitor, Barrister, McKenzieFriend) from Strapi or local store
   const professionals = useMemo(() => {
-    return listUsers().filter(
+    const local = listUsers().filter(
       (u) =>
         (u.role === 'Solicitor' || u.role === 'Barrister' || u.role === 'McKenzieFriend') &&
         Boolean(u.isVerified)
     )
-  }, [])
+    if (strapiPros.length === 0) return local
+
+    // Merge Strapi professionals with local, deduplicating by email
+    const emails = new Set(strapiPros.map((p) => p.email.toLowerCase()))
+    const uniqueLocal = local.filter((l) => !emails.has(l.email.toLowerCase()))
+    return [...strapiPros, ...uniqueLocal]
+  }, [strapiPros])
+
+  // Dynamic counts for filter chips
+  const counts = useMemo(() => {
+    return {
+      all: professionals.length,
+      mckenzie: professionals.filter((p) => p.role === 'McKenzieFriend').length,
+      solicitors: professionals.filter((p) => p.role === 'Solicitor').length,
+      barristers: professionals.filter((p) => p.role === 'Barrister').length,
+    }
+  }, [professionals])
 
   const filtered = useMemo(() => {
     const term = searchTerm.trim().toLowerCase()
@@ -57,89 +94,193 @@ export default function PeerDirectory() {
     setRequestTargetUser(null)
   }
 
+  function handleClearFilters() {
+    setSearchTerm('')
+    setRoleFilter('all')
+  }
+
   return (
-    <Container fluid className="py-2">
+    <Container fluid className="px-lg-4 py-3" style={{ maxWidth: '1360px', margin: '0 auto' }}>
+      {/* 1. Executive Hero Header */}
       <div className="mb-4">
-        <h1>{t('peerDirectory.title')}</h1>
-        <p className="lead text-secondary">
+        <div className="d-flex align-items-center gap-2 mb-1.5">
+          <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 small fw-semibold">
+            <FaUserCheck size={11} />
+            <span>VERIFIED LEGAL DIRECTORY</span>
+          </span>
+          <span className="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 small fw-semibold">
+            <span
+              className="rounded-circle bg-success"
+              style={{ width: 6, height: 6, display: 'inline-block' }}
+            />
+            <span>{counts.all} Active Supporters</span>
+          </span>
+        </div>
+
+        <h2 className="fw-bold text-dark mb-1" style={{ letterSpacing: '-0.02em', fontSize: '1.75rem' }}>
+          {t('peerDirectory.title')}
+        </h2>
+        <p className="text-secondary mb-3" style={{ maxWidth: 760, fontSize: '0.94rem' }}>
           {t('peerDirectory.subtitle')}
         </p>
+
+        {/* Header Metric Cards */}
+        <div className="d-flex align-items-center gap-2 flex-wrap">
+          <div className="bg-white border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-2 shadow-sm">
+            <FaUsers className="text-primary" size={13} />
+            <span className="small text-muted">All Verified:</span>
+            <span className="fw-bold text-dark small">{counts.all}</span>
+          </div>
+          <div className="bg-white border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-2 shadow-sm">
+            <FaHandshake className="text-success" size={13} />
+            <span className="small text-muted">McKenzie Friends:</span>
+            <span className="fw-bold text-dark small">{counts.mckenzie}</span>
+          </div>
+          <div className="bg-white border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-2 shadow-sm">
+            <FaGavel className="text-primary" size={12} />
+            <span className="small text-muted">Solicitors:</span>
+            <span className="fw-bold text-dark small">{counts.solicitors}</span>
+          </div>
+          <div className="bg-white border rounded-3 px-3 py-1.5 d-inline-flex align-items-center gap-2 shadow-sm">
+            <FaBalanceScale className="text-warning" size={13} />
+            <span className="small text-muted">Barristers:</span>
+            <span className="fw-bold text-dark small">{counts.barristers}</span>
+          </div>
+        </div>
       </div>
 
+      {/* Success Alert Banner */}
       {successMessage && (
-        <Alert variant="success" dismissible onClose={() => setSuccessMessage(null)} className="mb-4">
-          <FaHandshake className="me-2" />
-          {successMessage}
+        <Alert
+          variant="success"
+          dismissible
+          onClose={() => setSuccessMessage(null)}
+          className="mb-4 shadow-sm border-0 d-flex align-items-center gap-2"
+        >
+          <FaHandshake size={18} className="text-success flex-shrink-0" />
+          <span>{successMessage}</span>
         </Alert>
       )}
 
-      <Card className="shadow-sm mb-4 border-0">
-        <Card.Body className="p-3">
-          <Row className="g-3 align-items-center">
-            <Col xs={12} lg={6}>
-              <div className="position-relative">
-                <Form.Control
-                  type="text"
-                  placeholder={t('peerDirectory.searchPlaceholder')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  size="sm"
-                  className="py-2"
-                />
-              </div>
-            </Col>
-            <Col xs={12} lg={6}>
-              <div className="filter-scroll-wrapper d-flex gap-1 py-1 justify-content-start justify-content-lg-end">
-                <Button
-                  variant={roleFilter === 'all' ? 'primary' : 'outline-secondary'}
-                  size="sm"
-                  className="rounded-pill flex-shrink-0"
-                  onClick={() => setRoleFilter('all')}
+      {/* 2. Elevated Search & Filter Bar */}
+      <div className="premium-card p-3 mb-4 border-0 shadow-sm">
+        <Row className="g-3 align-items-center">
+          {/* Search Input with Icon */}
+          <Col xs={12} lg={5}>
+            <div className="position-relative">
+              <FaSearch
+                size={13}
+                className="position-absolute text-muted"
+                style={{ left: '12px', top: '50%', transform: 'translateY(-50%)' }}
+              />
+              <input
+                type="text"
+                placeholder={t('peerDirectory.searchPlaceholder')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="form-control form-control-sm ps-4 pe-4 py-2 bg-light border-0"
+                style={{ fontSize: '0.88rem', borderRadius: '10px' }}
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  className="btn btn-sm text-muted position-absolute p-0 border-0"
+                  style={{ right: '10px', top: '50%', transform: 'translateY(-50%)' }}
+                  onClick={() => setSearchTerm('')}
+                  aria-label="Clear search"
                 >
-                  {t('peerDirectory.allFilter', { count: professionals.length })}
-                </Button>
-                <Button
-                  variant={roleFilter === 'McKenzieFriend' ? 'success' : 'outline-secondary'}
-                  size="sm"
-                  className="rounded-pill flex-shrink-0"
-                  onClick={() => setRoleFilter('McKenzieFriend')}
-                >
-                  {t('peerDirectory.mckenzieFriendsFilter')}
-                </Button>
-                <Button
-                  variant={roleFilter === 'Solicitor' ? 'info' : 'outline-secondary'}
-                  size="sm"
-                  className="rounded-pill flex-shrink-0"
-                  onClick={() => setRoleFilter('Solicitor')}
-                >
-                  {t('peerDirectory.solicitorsFilter')}
-                </Button>
-                <Button
-                  variant={roleFilter === 'Barrister' ? 'warning' : 'outline-secondary'}
-                  size="sm"
-                  className="rounded-pill flex-shrink-0 text-dark"
-                  onClick={() => setRoleFilter('Barrister')}
-                >
-                  {t('peerDirectory.barristersFilter')}
-                </Button>
-              </div>
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+                  <FaTimes size={12} />
+                </button>
+              )}
+            </div>
+          </Col>
 
+          {/* Role Filter Chips */}
+          <Col xs={12} lg={7}>
+            <div className="d-flex align-items-center gap-1.5 justify-content-start justify-content-lg-end flex-wrap">
+              {/* All Filter */}
+              <button
+                type="button"
+                className={`filter-chip-btn ${roleFilter === 'all' ? 'active' : ''}`}
+                onClick={() => setRoleFilter('all')}
+              >
+                <span>All Roles</span>
+                <span className="chip-count">{counts.all}</span>
+              </button>
+
+              {/* McKenzie Friends Filter */}
+              <button
+                type="button"
+                className={`filter-chip-btn ${roleFilter === 'McKenzieFriend' ? 'active active-emerald' : ''}`}
+                onClick={() => setRoleFilter('McKenzieFriend')}
+              >
+                <span
+                  className="chip-dot"
+                  style={{ backgroundColor: '#10b981' }}
+                />
+                <span>McKenzie Friends</span>
+                <span className="chip-count">{counts.mckenzie}</span>
+              </button>
+
+              {/* Solicitors Filter */}
+              <button
+                type="button"
+                className={`filter-chip-btn ${roleFilter === 'Solicitor' ? 'active' : ''}`}
+                onClick={() => setRoleFilter('Solicitor')}
+              >
+                <span
+                  className="chip-dot"
+                  style={{ backgroundColor: '#2563eb' }}
+                />
+                <span>Solicitors</span>
+                <span className="chip-count">{counts.solicitors}</span>
+              </button>
+
+              {/* Barristers Filter */}
+              <button
+                type="button"
+                className={`filter-chip-btn ${roleFilter === 'Barrister' ? 'active' : ''}`}
+                onClick={() => setRoleFilter('Barrister')}
+              >
+                <span
+                  className="chip-dot"
+                  style={{ backgroundColor: '#f59e0b' }}
+                />
+                <span>Barristers</span>
+                <span className="chip-count">{counts.barristers}</span>
+              </button>
+            </div>
+          </Col>
+        </Row>
+      </div>
+
+      {/* 3. Grid of Cards or Empty State */}
       {filtered.length === 0 ? (
-        <Card className="text-center p-5 border-0 shadow-sm">
-          <Card.Body>
-            <FaBalanceScale size={48} className="text-muted mb-3" />
-            <h5>{t('peerDirectory.noProsFound')}</h5>
-            <p className="text-muted">{t('peerDirectory.noProsFound')}</p>
+        <Card className="premium-card text-center p-5 border-0 shadow-sm">
+          <Card.Body className="py-4">
+            <div
+              className="d-flex align-items-center justify-content-center mx-auto rounded-circle bg-light text-muted mb-3"
+              style={{ width: 64, height: 64 }}
+            >
+              <FaBalanceScale size={28} />
+            </div>
+            <h5 className="fw-bold text-dark mb-1">No legal professionals found</h5>
+            <p className="text-muted small mb-3" style={{ maxWidth: 420, margin: '0 auto' }}>
+              We could not find any verified professionals matching your current search query or role filter.
+            </p>
+            <button
+              type="button"
+              className="btn btn-outline-secondary btn-sm px-3 py-1.5 rounded-pill fw-semibold"
+              onClick={handleClearFilters}
+            >
+              Clear Filters
+            </button>
           </Card.Body>
         </Card>
       ) : (
         <Row className="g-4">
           {filtered.map((pro) => (
-            <Col key={pro.id} xs={12} md={6} lg={4}>
+            <Col key={pro.id} xs={12} md={6} lg={4} className="d-flex">
               <PeerSupporterCard
                 professional={pro}
                 onRequestSupport={user?.role === 'LIP' ? handleOpenRequestModal : undefined}
@@ -150,7 +291,7 @@ export default function PeerDirectory() {
         </Row>
       )}
 
-      {/* Reusable Peer Support Request Modal */}
+      {/* 4. Peer Support Request Modal */}
       <PeerSupportRequestModal
         show={Boolean(requestTargetUser)}
         targetUserId={requestTargetUser}

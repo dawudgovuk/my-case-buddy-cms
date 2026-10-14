@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Badge, ProgressBar, Button, Collapse } from 'react-bootstrap'
+import { Badge, Collapse } from 'react-bootstrap'
 import type { CaseStageInfo } from '../../utils/caseStages'
 import {
   FaCheck,
@@ -66,69 +66,73 @@ export default function CaseTimeline({
   const progressPercent = total > 0 ? Math.round(((currentStageIndex + 1) / total) * 100) : 0
   const activeStage = stages[currentStageIndex]
 
+  const nextStage = stages[currentStageIndex + 1]
+
   return (
     <div
       className={`case-timeline-card rounded-3 border overflow-hidden ${
-        compact ? 'bg-light bg-opacity-75' : 'bg-white shadow-sm'
+        compact ? 'bg-light bg-opacity-60' : 'bg-white shadow-sm'
       } ${className}`}
       style={{ borderColor: '#e2e8f0' }}
     >
-      <div className={`pt-2.5 pb-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2 ${compact ? 'bg-transparent' : 'bg-white'}`}>
-        <div className="d-flex align-items-center gap-2">
-          <span className="fw-semibold text-dark" style={{ fontSize: '0.82rem' }}>
-            Court Procedural Timeline
-          </span>
+      <div className="p-3">
+        {/* Stage Header: Stage Count & Stage Name */}
+        <div className="d-flex align-items-center justify-content-between gap-2 mb-2">
+          <div className="d-flex align-items-center gap-1.5">
+            <span className="fw-bold text-dark" style={{ fontSize: '0.82rem' }}>
+              Stage {currentStageIndex + 1} of {total}
+            </span>
+          </div>
+
           {activeStage && (
             <span
-              className="badge badge-soft-emerald px-2 py-0.5 rounded-pill fw-semibold"
-              style={{ fontSize: '0.72rem' }}
+              className="badge badge-soft-emerald px-2 py-0.5 rounded-pill fw-semibold text-truncate"
+              style={{ fontSize: '0.72rem', maxWidth: 190 }}
+              title={activeStage.name}
             >
-              Active: {activeStage.name}
+              ● {activeStage.name}
             </span>
           )}
         </div>
 
-        <div className="d-flex align-items-center gap-2">
-          {showProgressBar && (
-            <div className="d-none d-sm-flex align-items-center gap-2" style={{ minWidth: 120 }}>
-              <ProgressBar
-                now={progressPercent}
-                variant="success"
-                style={{ height: 5, width: 70 }}
-                className="rounded-pill"
+        {/* Progress Bar */}
+        {showProgressBar && (
+          <div className="mb-2">
+            <div className="case-mini-progress" style={{ height: 6 }}>
+              <div
+                className="case-mini-progress-bar"
+                style={{ width: `${progressPercent}%` }}
               />
-              <span className="small text-muted fw-semibold" style={{ fontSize: '0.72rem' }}>
-                {progressPercent}%
-              </span>
             </div>
-          )}
+          </div>
+        )}
+
+        {/* Next Step Hint & Expand Toggle */}
+        <div className="d-flex align-items-center justify-content-between gap-2">
+          <span className="text-muted text-truncate" style={{ fontSize: '0.74rem' }}>
+            {nextStage ? (
+              <>
+                <span className="text-secondary fw-medium">Next:</span> {nextStage.name}
+              </>
+            ) : (
+              <span className="text-success fw-medium">All court stages completed</span>
+            )}
+          </span>
 
           {collapsible && (
-            <Button
-              variant="light"
-              size="sm"
+            <button
+              type="button"
               onClick={() => setExpanded(!expanded)}
               aria-expanded={expanded}
-              className="btn-soft py-0 px-2 d-flex align-items-center gap-1 border"
-              style={{ fontSize: '0.74rem', height: 24 }}
+              className="btn btn-link p-0 text-decoration-none text-secondary d-inline-flex align-items-center gap-1 flex-shrink-0"
+              style={{ fontSize: '0.74rem', fontWeight: 500 }}
             >
-              <span>{expanded ? 'Collapse' : 'Expand'}</span>
+              <span>{expanded ? 'Hide steps' : 'View steps'}</span>
               {expanded ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
-            </Button>
+            </button>
           )}
         </div>
       </div>
-
-      {/* Progress percentage on mobile when visible */}
-      {showProgressBar && (
-        <div className="d-sm-none px-3 pb-2">
-          <div className="d-flex justify-content-between align-items-center mb-1">
-            <span className="small text-muted" style={{ fontSize: '0.75rem' }}>Progress</span>
-            <span className="small text-muted fw-semibold" style={{ fontSize: '0.75rem' }}>{progressPercent}%</span>
-          </div>
-          <ProgressBar now={progressPercent} variant="success" style={{ height: 4 }} className="rounded-pill" />
-        </div>
-      )}
 
       <Collapse in={!collapsible || expanded}>
         <div>

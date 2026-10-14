@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Card, Button } from 'react-bootstrap'
+import { Card } from 'react-bootstrap'
 import type { FamilyCase } from '../../types/domain'
 import { getStagesForCase, getCurrentStageIndex } from '../../utils/caseStages'
 import CaseSteps from './CaseSteps'
@@ -15,10 +15,8 @@ import {
   FaUsers,
   FaChild,
   FaGavel,
-  FaArrowRight,
-  FaFolderOpen,
   FaHandshake,
-  FaEdit,
+  FaCalendarAlt,
 } from 'react-icons/fa'
 
 export interface CaseCardProps {
@@ -41,10 +39,10 @@ export default function CaseCard({
   onViewDetails,
   onEdit,
   actions,
-  buttonLayout = 'horizontal',
+  buttonLayout = 'vertical',
   showProgress = true,
   showNextHearing = true,
-  progressComponent = 'compact',
+  progressComponent = 'timeline',
   timelineDefaultExpanded = false,
   className = '',
 }: CaseCardProps) {
@@ -76,65 +74,132 @@ export default function CaseCard({
 
   return (
     <Card className={`premium-card h-100 d-flex flex-column border-0 ${className}`}>
-      <Card.Body className="d-flex flex-column h-100 p-4">
-        {/* Header: ID, Status, and Quiet Counts */}
-        <div className="d-flex align-items-center justify-content-between gap-2 mb-3">
-          <div className="d-flex align-items-center gap-2">
-            <span className="badge bg-light text-muted border font-monospace px-2 py-1 small">
-              {caseData.id}
-            </span>
-            <span className={`badge rounded-pill px-2.5 py-1 small fw-semibold ${statusBadgeClass}`}>
-              ● {caseData.status}
-            </span>
-          </div>
-
-          <div className="d-flex align-items-center gap-2 text-muted small">
-            <span
-              className="d-inline-flex align-items-center gap-1"
-              title={`${partiesCount} Parties`}
-            >
-              <FaUsers size={12} className="text-secondary opacity-75" />
-              <span>{partiesCount}</span>
-            </span>
-            {childrenCount > 0 && (
-              <span
-                className="d-inline-flex align-items-center gap-1"
-                title={`${childrenCount} Children`}
+      <Card.Body className="d-flex flex-column h-100 p-3.5 p-md-4">
+        {/* Title Header with Status & Peer Support Badges on Same Line */}
+        <div className="mb-3">
+          <div className="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">
+            <div className="d-flex align-items-center gap-2 flex-wrap flex-grow-1">
+              <h5
+                className="fw-bold mb-0 text-dark hover-text-primary"
+                style={{
+                  letterSpacing: '-0.3px',
+                  lineHeight: 1.3,
+                  fontSize: '1.05rem',
+                  cursor: onViewDetails ? 'pointer' : 'default',
+                }}
+                onClick={() => onViewDetails?.(caseData.id)}
+                title={caseData.title}
               >
-                <FaChild size={11} className="text-secondary opacity-75" />
-                <span>{childrenCount}</span>
+                {caseData.title || '(Untitled Case)'}
+              </h5>
+
+              <span
+                className={`badge rounded-pill px-2.5 py-1 small fw-semibold ${statusBadgeClass}`}
+                style={{ fontSize: '0.72rem' }}
+              >
+                ● {caseData.status}
               </span>
+
+              {isSeekingSupport && (
+                <span
+                  className="badge badge-soft-emerald rounded-pill px-2.5 py-1 small fw-semibold d-inline-flex align-items-center gap-1"
+                  title="Peer Support Active"
+                  style={{ fontSize: '0.7rem' }}
+                >
+                  <FaHandshake size={10} />
+                  <span>Peer Support</span>
+                </span>
+              )}
+            </div>
+
+            {(partiesCount > 0 || childrenCount > 0) && (
+              <div className="d-flex align-items-center gap-1.5 text-muted small flex-shrink-0 ms-auto" style={{ fontSize: '0.75rem' }}>
+                {partiesCount > 0 && (
+                  <span
+                    className="badge bg-light text-secondary border px-2 py-1 rounded-pill d-inline-flex align-items-center gap-1"
+                    title={`${partiesCount} Parties`}
+                    style={{ fontSize: '0.7rem', fontWeight: 500 }}
+                  >
+                    <FaUsers size={10} className="text-secondary opacity-75" />
+                    <span>{partiesCount} {partiesCount === 1 ? 'Party' : 'Parties'}</span>
+                  </span>
+                )}
+                {childrenCount > 0 && (
+                  <span
+                    className="badge bg-light text-secondary border px-2 py-1 rounded-pill d-inline-flex align-items-center gap-1"
+                    title={`${childrenCount} Children`}
+                    style={{ fontSize: '0.7rem', fontWeight: 500 }}
+                  >
+                    <FaChild size={10} className="text-secondary opacity-75" />
+                    <span>{childrenCount} {childrenCount === 1 ? 'Child' : 'Children'}</span>
+                  </span>
+                )}
+              </div>
             )}
           </div>
-        </div>
 
-        {/* Title & Court Description */}
-        <div className="mb-3">
-          <h5
-            className="fw-bold mb-1 text-dark"
-            style={{
-              letterSpacing: '-0.3px',
-              lineHeight: 1.35,
-              cursor: onViewDetails ? 'pointer' : 'default',
-            }}
-            onClick={() => onViewDetails?.(caseData.id)}
+          <div
+            className="small text-secondary d-flex align-items-center gap-1.5 flex-wrap"
+            style={{ fontSize: '0.78rem', minHeight: '1.25rem' }}
           >
-            {caseData.title || '(Untitled Case)'}
-          </h5>
-
-          <div className="small text-secondary d-flex align-items-center gap-2 flex-wrap">
-            <span className="d-inline-flex align-items-center gap-1">
-              <FaGavel size={11} className="text-muted" />
+            <span className="d-inline-flex align-items-center gap-1 text-muted">
+              <FaGavel size={10} className="text-secondary opacity-75 flex-shrink-0" />
               <span>{caseData.court}</span>
             </span>
             <span className="text-muted">•</span>
-            <span className="text-muted">{caseData.caseType}</span>
+            <span className="text-muted text-truncate" style={{ maxWidth: 230 }}>
+              {caseData.caseType}
+            </span>
           </div>
         </div>
 
-        {/* Next Hearing Banner (Warm, Understated) */}
-        {showNextHearing && nextHearing && (
-          <NextHearingBanner hearing={nextHearing} className="mb-3" />
+        {/* Hearing Banner Section (Consistent 104px Height) */}
+        {showNextHearing && (
+          nextHearing ? (
+            <NextHearingBanner hearing={nextHearing} className="mb-3" />
+          ) : (
+            <div
+              className="next-hearing-banner p-3 rounded-3 mb-3 d-flex flex-column justify-content-between"
+              style={{
+                backgroundColor: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderLeft: '4px solid #94a3b8',
+                height: '104px',
+                boxSizing: 'border-box',
+              }}
+            >
+              <div className="d-flex align-items-center justify-content-between gap-2">
+                <div className="d-flex align-items-center gap-2">
+                  <div
+                    className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+                    style={{ width: 22, height: 22, backgroundColor: '#f1f5f9', color: '#64748b' }}
+                  >
+                    <FaCalendarAlt size={10} />
+                  </div>
+                  <span
+                    className="small text-uppercase fw-bold text-secondary"
+                    style={{ letterSpacing: '0.5px', fontSize: '0.7rem' }}
+                  >
+                    Next Court Hearing
+                  </span>
+                </div>
+                <span
+                  className="badge bg-white text-muted border px-2 py-0.5 rounded-pill fw-medium"
+                  style={{ fontSize: '0.7rem' }}
+                >
+                  Awaiting listing
+                </span>
+              </div>
+
+              <div className="fw-semibold text-secondary small d-flex align-items-center gap-2">
+                <span>No upcoming hearing scheduled</span>
+              </div>
+
+              <div className="small text-muted text-truncate" style={{ fontSize: '0.74rem' }}>
+                Court hearing date & directions will appear here once listed
+              </div>
+            </div>
+          )
         )}
 
         {/* Progression Section */}
@@ -210,58 +275,26 @@ export default function CaseCard({
               )}
             </CaseCardActions>
           ) : (
-            <div className="d-flex align-items-center justify-content-between gap-2">
+            <div className="d-flex align-items-center justify-content-between gap-2 flex-wrap">
               {onViewDetails && (
-                <Button
-                  className="btn-obsidian d-inline-flex align-items-center gap-2 py-2 px-3 shadow-none flex-grow-1 text-truncate"
-                  size="sm"
-                  onClick={() => onViewDetails(caseData.id)}
-                  style={{ fontSize: '0.825rem' }}
-                >
-                  <FaFolderOpen size={13} className="flex-shrink-0" />
-                  <span className="text-truncate">Open Case</span>
-                  <FaArrowRight size={10} className="ms-auto flex-shrink-0" />
-                </Button>
+                <ViewCaseButton
+                  caseId={caseData.id}
+                  onView={() => onViewDetails(caseData.id)}
+                  className="flex-grow-1"
+                />
               )}
-
-              <div className="d-flex align-items-center gap-1 flex-shrink-0">
-                {onTogglePeerSupport && (
-                  <Button
-                    variant={isSeekingSupport ? 'success' : 'light'}
-                    className={`d-inline-flex align-items-center gap-1 py-1.5 px-2.5 border ${
-                      isSeekingSupport
-                        ? 'bg-success text-white border-success'
-                        : 'btn-soft text-secondary'
-                    }`}
-                    size="sm"
-                    onClick={() => onTogglePeerSupport(caseData.id, isSeekingSupport)}
-                    title={
-                      isSeekingSupport
-                        ? 'Peer Support is active'
-                        : 'Request peer review support'
-                    }
-                    style={{ fontSize: '0.8rem' }}
-                  >
-                    <FaHandshake size={12} />
-                    <span className="d-none d-sm-inline">
-                      {isSeekingSupport ? 'Active' : 'Support'}
-                    </span>
-                  </Button>
-                )}
-
-                {onEdit && (
-                  <Button
-                    variant="light"
-                    className="btn-soft text-secondary py-1.5 px-2 border"
-                    size="sm"
-                    onClick={() => onEdit(caseData.id)}
-                    title="Edit Case"
-                    aria-label="Edit Case"
-                  >
-                    <FaEdit size={12} />
-                  </Button>
-                )}
-              </div>
+              {onTogglePeerSupport && (
+                <PeerSupportButton
+                  isSeekingPeerSupport={isSeekingSupport}
+                  onToggle={() => onTogglePeerSupport(caseData.id, isSeekingSupport)}
+                />
+              )}
+              {onEdit && (
+                <EditCaseButton
+                  caseId={caseData.id}
+                  onEdit={() => onEdit(caseData.id)}
+                />
+              )}
             </div>
           )}
         </div>

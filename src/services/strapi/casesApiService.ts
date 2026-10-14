@@ -22,16 +22,22 @@ interface StrapiSingleResponse<T> {
   data: T;
 }
 
+const COMMON_POPULATE_PARAMS = {
+  'populate[parties]': '*',
+  'populate[hearings]': '*',
+  'populate[orders]': '*',
+  'populate[documents]': '*',
+  'populate[notes]': '*',
+  'populate[members]': '*',
+  'populate[deadlines]': '*',
+};
+
 /**
  * Fetches all cases from Strapi with nested relations populated.
  */
 export async function fetchStrapiCases(): Promise<FamilyCase[]> {
   const query = {
-    'populate[parties]': '*',
-    'populate[hearings]': '*',
-    'populate[orders]': '*',
-    'populate[documents]': '*',
-    'populate[notes]': '*',
+    ...COMMON_POPULATE_PARAMS,
     'sort': 'updatedAt:desc',
     'pagination[pageSize]': '100',
   };
@@ -44,17 +50,13 @@ export async function fetchStrapiCases(): Promise<FamilyCase[]> {
 }
 
 /**
- * Fetches a single case by caseNumber or Strapi ID.
+ * Fetches a single case by caseNumber or Strapi documentId.
  */
 export async function fetchStrapiCaseById(caseIdOrNumber: string): Promise<FamilyCase | null> {
   // Try querying by caseNumber filter first
   const query = {
     'filters[caseNumber][$eq]': caseIdOrNumber,
-    'populate[parties]': '*',
-    'populate[hearings]': '*',
-    'populate[orders]': '*',
-    'populate[documents]': '*',
-    'populate[notes]': '*',
+    ...COMMON_POPULATE_PARAMS,
   };
 
   const listResponse = await strapiGet<StrapiListResponse<StrapiCaseRaw>>('/api/cases', query);
@@ -62,25 +64,24 @@ export async function fetchStrapiCaseById(caseIdOrNumber: string): Promise<Famil
     return toDomainCase(listResponse.data[0]);
   }
 
-  // Fallback to direct ID fetch if numeric
-  if (/^\d+$/.test(caseIdOrNumber)) {
-    try {
-      const single = await strapiGet<StrapiSingleResponse<StrapiCaseRaw>>(
-        `/api/cases/${caseIdOrNumber}?populate=*`
-      );
-      if (single?.data) {
-        return toDomainCase(single.data);
-      }
-    } catch {
-      return null;
+  // Fallback to direct ID / documentId fetch
+  try {
+    const single = await strapiGet<StrapiSingleResponse<StrapiCaseRaw>>(
+      `/api/cases/${encodeURIComponent(caseIdOrNumber)}`,
+      COMMON_POPULATE_PARAMS
+    );
+    if (single?.data) {
+      return toDomainCase(single.data);
     }
+  } catch {
+    return null;
   }
 
   return null;
 }
 
 /**
- * Creates a new case in Strapi.
+ * Creates a new case in Strapi including initial relational children.
  */
 export async function createStrapiCase(fc: FamilyCase): Promise<FamilyCase> {
   const payload = toStrapiCasePayload(fc);
@@ -89,10 +90,10 @@ export async function createStrapiCase(fc: FamilyCase): Promise<FamilyCase> {
 }
 
 /**
- * Updates an existing case in Strapi.
+ * Updates an existing case in Strapi including relational children.
  */
 export async function updateStrapiCase(fc: FamilyCase): Promise<FamilyCase> {
-  // First locate the Strapi record to obtain its internal ID
+  // First locate the Strapi record to obtain its internal documentId
   const existing = await fetchStrapiCaseById(fc.id);
   const targetId = existing?.id || fc.id;
 
@@ -108,7 +109,10 @@ export async function updateStrapiCase(fc: FamilyCase): Promise<FamilyCase> {
  * Deletes a case from Strapi.
  */
 export async function deleteStrapiCase(caseIdOrNumber: string): Promise<boolean> {
-  await strapiDelete(`/api/cases/${encodeURIComponent(caseIdOrNumber)}`);
+  // If numeric or alphanumeric, try delete by ID / documentId
+  const existing = await fetchStrapiCaseById(caseIdOrNumber);
+  const targetId = existing?.id || caseIdOrNumber;
+  await strapiDelete(`/api/cases/${encodeURIComponent(targetId)}`);
   return true;
 }
 

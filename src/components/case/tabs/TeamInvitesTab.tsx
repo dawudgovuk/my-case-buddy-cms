@@ -4,6 +4,7 @@ import { useCasesStore } from '../../../store/casesStore'
 import { useAuthStore } from '../../../store/authStore'
 import { generateId, createInvite, getAllInvites } from '../../../services/storage'
 import { listUsers } from '../../../services/auth'
+import { createStrapiInvite } from '../../../services/strapi'
 import type { FamilyCase } from '../../../types/domain'
 import InviteLinkCard from '../InviteLinkCard'
 import { FaUserPlus, FaUsers } from 'react-icons/fa'
@@ -29,7 +30,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
   const allInvites = getAllInvites().filter((i) => i.caseId === caseId)
   const allUsers = listUsers()
 
-  function generateInviteLink() {
+  async function generateInviteLink() {
     if (!user) return
     const token = generateId('INV')
     const invite = {
@@ -42,6 +43,15 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
     }
     createInvite(invite)
+
+    if (store.isStrapiMode) {
+      try {
+        await createStrapiInvite(current.id, inviteRole, user.id)
+      } catch {
+        // Fallback to local storage invite
+      }
+    }
+
     const inviteUrl = `${window.location.origin}/invite/${token}`
     setGeneratedInvite(inviteUrl)
   }

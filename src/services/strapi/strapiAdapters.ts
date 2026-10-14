@@ -5,6 +5,8 @@ import type {
   OrderRecord,
   DocumentRecord,
   CaseNote,
+  CaseMember,
+  DocumentDeadline,
   CourtType,
   CaseType,
   CaseStatus,
@@ -34,6 +36,8 @@ export interface StrapiCaseRaw {
   orders?: StrapiOrderRaw[];
   documents?: StrapiDocumentRaw[];
   notes?: StrapiNoteRaw[];
+  members?: StrapiMemberRaw[];
+  deadlines?: StrapiDeadlineRaw[];
   attributes?: Record<string, unknown>;
 }
 
@@ -93,6 +97,29 @@ export interface StrapiNoteRaw {
   createdAt?: string;
   author?: string;
   text?: string;
+  attributes?: Record<string, unknown>;
+}
+
+export interface StrapiMemberRaw {
+  id: number;
+  documentId?: string;
+  username?: string;
+  email?: string;
+  userRole?: string;
+  attributes?: Record<string, unknown>;
+}
+
+export interface StrapiDeadlineRaw {
+  id: number;
+  documentId?: string;
+  title?: string;
+  description?: string;
+  deadlineDate?: string;
+  documentType?: string;
+  status?: string;
+  submittedAt?: string;
+  case?: { id?: number; documentId?: string; caseNumber?: string };
+  assignedTo?: { id?: number; documentId?: string; username?: string };
   attributes?: Record<string, unknown>;
 }
 
@@ -167,6 +194,30 @@ export function toDomainNote(raw: StrapiNoteRaw): CaseNote {
   };
 }
 
+export function toDomainMember(raw: StrapiMemberRaw): CaseMember {
+  const data = unwrap(raw);
+  return {
+    userId: String(data.id ?? raw.id ?? raw.documentId ?? ''),
+    role: (data.userRole as CaseMember['role']) || 'Collaborator',
+  };
+}
+
+export function toDomainDeadline(raw: StrapiDeadlineRaw, caseIdFallback?: string): DocumentDeadline {
+  const data = unwrap(raw);
+  const caseRel = data.case as { caseNumber?: string; id?: number; documentId?: string } | undefined;
+  return {
+    id: String(data.id ?? raw.id ?? raw.documentId ?? ''),
+    caseId: caseRel?.caseNumber || (caseRel?.documentId ? String(caseRel.documentId) : caseIdFallback || ''),
+    title: String(data.title || 'Document Deadline'),
+    description: data.description ? String(data.description) : undefined,
+    deadlineDate: String(data.deadlineDate || new Date().toISOString().slice(0, 10)),
+    documentType: data.documentType ? String(data.documentType) : undefined,
+    status: (data.status as DocumentDeadline['status']) || 'pending',
+    assignedTo: data.assignedTo ? String((data.assignedTo as { id?: unknown }).id || '') : undefined,
+    submittedAt: data.submittedAt ? String(data.submittedAt) : undefined,
+  };
+}
+
 export function toDomainCase(raw: StrapiCaseRaw): FamilyCase {
   const data = unwrap(raw);
   const rawParties = Array.isArray(data.parties) ? (data.parties as StrapiPartyRaw[]) : [];
@@ -174,6 +225,7 @@ export function toDomainCase(raw: StrapiCaseRaw): FamilyCase {
   const rawOrders = Array.isArray(data.orders) ? (data.orders as StrapiOrderRaw[]) : [];
   const rawDocs = Array.isArray(data.documents) ? (data.documents as StrapiDocumentRaw[]) : [];
   const rawNotes = Array.isArray(data.notes) ? (data.notes as StrapiNoteRaw[]) : [];
+  const rawMembers = Array.isArray(data.members) ? (data.members as StrapiMemberRaw[]) : [];
 
   return {
     id: String(data.caseNumber || data.id || raw.documentId || ''),
@@ -190,6 +242,7 @@ export function toDomainCase(raw: StrapiCaseRaw): FamilyCase {
     orders: rawOrders.map(toDomainOrder),
     documents: rawDocs.map(toDomainDocument),
     notes: rawNotes.map(toDomainNote),
+    members: rawMembers.map(toDomainMember),
     seekingPeerSupport: Boolean(data.seekingPeerSupport),
     peerSupportNote: data.peerSupportNote ? String(data.peerSupportNote) : undefined,
     peerSupportRequestedAt: data.peerSupportRequestedAt ? String(data.peerSupportRequestedAt) : undefined,
@@ -212,6 +265,49 @@ export function toStrapiCasePayload(fc: FamilyCase): { data: Record<string, unkn
       seekingPeerSupport: Boolean(fc.seekingPeerSupport),
       peerSupportNote: fc.peerSupportNote,
       peerSupportRequestedAt: fc.peerSupportRequestedAt,
+      parties: (fc.parties || []).map((p) => ({
+        documentId: p.id.startsWith('PTY_') ? undefined : p.id,
+        role: p.role,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        dateOfBirth: p.dateOfBirth,
+        address: p.address,
+        solicitorFirm: p.solicitorFirm,
+        solicitorContact: p.solicitorContact,
+        contactEmail: p.contactEmail,
+        contactPhone: p.contactPhone,
+      })),
+      hearings: (fc.hearings || []).map((h) => ({
+        documentId: h.id.startsWith('HRG_') ? undefined : h.id,
+        type: h.type,
+        date: h.date,
+        time: h.time,
+        location: h.location,
+        judge: h.judge,
+        notes: h.notes,
+        outcome: h.outcome,
+      })),
+      orders: (fc.orders || []).map((o) => ({
+        documentId: o.id.startsWith('ORD_') ? undefined : o.id,
+        type: o.type,
+        dateMade: o.dateMade,
+        summary: o.summary,
+        expiresOn: o.expiresOn,
+        documentUrl: o.documentUrl,
+      })),
+      documents: (fc.documents || []).map((d) => ({
+        documentId: d.id.startsWith('DOC_') ? undefined : d.id,
+        title: d.title,
+        type: d.type,
+        uploadedAt: d.uploadedAt,
+        url: d.url,
+        notes: d.notes,
+      })),
+      notes: (fc.notes || []).map((n) => ({
+        documentId: n.id.startsWith('NOTE_') ? undefined : n.id,
+        author: n.author,
+        text: n.text,
+      })),
     },
   };
 }
