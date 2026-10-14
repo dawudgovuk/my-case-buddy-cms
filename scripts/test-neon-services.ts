@@ -56,7 +56,7 @@ async function runTests() {
   }
 
   // 2. Test Neon Auth
-  console.log('\n2️⃣ Testing Neon Auth (Managed Better Auth JWKS)...');
+  console.log('\n2️⃣ Testing Neon Auth (Managed Better Auth JWKS & Client SDK)...');
   try {
     if (!AUTH_JWKS_URL) {
       throw new Error('NEON_AUTH_JWKS_URL is not defined in environment');
@@ -71,6 +71,20 @@ async function runTests() {
     console.log(`      Active Cryptographic Keys: ${data.keys?.length ?? 0}`);
     if (data.keys?.[0]) {
       console.log(`      Key Algorithm: ${data.keys[0].alg} (${data.keys[0].kty})`);
+    }
+
+    // Verify @neondatabase/neon-js/auth Client SDK
+    const authUrl = process.env.VITE_NEON_AUTH_URL || process.env.VITE_NEON_AUTH_BASE_URL || process.env.NEON_AUTH_BASE_URL;
+    if (authUrl) {
+      const { createAuthClient } = await import('@neondatabase/neon-js/auth');
+      const client = createAuthClient(authUrl, {
+        fetchOptions: { headers: { Origin: 'http://localhost:5173' } },
+      });
+      const sessionRes = await client.getSession();
+      console.log('   ✅ Neon JS Auth Client SDK initialized successfully!');
+      console.log(`      Auth URL: ${authUrl}`);
+      console.log(`      API Methods: getSession, signIn.email, signUp.email, signOut, token`);
+      console.log(`      Active Session: ${sessionRes.data ? 'Present' : 'None (Ready for login)'}`);
     }
   } catch (err) {
     allPassed = false;
