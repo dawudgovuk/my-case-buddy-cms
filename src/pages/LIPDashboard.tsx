@@ -1,114 +1,76 @@
-import { Container, Row, Col, Card, Button, Badge, Alert } from 'react-bootstrap'
+import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
-import CaseSteps from '../components/CaseSteps'
-import { getStagesForCase, getCurrentStageIndex } from '../utils/caseStages'
-import { format } from 'date-fns'
-import { FaCalendarAlt, FaMapMarkerAlt, FaEye, FaPlus, FaGavel } from 'react-icons/fa'
+import { useTranslation } from '../hooks/useTranslation'
+import CaseCard from '../components/case/CaseCard'
+import DashboardHeader from '../components/dashboard/DashboardHeader'
+import { FaFolderPlus } from 'react-icons/fa'
 
 export default function LIPDashboard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { cases } = useCasesStore()
+  const { cases, togglePeerSupport } = useCasesStore()
+  const { t } = useTranslation()
 
   const userCases = cases.filter((c) => c.members?.some((m) => m.userId === user?.id && m.role === 'Owner'))
+  const upcomingHearingsCount = userCases.reduce((acc, c) => acc + (c.hearings ? c.hearings.length : 0), 0)
+  const peerSupportCount = userCases.filter((c) => c.seekingPeerSupport).length
 
   if (!user) {
     return (
-      <Container>
-        <Alert variant="warning">Please log in</Alert>
+      <Container className="py-4">
+        <Alert variant="warning">{t('auth.signInTitle')}</Alert>
       </Container>
     )
   }
 
   return (
-    <Container fluid>
-      <div className="mb-4">
-        <h1>
-          My Cases Dashboard
-        </h1>
-        <p className="lead">
-          Welcome, <span className="fw-bold">{user.name}</span>. Here's an overview of your cases and their progress.
-        </p>
-      </div>
+    <Container fluid className="px-lg-4 py-2">
+      {/* Dashboard Executive Header & Metric Pills */}
+      <DashboardHeader
+        userName={user.name}
+        userRole={t('lipDashboard.userRoleLabel')}
+        title={t('lipDashboard.title')}
+        totalCases={userCases.length}
+        upcomingHearingsCount={upcomingHearingsCount}
+        peerSupportCount={peerSupportCount}
+        onFindSupporters={() => navigate('/peer-directory')}
+        onNewCase={() => navigate('/cases/new')}
+      />
 
       {userCases.length === 0 ? (
-        <Card className="text-center p-5">
-          <Card.Body>
-            
-            <h3 className="mb-3 fw-bold">No Cases Yet</h3>
-            <p className="mb-4 text-secondary">Start managing your cases by creating your first one.</p>
-            <Button variant="primary" size="lg" className="fw-bold px-4 py-2" onClick={() => navigate('/cases/new')}>
-              
-              Create Your First Case
+        <Card className="premium-card text-center p-5 border-0">
+          <Card.Body className="py-5">
+            <div className="d-flex align-items-center justify-content-center mx-auto rounded-circle bg-primary-subtle text-primary mb-3" style={{ width: 64, height: 64 }}>
+              <FaFolderPlus size={28} />
+            </div>
+            <h3 className="mb-2 fw-bold text-dark">{t('lipDashboard.noActiveCasesTitle')}</h3>
+            <p className="mb-4 text-muted" style={{ maxWidth: 440, margin: '0 auto' }}>
+              {t('lipDashboard.noActiveCasesDesc')}
+            </p>
+            <Button variant="primary" size="lg" className="fw-semibold px-4 py-2 rounded-3 shadow-sm" onClick={() => navigate('/cases/new')}>
+              {t('lipDashboard.createFirstCaseBtn')}
             </Button>
           </Card.Body>
         </Card>
       ) : (
         <Row className="g-4">
-          {userCases.map((caseData) => {
-            const stages = getStagesForCase(caseData)
-            const currentIndex = getCurrentStageIndex(caseData)
-            const nextHearing = caseData.hearings
-              .filter((h) => new Date(h.date) >= new Date())
-              .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0]
-
-            return (
-              <Col key={caseData.id} xs={12} md={6} lg={4}>
-                <Card className="h-100 shadow-sm">
-                  <Card.Body>
-                    <div className="mb-3">
-                      <h5 className="fw-bold mb-2 text-primary">
-                        {caseData.id} — {caseData.title}
-                      </h5>
-                      <p className="small mb-2 text-secondary">
-                        {caseData.court} • {caseData.caseType}
-                      </p>
-                      <div className="d-flex gap-2 flex-wrap">
-                        <Badge bg={caseData.status === 'Open' ? 'success' : caseData.status === 'Stayed' ? 'warning' : 'secondary'} className="fw-semibold px-3 py-2">
-                          {caseData.status}
-                        </Badge>
-                        <Badge bg="primary" className="fw-semibold px-3 py-2">
-                          
-                          {caseData.hearings.length} hearings
-                        </Badge>
-                      </div>
-                    </div>
-
-                    {nextHearing && (
-                      <Alert variant="warning" className="mb-3 fw-semibold">
-                        <div className="fw-bold mb-1">
-                          
-                          Next Hearing
-                        </div>
-                        <div className="small">
-                          {format(new Date(nextHearing.date), 'PPP')}
-                          {nextHearing.time && ` at ${nextHearing.time}`}
-                        </div>
-                        {nextHearing.location && (
-                          <div className="small mt-1">
-                            
-                            {nextHearing.location}
-                          </div>
-                        )}
-                      </Alert>
-                    )}
-
-                    <div className="mb-3">
-                      <h6 className="fw-bold mb-2">Case Progress</h6>
-                      <CaseSteps stages={stages} currentStageIndex={currentIndex} />
-                    </div>
-
-                    <Button variant="outline-primary" className="w-100" onClick={() => navigate(`/cases/${caseData.id}`)}>
-
-                      View Case Details
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-            )
-          })}
+          {userCases.map((caseData) => (
+            <Col key={caseData.id} xs={12} md={6} lg={4} className="d-flex">
+              <CaseCard
+                caseData={caseData}
+                onTogglePeerSupport={(caseId, currentSeeking) =>
+                  togglePeerSupport(
+                    caseId,
+                    !currentSeeking,
+                    currentSeeking ? undefined : 'Seeking peer review from experienced supporters'
+                  )
+                }
+                onViewDetails={(caseId) => navigate(`/cases/${caseId}`)}
+              />
+            </Col>
+          ))}
         </Row>
       )}
     </Container>

@@ -1,75 +1,213 @@
 import { useMemo, useState } from 'react'
-import { useCasesStore } from '../store/casesStore'
-import { Button, Card, Form, Badge } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
+import { Row, Col } from 'react-bootstrap'
+import { useCasesStore } from '../store/casesStore'
 import { useAuthStore } from '../store/authStore'
+import type { CaseStatus, FamilyCase } from '../types/domain'
+import CasesHeader from '../components/case/CasesHeader'
+import CasesFilterBar from '../components/case/CasesFilterBar'
+import CaseListItemCard from '../components/case/CaseListItemCard'
+import CaseCard from '../components/case/CaseCard'
+import EmptyCasesState from '../components/case/EmptyCasesState'
+import DeleteCaseModal from '../components/case/DeleteCaseModal'
+import { StrapiSyncModal } from '../components/strapi/StrapiSyncModal'
+import { CASE_TYPE_OPTIONS } from '../utils/caseConstants'
+import { countChildren } from '../utils/partyUtils'
 
 export default function CasesList() {
-  const { cases, remove } = useCasesStore()
+  const { cases, remove, togglePeerSupport, isStrapiMode } = useCasesStore()
   const { user } = useAuthStore()
-  const [q, setQ] = useState('')
   const navigate = useNavigate()
 
+  // Filter & View State
+  const [q, setQ] = useState('')
+  const [selectedStatus, setSelectedStatus] = useState<CaseStatus | 'All'>('All')
+  const [selectedCaseType, setSelectedCaseType] = useState<string>('')
+  const [sortBy, setSortBy] = useState<'recent' | 'started' | 'title' | 'hearings'>('recent')
+  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
+  const [caseToDelete, setCaseToDelete] = useState<FamilyCase | null>(null)
+  const [showStrapiModal, setShowStrapiModal] = useState<boolean>(false)
+
+  // Visible user cases based on RBAC membership
+  const userCases = useMemo(() => {
+    if (!user) return []
+    return cases.filter((c) => {
+      const members = c.members || []
+      return members.some((m) => m.userId === user.id)
+    })
+  }, [cases, user])
+
+  // Summary Metrics
+  const totalCases = userCases.length
+  const openCasesCount = userCases.filter((c) => c.status === 'Open').length
+  const stayedCasesCount = userCases.filter((c) => c.status === 'Stayed').length
+  const concludedCasesCount = userCases.filter((c) => c.status === 'Concluded').length
+  const upcomingHearingsCount = userCases.reduce(
+    (acc, c) => acc + (c.hearings ? c.hearings.length : 0),
+    0
+  )
+  const childrenCount = userCases.reduce(
+    (acc, c) => acc + countChildren(c.parties),
+    0
+  )
+
+  // Filtered & Sorted Cases
   const filtered = useMemo(() => {
     const term = q.trim().toLowerCase()
-    const visible = user ? cases.filter(c => {
-      const members = c.members || []
-      return members.some(m => m.userId === user.id)
-    }) : []
-    if (!term) return visible
-    return visible.filter((c) =>
-      [c.id, c.title, c.caseType, c.status, c.allocatedJudge]
-        .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(term)),
-    )
-  }, [cases, q, user])
+
+    let result = userCases.filter((c) => {
+      // 1. Status Filter
+      if (selectedStatus !== 'All' && c.status !== selectedStatus) {
+        return false
+      }
+
+      // 2. Case Type Filter
+      if (selectedCaseType && c.caseType !== selectedCaseType) {
+        return false
+      }
+
+      // 3. Search Term
+      if (term) {
+        const matches = [c.id, c.title, c.caseType, c.status, c.allocatedJudge, c.court]
+          .filter(Boolean)
+          .some((v) => String(v).toLowerCase().includes(term))
+        if (!matches) return false
+      }
+
+      return true
+    })
+
+    // Sorting
+    result = [...result].sort((a, b) => {
+      if (sortBy === 'title') {
+        return a.title.localeCompare(b.title)
+      }
+      if (sortBy === 'started') {
+        return (b.startedAt || '').localeCompare(a.startedAt || '')
+      }
+      if (sortBy === 'hearings') {
+        return (b.hearings?.length || 0) - (a.hearings?.length || 0)
+      }
+      // 'recent' by default:
+      const dateA = a.lastUpdatedAt || a.startedAt || ''
+      const dateB = b.lastUpdatedAt || b.startedAt || ''
+      return dateB.localeCompare(dateA)
+    })
+
+    return result
+  }, [userCases, q, selectedStatus, selectedCaseType, sortBy])
+
+  const hasActiveFilters = Boolean(q.trim() || selectedStatus !== 'All' || selectedCaseType)
+
+  function handleResetFilters() {
+    setQ('')
+    setSelectedStatus('All')
+    setSelectedCaseType('')
+    setSortBy('recent')
+  }
+
+  function handleConfirmDelete() {
+    if (caseToDelete) {
+      remove(caseToDelete.id)
+      setCaseToDelete(null)
+    }
+  }
 
   return (
-    <div className="container-fluid p-0">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h1>Cases</h1>
-        <Button variant="primary" href="/cases/new">+ New Case</Button>
-      </div>
-      <Form.Group className="mb-3">
-        <Form.Control
-          type="text"
-          placeholder="Case number, title, judge, status..."
-          value={q}
-          onChange={e => setQ(e.target.value)}
-          
+    <div className="py-2" style={{ maxWidth: '1240px', margin: '0 auto' }}>
+      {/* Executive Header & Summary Metrics */}
+      <CasesHeader
+        totalCases={totalCases}
+        openCasesCount={openCasesCount}
+        upcomingHearingsCount={upcomingHearingsCount}
+        childrenCount={childrenCount}
+        onNewCase={() => navigate('/cases/new')}
+        onOpenStrapiSync={() => setShowStrapiModal(true)}
+        isStrapiMode={isStrapiMode}
+      />
+
+      {/* Filter, Search & View Controls */}
+      <CasesFilterBar
+        searchTerm={q}
+        onSearchChange={setQ}
+        selectedStatus={selectedStatus}
+        onStatusChange={setSelectedStatus}
+        statusCounts={{
+          all: totalCases,
+          open: openCasesCount,
+          stayed: stayedCasesCount,
+          concluded: concludedCasesCount,
+        }}
+        selectedCaseType={selectedCaseType}
+        onCaseTypeChange={setSelectedCaseType}
+        caseTypeOptions={CASE_TYPE_OPTIONS}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        hasActiveFilters={hasActiveFilters}
+        onResetFilters={handleResetFilters}
+      />
+
+      {/* Empty State when no cases match */}
+      {filtered.length === 0 ? (
+        <EmptyCasesState
+          isFiltered={hasActiveFilters || totalCases > 0}
+          searchTerm={q}
+          onReset={handleResetFilters}
+          onNewCase={() => navigate('/cases/new')}
         />
-      </Form.Group>
-      {filtered.length === 0 && (
-        <Card className="mb-2 p-3 text-center">No cases found. Create your first case.</Card>
+      ) : viewMode === 'list' ? (
+        /* List View */
+        <div className="d-flex flex-column">
+          {filtered.map((c) => (
+            <CaseListItemCard
+              key={c.id}
+              caseData={c}
+              onViewCase={(id) => navigate(`/cases/${id}`)}
+              onEditCase={(id) => navigate(`/cases/${id}/edit`)}
+              onDeleteCase={() => setCaseToDelete(c)}
+            />
+          ))}
+        </div>
+      ) : (
+        /* Grid View */
+        <Row className="g-4">
+          {filtered.map((c) => (
+            <Col key={c.id} xs={12} md={6} lg={4} className="d-flex">
+              <CaseCard
+                caseData={c}
+                onViewDetails={(id) => navigate(`/cases/${id}`)}
+                onEdit={(id) => navigate(`/cases/${id}/edit`)}
+                onTogglePeerSupport={(id, cur) =>
+                  togglePeerSupport(
+                    id,
+                    !cur,
+                    cur ? undefined : 'Seeking peer review from experienced supporters'
+                  )
+                }
+              />
+            </Col>
+          ))}
+        </Row>
       )}
-      {filtered.map((c) => (
-        <Card key={c.id} className="mb-2 p-3 d-flex flex-row align-items-center gap-3">
-          <div className="flex-grow-1 min-width-0" onClick={() => navigate(`/cases/${c.id}`)}>
-            <div className="fw-bold text-truncate">{c.id} — {c.title}</div>
-            <div className="small text-truncate">
-              {c.court} • {c.caseType} • Judge: {c.allocatedJudge || 'Unassigned'}
-            </div>
-            <div className="d-flex gap-2 mt-1 flex-wrap">
-              <Badge bg={c.status === 'Open' ? 'success' : c.status === 'Concluded' ? 'secondary' : 'warning'} className="fw-semibold px-3 py-2">{c.status}</Badge>
-              {Array.isArray(c.parties) && c.parties.filter(p => p.role === 'Child').length > 0 && (
-                <Badge bg="info" className="fw-semibold px-3 py-2">
-                  {c.parties.filter(p => p.role === 'Child').length} child{c.parties.filter(p => p.role === 'Child').length === 1 ? '' : 'ren'}
-                </Badge>
-              )}
-              <Badge bg="primary" className="fw-semibold px-3 py-2">
-                Parties: {c.parties.filter(p => p.role !== 'Child' || (p.role === 'Child' && p.solicitorFirm)).length}
-              </Badge>
-              <Badge bg="warning" className="fw-semibold px-3 py-2 text-dark">Hearings: {c.hearings.length}</Badge>
-            </div>
-          </div>
-              <div className="d-flex gap-2">
-                <Button variant="outline-primary" onClick={() => navigate(`/cases/${c.id}/edit`)}>Edit</Button>
-                <Button variant="outline-danger" onClick={() => remove(c.id)}>Delete</Button>
-          </div>
-        </Card>
-      ))}
+
+      {/* Delete Confirmation Modal */}
+      {caseToDelete && (
+        <DeleteCaseModal
+          show={Boolean(caseToDelete)}
+          caseId={caseToDelete.id}
+          caseTitle={caseToDelete.title}
+          onConfirm={handleConfirmDelete}
+          onCancel={() => setCaseToDelete(null)}
+        />
+      )}
+
+      {/* Strapi Backend & Neon PostgreSQL Sync Modal */}
+      <StrapiSyncModal
+        show={showStrapiModal}
+        onHide={() => setShowStrapiModal(false)}
+      />
     </div>
   )
 }
-
-

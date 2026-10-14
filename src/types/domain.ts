@@ -110,6 +110,9 @@ export interface FamilyCase {
   lastUpdatedAt: string; // ISO
   members?: CaseMember[]; // users who can access this case
   currentStage?: string; // Current stage in the case process
+  seekingPeerSupport?: boolean; // Whether case owner is seeking peer-to-peer support
+  peerSupportNote?: string; // Description of support needed
+  peerSupportRequestedAt?: string; // ISO date
 }
 
 export interface CaseStage {
@@ -138,6 +141,12 @@ export interface User {
   role: UserRole;
   firm?: string; // For Solicitor/Barrister
   registrationNumber?: string; // Professional registration number
+  isVerified?: boolean; // Email verification status
+  verificationToken?: string; // Token for email verification link
+  verificationSentAt?: string; // ISO date when verification email was sent
+  bio?: string;
+  specialisms?: string[];
+  yearsExperience?: number;
 }
 
 export type CaseMemberRole = 'Owner' | 'Collaborator' | 'McKenzieFriend' | 'Solicitor' | 'Barrister';
