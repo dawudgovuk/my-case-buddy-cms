@@ -10,15 +10,8 @@ import CaseListItemCard from '../components/case/CaseListItemCard'
 import CaseCard from '../components/case/CaseCard'
 import EmptyCasesState from '../components/case/EmptyCasesState'
 import DeleteCaseModal from '../components/case/DeleteCaseModal'
-
-const CASE_TYPE_OPTIONS = [
-  'Private Law (Child Arrangements)',
-  'Public Law (Care Proceedings)',
-  'Domestic Abuse (Non-Molestation)',
-  'Financial Remedies',
-  'Adoption',
-  'Other',
-]
+import { CASE_TYPE_OPTIONS } from '../utils/caseConstants'
+import { countChildren } from '../utils/partyUtils'
 
 export default function CasesList() {
   const { cases, remove, togglePeerSupport } = useCasesStore()
@@ -52,7 +45,7 @@ export default function CasesList() {
     0
   )
   const childrenCount = userCases.reduce(
-    (acc, c) => acc + (c.parties?.filter((p) => p.role === 'Child').length || 0),
+    (acc, c) => acc + countChildren(c.parties),
     0
   )
 

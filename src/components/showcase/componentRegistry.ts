@@ -48,6 +48,13 @@ import {
   SystemQuickGuidePreview,
   ProfessionalFaqModalPreview,
 } from './ProfessionalDashboardPreviews'
+import {
+  CaseMetadataOverviewPreview,
+  CaseOverviewTabPreview,
+  PeerSupportRequestModalPreview,
+  RegistrationPendingCardPreview,
+  RoleRegistrationLinksPreview,
+} from './CaseDetailsPreviews'
 
 export const COMPONENT_CATALOG: ComponentItem[] = [
   // 1. Cases & Progression
@@ -904,5 +911,104 @@ export const COMPONENT_CATALOG: ComponentItem[] = [
       { name: 'onHide', type: '() => void', required: true, description: 'Modal close callback' },
     ],
     renderPreview: (onFeedback) => createElement(ProfessionalFaqModalPreview, { onFeedback }),
+  },
+  {
+    id: 'case-metadata-overview',
+    name: 'Case Metadata Overview',
+    category: 'Cases & Progression',
+    filePath: 'src/components/case/CaseMetadataOverview.tsx',
+    importStatement: "import CaseMetadataOverview from '../components/case/CaseMetadataOverview'",
+    description:
+      'Accessible, clean summary grid displaying court venue, proceedings type, case status badge, filing date, and allocated judge.',
+    badges: ['Metadata Grid', 'ISP Compliant', 'Status Badge'],
+    codeSnippet: `<CaseMetadataOverview caseData={caseData} />`,
+    propsDoc: [
+      { name: 'caseData', type: 'Pick<FamilyCase, "id" | "court" | "caseType" | "status" | "startedAt" | "allocatedJudge">', required: true, description: 'Case metadata subset' },
+      { name: 'className', type: 'string', required: false, description: 'Optional CSS class' },
+    ],
+    renderPreview: (onFeedback) => createElement(CaseMetadataOverviewPreview, { onFeedback }),
+  },
+  {
+    id: 'case-overview-tab',
+    name: 'Case Overview Tab',
+    category: 'Cases & Progression',
+    filePath: 'src/components/case/tabs/CaseOverviewTab.tsx',
+    importStatement: "import CaseOverviewTab from '../components/case/tabs/CaseOverviewTab'",
+    description:
+      'Complete procedural overview tab for CaseDetails combining the visual CaseTimeline, metadata grid, and collapsible item lists.',
+    badges: ['Overview Tab', 'Procedural Timeline', 'Collapsible Accordion'],
+    codeSnippet: `<CaseOverviewTab caseData={caseData} />`,
+    propsDoc: [
+      { name: 'caseData', type: 'FamilyCase', required: false, description: 'Full family court case object' },
+      { name: 'caseId', type: 'string', required: false, description: 'Alternative case ID lookup key' },
+    ],
+    renderPreview: (onFeedback) => createElement(CaseOverviewTabPreview, { onFeedback }),
+  },
+  {
+    id: 'peer-support-request-modal',
+    name: 'Peer Support Request Modal',
+    category: 'Legal Directory & Safeguarding',
+    filePath: 'src/components/directory/PeerSupportRequestModal.tsx',
+    importStatement: "import PeerSupportRequestModal from '../components/directory/PeerSupportRequestModal'",
+    description:
+      'Modal dialog allowing Litigants in Person to select an active case and compose a guidance request note for verified peers.',
+    badges: ['Request Dialog', 'Case Linking', 'Accessible Modal'],
+    codeSnippet: `<PeerSupportRequestModal
+  show={isOpen}
+  targetUserId="usr-123"
+  cases={myCases}
+  onSendRequest={(caseId, note) => handleSend(caseId, note)}
+  onCancel={() => setIsOpen(false)}
+/>`,
+    propsDoc: [
+      { name: 'show', type: 'boolean', required: true, description: 'Modal visibility' },
+      { name: 'targetUserId', type: 'string | null', required: true, description: 'Target peer professional ID' },
+      { name: 'cases', type: 'FamilyCase[]', required: true, description: 'Litigant active cases to select from' },
+      { name: 'onSendRequest', type: '(caseId: string, note: string) => void', required: true, description: 'Submission callback' },
+      { name: 'onCancel', type: '() => void', required: true, description: 'Cancellation callback' },
+    ],
+    renderPreview: (onFeedback) => createElement(PeerSupportRequestModalPreview, { onFeedback }),
+  },
+  {
+    id: 'registration-pending-card',
+    name: 'Registration Pending Card',
+    category: 'Legal Directory & Safeguarding',
+    filePath: 'src/components/auth/RegistrationPendingCard.tsx',
+    importStatement: "import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'",
+    description:
+      'Notice card presented when a legal professional finishes registration and awaits email verification, with demo link simulator.',
+    badges: ['Verification Notice', 'Security & Compliance', 'Demo Simulator'],
+    codeSnippet: `<RegistrationPendingCard
+  name="James Sterling"
+  email="james@example.com"
+  token="tok_123"
+  role="Barrister"
+  onVerifyNow={(tok) => handleVerify(tok)}
+  onReturnToLogin={() => handleLogin()}
+/>`,
+    propsDoc: [
+      { name: 'name', type: 'string', required: true, description: 'User full name' },
+      { name: 'email', type: 'string', required: true, description: 'User email address' },
+      { name: 'token', type: 'string', required: true, description: 'Verification token string' },
+      { name: 'role', type: 'UserRole', required: true, description: 'Registered professional role' },
+      { name: 'onVerifyNow', type: '(token: string) => void', required: true, description: 'Action for immediate simulation' },
+      { name: 'onReturnToLogin', type: '() => void', required: true, description: 'Action to go back to login' },
+    ],
+    renderPreview: (onFeedback) => createElement(RegistrationPendingCardPreview, { onFeedback }),
+  },
+  {
+    id: 'role-registration-links',
+    name: 'Role Registration Links',
+    category: 'Buttons & Actions',
+    filePath: 'src/components/auth/RoleRegistrationLinks.tsx',
+    importStatement: "import RoleRegistrationLinks from '../components/auth/RoleRegistrationLinks'",
+    description:
+      'Responsive grid of styled navigation buttons for choosing account type during registration.',
+    badges: ['Role Selection', 'Accessible Grid', 'Clean UI'],
+    codeSnippet: `<RoleRegistrationLinks onSelectRole={(role) => navigate('/register/' + role)} />`,
+    propsDoc: [
+      { name: 'onSelectRole', type: '(role: UserRole) => void', required: true, description: 'Callback when role button is clicked' },
+    ],
+    renderPreview: (onFeedback) => createElement(RoleRegistrationLinksPreview, { onFeedback }),
   },
 ]

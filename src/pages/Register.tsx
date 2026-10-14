@@ -5,11 +5,11 @@ import { useNavigate, useParams } from 'react-router-dom'
 import type { User, UserRole } from '../types/domain'
 import { saveUsers, listUsers } from '../services/auth'
 import { generateId } from '../services/storage'
-
-const VALID_ROLES: UserRole[] = ['LIP', 'McKenzieFriend', 'Solicitor', 'Barrister']
+import { USER_ROLES } from '../utils/caseConstants'
+import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
 
 function isValidRole(r: string | undefined): r is UserRole {
-  return typeof r === 'string' && VALID_ROLES.includes(r as UserRole)
+  return typeof r === 'string' && (USER_ROLES as readonly string[]).includes(r)
 }
 
 export default function Register() {
@@ -88,42 +88,14 @@ export default function Register() {
 
   if (registeredPendingVerification) {
     return (
-      <Container className="d-flex justify-content-center align-items-center min-vh-50 py-5">
-        <Card className="shadow-lg border-0" style={{ width: '100%', maxWidth: '560px' }}>
-          <Card.Header className="text-center py-4 bg-primary text-white">
-            <h2 className="h4 mb-0">Check Your Email</h2>
-          </Card.Header>
-          <Card.Body className="p-4 text-center">
-            <Alert variant="info" className="text-start mb-4">
-              <p className="mb-2">
-                Thank you, <strong>{registeredPendingVerification.name}</strong>. A verification email has been sent to:
-              </p>
-              <div className="fw-bold fs-6 mb-2">{registeredPendingVerification.email}</div>
-              <p className="small mb-0 text-muted">
-                As a registered {userRole}, you will be granted access to review other people&apos;s cases once your email is confirmed.
-              </p>
-            </Alert>
-
-            <div className="p-3 bg-light rounded border mb-4 text-start">
-              <div className="small text-muted fw-bold mb-1">Demo Simulation Link:</div>
-              <div className="small text-secondary mb-3">
-                In this demo environment, click below to simulate clicking the email link:
-              </div>
-              <Button
-                variant="success"
-                className="w-100 fw-bold"
-                onClick={() => navigate(`/verify-email/${registeredPendingVerification.token}`)}
-              >
-                Verify Email via Link Now
-              </Button>
-            </div>
-
-            <Button variant="outline-secondary" className="w-100" onClick={() => navigate('/login')}>
-              Return to Login
-            </Button>
-          </Card.Body>
-        </Card>
-      </Container>
+      <RegistrationPendingCard
+        name={registeredPendingVerification.name}
+        email={registeredPendingVerification.email}
+        token={registeredPendingVerification.token}
+        role={userRole}
+        onVerifyNow={(token) => navigate(`/verify-email/${token}`)}
+        onReturnToLogin={() => navigate('/login')}
+      />
     )
   }
 

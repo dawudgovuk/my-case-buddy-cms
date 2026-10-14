@@ -1,5 +1,26 @@
 # Change Log
 
+## Code Optimization, Modular Decomposition & Agent Architecture Standards
+
+### Features & Architectural Optimizations:
+1. **Case Details Decomposition (`/cases/:id`)**:
+   - Decomposed monolithic inline JSX from [`CaseDetails.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/CaseDetails.tsx), reducing line count from 185 to 67 lines (<70 lines).
+   - Created standalone [`CaseOverviewTab.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/tabs/CaseOverviewTab.tsx) encapsulating procedural timeline and collapsible accordion item summaries.
+   - Created standalone [`CaseMetadataOverview.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CaseMetadataOverview.tsx) adhering to ISP and SRP for clean metadata grid presentation.
+2. **Centralized Domain Constants & Pure Utilities**:
+   - Created [`src/utils/caseConstants.ts`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/utils/caseConstants.ts) centralizing `CASE_TYPE_OPTIONS`, `COURT_TYPE_OPTIONS`, `CASE_STATUS_OPTIONS`, `USER_ROLES`, and `CASE_DETAILS_TABS` navigation definitions.
+   - Created [`src/utils/partyUtils.ts`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/utils/partyUtils.ts) establishing reusable domain pure functions: `partitionParties`, `countChildren`, `countAdults`, and `formatPartyName`. Eliminates duplicated inline filtering across `CaseDetails`, `PartiesTab`, and `CasesList`.
+3. **Pages Directory Modular Optimization (`src/pages/`)**:
+   - [`CasesList.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/CasesList.tsx): Converted to consume centralized `CASE_TYPE_OPTIONS` and `countChildren` utilities.
+   - [`PeerDirectory.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/PeerDirectory.tsx): Extracted inline modal into standalone [`PeerSupportRequestModal.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/directory/PeerSupportRequestModal.tsx), reducing page complexity.
+   - [`Register.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/Register.tsx): Extracted verification wait card into standalone [`RegistrationPendingCard.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/auth/RegistrationPendingCard.tsx) and centralized `USER_ROLES`.
+   - [`Login.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/Login.tsx): Extracted registration role buttons into standalone [`RoleRegistrationLinks.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/auth/RoleRegistrationLinks.tsx).
+4. **Component Explorer Integration (`/components`)**:
+   - Created [`CaseDetailsPreviews.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/showcase/CaseDetailsPreviews.tsx) with interactive previews and registered all 5 new components in [`componentRegistry.ts`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/showcase/componentRegistry.ts).
+5. **Directives & Agent Standards Updated Across Repository**:
+   - Updated [`AGENTS.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/AGENTS.md), [`GEMINI.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/GEMINI.md), [`.agents/rules/coding-standards.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/.agents/rules/coding-standards.md), [`.agents/rules/solid-principles.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/.agents/rules/solid-principles.md), [`.agents/rules/task-orchestrator.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/.agents/rules/task-orchestrator.md), [`.agents/skills/code-reviewer/SKILL.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/.agents/skills/code-reviewer/SKILL.md), and [`.agents/skills/task-orchestrator/SKILL.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/.agents/skills/task-orchestrator/SKILL.md).
+   - Mandated ultra-lean page containers (<150-200 lines), zero monolithic inline JSX, centralized constants/utilities, and mandatory component-first registration.
+
 ## [Unreleased] - Professional Dashboard Redesign & Newcomer Onboarding Experience
 
 ### Features & Capabilities Added:

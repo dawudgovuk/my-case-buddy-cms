@@ -10,7 +10,7 @@ export interface CasesFilterBarProps {
   statusCounts: { all: number; open: number; stayed: number; concluded: number }
   selectedCaseType: string
   onCaseTypeChange: (type: string) => void
-  caseTypeOptions?: string[]
+  caseTypeOptions?: readonly string[]
   sortBy: 'recent' | 'started' | 'title' | 'hearings'
   onSortChange: (sort: 'recent' | 'started' | 'title' | 'hearings') => void
   viewMode: 'list' | 'grid'

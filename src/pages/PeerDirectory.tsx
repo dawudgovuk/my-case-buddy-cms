@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react'
-import { Container, Row, Col, Card, Button, Form, Modal, Alert } from 'react-bootstrap'
+import { Container, Row, Col, Card, Button, Form, Alert } from 'react-bootstrap'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
 import { listUsers } from '../services/auth'
-import type { FamilyCase } from '../types/domain'
-import { FaHandshake, FaBalanceScale, FaPaperPlane } from 'react-icons/fa'
+import { FaHandshake, FaBalanceScale } from 'react-icons/fa'
 import PeerSupporterCard from '../components/directory/PeerSupporterCard'
+import PeerSupportRequestModal from '../components/directory/PeerSupportRequestModal'
 
 export default function PeerDirectory() {
   const { user } = useAuthStore()
@@ -13,8 +13,6 @@ export default function PeerDirectory() {
 
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCaseId, setSelectedCaseId] = useState<string>('')
-  const [requestNote, setRequestNote] = useState('')
   const [requestTargetUser, setRequestTargetUser] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
@@ -48,16 +46,11 @@ export default function PeerDirectory() {
 
   function handleOpenRequestModal(professionalId: string) {
     setRequestTargetUser(professionalId)
-    setRequestNote('')
-    if (myCases.length > 0) {
-      setSelectedCaseId(myCases[0].id)
-    }
     setSuccessMessage(null)
   }
 
-  function handleSendRequest() {
-    if (!selectedCaseId) return
-    togglePeerSupport(selectedCaseId, true, requestNote.trim() || 'Peer support requested from legal directory')
+  function handleSendRequest(caseId: string, note: string) {
+    togglePeerSupport(caseId, true, note || 'Peer support requested from legal directory')
     setSuccessMessage('Peer support request sent! The case has been flagged for peer review.')
     setRequestTargetUser(null)
   }
@@ -150,53 +143,14 @@ export default function PeerDirectory() {
         </Row>
       )}
 
-      {/* Peer Support Request Modal */}
-      <Modal show={Boolean(requestTargetUser)} onHide={() => setRequestTargetUser(null)} centered>
-        <Modal.Header closeButton>
-          <Modal.Title className="h5">Request Peer Support on Case</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {myCases.length === 0 ? (
-            <Alert variant="warning">
-              You do not have any active cases yet. Please create a case first to request peer support.
-            </Alert>
-          ) : (
-            <div>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-bold">Select Your Case</Form.Label>
-                <Form.Select value={selectedCaseId} onChange={(e) => setSelectedCaseId(e.target.value)}>
-                  {myCases.map((c: FamilyCase) => (
-                    <option key={c.id} value={c.id}>
-                      {c.id} — {c.title} ({c.caseType})
-                    </option>
-                  ))}
-                </Form.Select>
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-bold">What help or advice do you need?</Form.Label>
-                <Form.Control
-                  as="textarea"
-                  rows={3}
-                  placeholder="e.g. Need peer review of draft statement, help understanding court directions, bundle indexing..."
-                  value={requestNote}
-                  onChange={(e) => setRequestNote(e.target.value)}
-                />
-              </Form.Group>
-            </div>
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setRequestTargetUser(null)}>
-            Cancel
-          </Button>
-          {myCases.length > 0 && (
-            <Button variant="primary" onClick={handleSendRequest} className="d-flex align-items-center gap-2">
-              <FaPaperPlane />
-              <span>Send Request</span>
-            </Button>
-          )}
-        </Modal.Footer>
-      </Modal>
+      {/* Reusable Peer Support Request Modal */}
+      <PeerSupportRequestModal
+        show={Boolean(requestTargetUser)}
+        targetUserId={requestTargetUser}
+        cases={myCases}
+        onSendRequest={handleSendRequest}
+        onCancel={() => setRequestTargetUser(null)}
+      />
     </Container>
   )
 }

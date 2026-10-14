@@ -4,6 +4,7 @@ import { useCasesStore } from '../../../store/casesStore'
 import { generateId } from '../../../services/storage'
 import type { FamilyCase, Party } from '../../../types/domain'
 import PartyCard from '../PartyCard'
+import { partitionParties } from '../../../utils/partyUtils'
 
 export interface PartiesTabProps {
   caseId: string
@@ -53,8 +54,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
     setSolicitorFirm('')
   }
 
-  const nonChildren = fc.parties.filter((p) => p.role !== 'Child' || (p.role === 'Child' && p.solicitorFirm))
-  const children = fc.parties.filter((p) => p.role === 'Child' && !p.solicitorFirm)
+  const { adultsAndRepresented: nonChildren, children } = partitionParties(fc.parties)
 
   return (
     <div className="mb-3">

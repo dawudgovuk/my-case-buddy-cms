@@ -1,8 +1,9 @@
-import { Container, Card, Form, Button, Row, Col } from 'react-bootstrap'
+import { Container, Card, Form, Button } from 'react-bootstrap'
 import { useEffect, useState } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useNavigate } from 'react-router-dom'
 import { FaSignInAlt } from 'react-icons/fa'
+import RoleRegistrationLinks from '../components/auth/RoleRegistrationLinks'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -53,7 +54,12 @@ export default function Login() {
                 })}
               </Form.Select>
             </Form.Group>
-            <Button type="submit" variant="primary" size="lg" className="w-100 mb-3 d-flex align-items-center justify-content-center gap-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              className="w-100 mb-3 d-flex align-items-center justify-content-center gap-2"
+            >
               <FaSignInAlt />
               <span>Sign In</span>
             </Button>
@@ -61,53 +67,8 @@ export default function Login() {
 
           <hr className="my-4" />
 
-          <div className="text-center mb-3">
-            <p className="text-muted mb-3">Need to register?</p>
-          </div>
-          <Row className="g-2">
-            <Col xs={6} sm={6}>
-              <Button
-                variant="outline-primary"
-                className="w-100"
-                onClick={() => navigate('/register/LIP')}
-                size="sm"
-                
-              >
-                
-                LIP
-              </Button>
-            </Col>
-            <Col xs={6} sm={6}>
-              <Button
-                variant="outline-success"
-                className="w-100"
-                onClick={() => navigate('/register/McKenzieFriend')}
-                size="sm"
-              >
-                McKenzie Friend
-              </Button>
-            </Col>
-            <Col xs={6} sm={6}>
-              <Button
-                variant="outline-info"
-                className="w-100"
-                onClick={() => navigate('/register/Solicitor')}
-                size="sm"
-              >
-                Solicitor
-              </Button>
-            </Col>
-            <Col xs={6} sm={6}>
-              <Button
-                variant="outline-warning"
-                className="w-100"
-                onClick={() => navigate('/register/Barrister')}
-                size="sm"
-              >
-                Barrister
-              </Button>
-            </Col>
-          </Row>
+          {/* Extracted Reusable Role Registration Shortcuts */}
+          <RoleRegistrationLinks onSelectRole={(role) => navigate(`/register/${role}`)} />
         </Card.Body>
       </Card>
     </Container>
