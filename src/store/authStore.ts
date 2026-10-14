@@ -169,6 +169,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const nSession = (sessionRes.data?.session || null) as NeonSessionData | null
 
       const isProfessional = role !== 'LIP'
+      const isVerified = !isProfessional
       const verificationToken = isProfessional ? generateId('verify') : undefined
 
       const users = get().users
@@ -181,8 +182,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         role,
         firm: firm?.trim(),
         registrationNumber: registrationNumber?.trim(),
-        isVerified: !isProfessional || Boolean(nUser?.emailVerified),
-        ...(verificationToken && !nUser?.emailVerified && {
+        isVerified,
+        ...(verificationToken && {
           verificationToken,
           verificationSentAt: new Date().toISOString(),
         }),

@@ -17,6 +17,7 @@ import {
 import { useTranslation } from '../hooks/useTranslation'
 import type { UserRole } from '../types/domain'
 import RoleRegistrationLinks from '../components/auth/RoleRegistrationLinks'
+import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
 
 type ActiveTab = 'auth' | 'demo'
 
@@ -49,6 +50,14 @@ export default function Login() {
   // Demo personas state
   const [demoUserId, setDemoUserId] = useState('')
 
+  // Email verification pending state
+  const [registeredPendingVerification, setRegisteredPendingVerification] = useState<{
+    email: string
+    token: string
+    name: string
+    role: UserRole
+  } | null>(null)
+
   // UI state
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -59,10 +68,10 @@ export default function Login() {
   }, [ensureDemoUsers])
 
   useEffect(() => {
-    if (user) {
+    if (user && !registeredPendingVerification) {
       navigate(user.role === 'LIP' ? '/cases' : '/professional-dashboard', { replace: true })
     }
-  }, [user, navigate])
+  }, [user, navigate, registeredPendingVerification])
 
   // Partition users for demo personas tab
   const { verifiedPros, lips, unverifiedPros } = useMemo(() => {
@@ -114,8 +123,20 @@ export default function Login() {
           registrationNumber: registrationNumber.trim() || undefined,
         })
 
-        if (!result.success) {
+        if (!result.success || !result.user) {
           setError(result.error || 'Registration failed. Please try a different email.')
+          setLoading(false)
+          return
+        }
+
+        const isProfessional = selectedRole !== 'LIP'
+        if (isProfessional && result.user.verificationToken) {
+          setRegisteredPendingVerification({
+            email: result.user.email,
+            token: result.user.verificationToken,
+            name: result.user.name,
+            role: selectedRole,
+          })
           setLoading(false)
           return
         }
@@ -138,6 +159,22 @@ export default function Login() {
     const targetUser = users.find((u) => u.id === demoUserId)
     login(demoUserId)
     navigate(targetUser?.role === 'LIP' ? '/cases' : '/professional-dashboard', { replace: true })
+  }
+
+  if (registeredPendingVerification) {
+    return (
+      <RegistrationPendingCard
+        name={registeredPendingVerification.name}
+        email={registeredPendingVerification.email}
+        token={registeredPendingVerification.token}
+        role={registeredPendingVerification.role}
+        onVerifyNow={(token) => navigate(`/verify-email/${token}`)}
+        onReturnToLogin={() => {
+          setRegisteredPendingVerification(null)
+          setAuthMode('signin')
+        }}
+      />
+    )
   }
 
   return (
