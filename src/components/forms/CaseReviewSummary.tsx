@@ -1,4 +1,4 @@
-import { Card, Row, Col, Button, Badge } from 'react-bootstrap'
+import { Card, Row, Col, Button, Badge, Spinner, Alert } from 'react-bootstrap'
 import type { FamilyCase } from '../../types/domain'
 import CaseReadinessChecklist from './CaseReadinessChecklist'
 import {
@@ -10,12 +10,15 @@ import {
   FaCalendarAlt,
   FaRocket,
   FaSave,
+  FaExclamationTriangle,
+  FaArrowLeft,
 } from 'react-icons/fa'
 
 export interface CaseReviewSummaryProps {
   caseData: FamilyCase
   onEditStep: (step: number) => void
   isEditMode: boolean
+  isSubmitting?: boolean
   onSubmit: () => void
   onCancel: () => void
   className?: string
@@ -25,6 +28,7 @@ export default function CaseReviewSummary({
   caseData,
   onEditStep,
   isEditMode,
+  isSubmitting = false,
   onSubmit,
   onCancel,
   className = '',
@@ -61,49 +65,128 @@ export default function CaseReviewSummary({
           </div>
 
           <Button
-            variant="primary"
+            variant={allReady ? 'primary' : 'secondary'}
             size="lg"
             onClick={onSubmit}
-            disabled={!allReady}
-            className="fw-semibold px-4 d-flex align-items-center gap-2 shadow-sm"
+            disabled={!allReady || isSubmitting}
+            className="fw-semibold px-4 d-flex align-items-center gap-2 shadow-sm text-nowrap"
+            title={!hasTitle ? 'Please enter Case Title in Step 1 before creating the case' : undefined}
           >
-            {isEditMode ? <FaSave size={16} /> : <FaRocket size={16} />}
-            <span>{isEditMode ? 'Save Changes' : 'Create Case Now'}</span>
+            {isSubmitting ? (
+              <>
+                <Spinner animation="border" size="sm" />
+                <span>{isEditMode ? 'Saving Changes...' : 'Creating Case Workspace...'}</span>
+              </>
+            ) : !allReady ? (
+              <>
+                <FaExclamationTriangle size={16} className="text-warning" />
+                <span>Title Required (Step 1)</span>
+              </>
+            ) : (
+              <>
+                {isEditMode ? <FaSave size={16} /> : <FaRocket size={16} />}
+                <span>{isEditMode ? 'Save Changes' : 'Create Case Now'}</span>
+              </>
+            )}
           </Button>
         </div>
       </Card>
 
-      {/* Extracted Modular Readiness Checklist */}
+      {/* Prominent Missing Title Error Alert */}
+      {!hasTitle && (
+        <Alert
+          variant="danger"
+          className="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-3 p-3 rounded-3 shadow-sm mb-4 border-danger"
+        >
+          <div className="d-flex align-items-center gap-3">
+            <div
+              className="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center p-2 flex-shrink-0"
+              style={{ width: 40, height: 40 }}
+            >
+              <FaExclamationTriangle size={18} />
+            </div>
+            <div>
+              <div className="fw-bold text-danger fs-6">Issue in Step 1: Case Title is Missing</div>
+              <div className="small text-secondary">
+                A case title is required before this case can be created. Click the button to return to Step 1 and provide a title.
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="danger"
+            size="sm"
+            className="fw-bold px-3 py-2 text-nowrap d-flex align-items-center justify-content-center gap-2 shadow-xs align-self-start align-self-sm-center"
+            onClick={() => onEditStep(0)}
+          >
+            <FaArrowLeft size={12} />
+            <span>Go Back to Step 1</span>
+          </Button>
+        </Alert>
+      )}
+
+      {/* Extracted Modular Readiness Checklist with onFixTitle callback */}
       <CaseReadinessChecklist
         hasTitle={hasTitle}
         court={caseData.court}
         applicantsCount={applicants.length}
         respondentsCount={respondents.length}
+        onFixTitle={() => onEditStep(0)}
       />
 
       {/* Review Section Cards */}
       <Row className="g-4 mb-4">
         {/* Card 1: Case Details */}
         <Col md={6}>
-          <Card className="border shadow-sm bg-white rounded-3 h-100">
-            <Card.Header className="bg-white border-bottom py-3 px-3 d-flex justify-content-between align-items-center">
+          <Card
+            className={`border shadow-sm bg-white rounded-3 h-100 ${
+              !hasTitle ? 'border-danger-subtle' : ''
+            }`}
+          >
+            <Card.Header
+              className={`border-bottom py-3 px-3 d-flex justify-content-between align-items-center ${
+                !hasTitle ? 'bg-danger-subtle text-danger' : 'bg-white'
+              }`}
+            >
               <div className="d-flex align-items-center gap-2">
-                <FaFolder className="text-primary" />
+                <FaFolder className={!hasTitle ? 'text-danger' : 'text-primary'} />
                 <h6 className="fw-bold mb-0 text-dark">Case Identification</h6>
+                {!hasTitle && (
+                  <Badge bg="danger" className="py-0.5 px-1.5 ms-1 font-monospace" style={{ fontSize: '0.68rem' }}>
+                    ⚠️ Issue
+                  </Badge>
+                )}
               </div>
               <Button
-                variant="outline-primary"
+                variant={!hasTitle ? 'danger' : 'outline-primary'}
                 size="sm"
-                className="py-0 px-2"
+                className="py-0 px-2 fw-semibold"
                 style={{ fontSize: '0.78rem' }}
                 onClick={() => onEditStep(0)}
               >
                 <FaEdit className="me-1" size={10} />
-                Edit
+                {!hasTitle ? 'Fix in Step 1' : 'Edit'}
               </Button>
             </Card.Header>
             <Card.Body className="p-3">
-              <h6 className="fw-bold text-dark mb-1">{caseData.title || '(No title entered)'}</h6>
+              {!caseData.title.trim() ? (
+                <div className="alert alert-danger py-2 px-3 small d-flex align-items-center justify-content-between mb-3 rounded-3 border-danger-subtle">
+                  <span className="text-danger fw-semibold d-flex align-items-center gap-1.5">
+                    <FaExclamationTriangle /> Case Title is missing
+                  </span>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    className="py-1 px-2 fw-bold text-nowrap"
+                    style={{ fontSize: '0.75rem' }}
+                    onClick={() => onEditStep(0)}
+                  >
+                    Add Title Now
+                  </Button>
+                </div>
+              ) : (
+                <h6 className="fw-bold text-dark mb-1">{caseData.title}</h6>
+              )}
+
               <div className="text-muted small mb-3">
                 Reference: <code className="text-dark fw-bold">{caseData.id || '(Auto-generated)'}</code>
               </div>
@@ -246,13 +329,27 @@ export default function CaseReviewSummary({
             Cancel
           </Button>
           <Button
-            variant="primary"
+            variant={allReady ? 'primary' : 'secondary'}
             className="px-4 fw-semibold d-flex align-items-center gap-2 shadow-sm"
             onClick={onSubmit}
-            disabled={!allReady}
+            disabled={!allReady || isSubmitting}
           >
-            {isEditMode ? <FaSave size={14} /> : <FaRocket size={14} />}
-            <span>{isEditMode ? 'Save Changes' : 'Create Case Workspace'}</span>
+            {isSubmitting ? (
+              <>
+                <Spinner animation="border" size="sm" />
+                <span>{isEditMode ? 'Saving...' : 'Creating Workspace...'}</span>
+              </>
+            ) : !allReady ? (
+              <>
+                <FaExclamationTriangle size={14} className="text-warning" />
+                <span>Title Missing (Fix in Step 1)</span>
+              </>
+            ) : (
+              <>
+                {isEditMode ? <FaSave size={14} /> : <FaRocket size={14} />}
+                <span>{isEditMode ? 'Save Changes' : 'Create Case Workspace'}</span>
+              </>
+            )}
           </Button>
         </div>
       </div>

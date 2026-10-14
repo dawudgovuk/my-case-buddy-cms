@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Card, Button } from 'react-bootstrap'
+import { Card, Button, Alert, Spinner } from 'react-bootstrap'
 import type { FamilyCase, Party, CaseType, CourtType } from '../types/domain'
 import { generateId } from '../services/storage'
 import { useCasesStore } from '../store/casesStore'
@@ -10,7 +10,7 @@ import PartyFormSection from '../components/case/PartyFormSection'
 import CaseCreationStepper from '../components/forms/CaseCreationStepper'
 import CaseQuickPresets from '../components/forms/CaseQuickPresets'
 import CaseReviewSummary from '../components/forms/CaseReviewSummary'
-import { FaSave, FaArrowRight, FaArrowLeft, FaTimes } from 'react-icons/fa'
+import { FaSave, FaArrowRight, FaArrowLeft, FaTimes, FaExclamationTriangle } from 'react-icons/fa'
 import { useTranslation } from '../hooks/useTranslation'
 
 export default function CaseForm() {
@@ -22,6 +22,8 @@ export default function CaseForm() {
 
   const existing = useMemo(() => (caseId ? getById(caseId) : undefined), [caseId, getById])
   const [currentStep, setCurrentStep] = useState<number>(0)
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const [form, setForm] = useState<FamilyCase>(() =>
     existing ?? {
@@ -87,21 +89,37 @@ export default function CaseForm() {
     }))
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
+    if (isSubmitting) return
+    setIsSubmitting(true)
+    setErrorMessage(null)
+
     const trimmedTitle = form.title.trim()
     const trimmedJudge = form.allocatedJudge?.trim() || undefined
     const id = existing?.id || form.id || generateId('CASE')
+    const calculatedChildren = form.parties.filter((p) => p.role === 'Child').length
     const payload: FamilyCase = {
       ...form,
       id,
       title: trimmedTitle,
       allocatedJudge: trimmedJudge,
       startedAt: form.startedAt,
+      childrenInvolved: calculatedChildren,
       members: existing?.members ?? (user ? [{ userId: user.id, role: 'Owner' }] : []),
       currentStage: existing?.currentStage || 'application',
     }
-    addOrUpdate(payload)
-    navigate(`/cases/${id}`)
+
+    try {
+      const savedCase = await addOrUpdate(payload)
+      navigate(`/cases/${savedCase.id || id}`)
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'Failed to save case. Please check your network connection and try again.'
+      setErrorMessage(message)
+      setIsSubmitting(false)
+    }
   }
 
   const childrenCount = form.parties.filter((p) => p.role === 'Child').length
@@ -141,14 +159,38 @@ export default function CaseForm() {
               size="sm"
               className="px-3 d-flex align-items-center gap-1 shadow-xs"
               onClick={handleSubmit}
-              disabled={!isDetailsValid}
+              disabled={!isDetailsValid || isSubmitting}
             >
-              <FaSave size={12} />
-              <span>{t('common.saveChanges')}</span>
+              {isSubmitting ? (
+                <>
+                  <Spinner animation="border" size="sm" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <FaSave size={12} />
+                  <span>{t('common.saveChanges')}</span>
+                </>
+              )}
             </Button>
           )}
         </div>
       </div>
+
+      {/* Action Error Alert */}
+      {errorMessage && (
+        <Alert
+          variant="danger"
+          dismissible
+          onClose={() => setErrorMessage(null)}
+          className="d-flex align-items-center gap-2 mb-3 shadow-sm rounded-3"
+        >
+          <FaExclamationTriangle className="text-danger flex-shrink-0" />
+          <div className="small">
+            <strong>Action failed:</strong> {errorMessage}
+          </div>
+        </Alert>
+      )}
 
       {/* Guided 3-Step Interactive Stepper */}
       <CaseCreationStepper
@@ -156,6 +198,7 @@ export default function CaseForm() {
         onSelectStep={(step) => setCurrentStep(step)}
         status={{
           detailsValid: isDetailsValid,
+          titleMissing: !isDetailsValid,
           partiesCount: adultPartiesCount,
           childrenCount,
         }}
@@ -258,6 +301,7 @@ export default function CaseForm() {
           caseData={form}
           onEditStep={(step) => setCurrentStep(step)}
           isEditMode={Boolean(existing)}
+          isSubmitting={isSubmitting}
           onSubmit={handleSubmit}
           onCancel={() => navigate(existing ? `/cases/${existing.id}` : '/')}
         />

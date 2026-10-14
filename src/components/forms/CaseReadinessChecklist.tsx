@@ -1,11 +1,12 @@
-import { Card, Row, Col } from 'react-bootstrap'
-import { FaCheckCircle, FaExclamationCircle } from 'react-icons/fa'
+import { Card, Row, Col, Button } from 'react-bootstrap'
+import { FaCheckCircle, FaExclamationCircle, FaArrowLeft } from 'react-icons/fa'
 
 export interface CaseReadinessChecklistProps {
   hasTitle: boolean
   court: string
   applicantsCount: number
   respondentsCount: number
+  onFixTitle?: () => void
   className?: string
 }
 
@@ -14,6 +15,7 @@ export default function CaseReadinessChecklist({
   court,
   applicantsCount,
   respondentsCount,
+  onFixTitle,
   className = '',
 }: CaseReadinessChecklistProps) {
   const hasApplicant = applicantsCount > 0
@@ -27,23 +29,47 @@ export default function CaseReadinessChecklist({
       <Card.Body className="p-3 p-md-4">
         <Row className="g-3">
           <Col sm={6} md={3}>
-            <div className="d-flex align-items-center gap-2">
-              {hasTitle ? (
-                <FaCheckCircle className="text-success flex-shrink-0" size={18} />
-              ) : (
-                <FaExclamationCircle className="text-danger flex-shrink-0" size={18} />
-              )}
-              <div>
-                <div className="small fw-semibold text-dark">Case Title</div>
-                <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-                  {hasTitle ? 'Title provided' : 'Title missing'}
+            <div
+              className={`p-2 rounded-2 transition-all d-flex align-items-center justify-content-between ${
+                !hasTitle ? 'bg-danger-subtle border border-danger-subtle' : ''
+              }`}
+            >
+              <div className="d-flex align-items-center gap-2 overflow-hidden">
+                {hasTitle ? (
+                  <FaCheckCircle className="text-success flex-shrink-0" size={18} />
+                ) : (
+                  <FaExclamationCircle className="text-danger flex-shrink-0" size={18} />
+                )}
+                <div>
+                  <div className={`small fw-semibold ${!hasTitle ? 'text-danger' : 'text-dark'}`}>
+                    Case Title
+                  </div>
+                  <div
+                    className={!hasTitle ? 'text-danger fw-semibold' : 'text-muted'}
+                    style={{ fontSize: '0.75rem' }}
+                  >
+                    {hasTitle ? 'Title provided' : 'Title missing *'}
+                  </div>
                 </div>
               </div>
+              {!hasTitle && onFixTitle && (
+                <Button
+                  variant="outline-danger"
+                  size="sm"
+                  className="py-0 px-1.5 ms-1 flex-shrink-0 fw-bold"
+                  style={{ fontSize: '0.7rem' }}
+                  onClick={onFixTitle}
+                  title="Go to Step 1 to enter Case Title"
+                >
+                  <FaArrowLeft size={9} className="me-1" />
+                  Fix
+                </Button>
+              )}
             </div>
           </Col>
 
           <Col sm={6} md={3}>
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-center gap-2 p-2">
               <FaCheckCircle className="text-success flex-shrink-0" size={18} />
               <div>
                 <div className="small fw-semibold text-dark">Jurisdiction</div>
@@ -55,7 +81,7 @@ export default function CaseReadinessChecklist({
           </Col>
 
           <Col sm={6} md={3}>
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-center gap-2 p-2">
               {hasApplicant ? (
                 <FaCheckCircle className="text-success flex-shrink-0" size={18} />
               ) : (
@@ -71,7 +97,7 @@ export default function CaseReadinessChecklist({
           </Col>
 
           <Col sm={6} md={3}>
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-center gap-2 p-2">
               {hasRespondent ? (
                 <FaCheckCircle className="text-success flex-shrink-0" size={18} />
               ) : (
