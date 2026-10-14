@@ -11,17 +11,14 @@ import {
   FaCheckCircle,
   FaEye,
   FaEyeSlash,
-  FaBolt,
-  FaShieldAlt,
-  FaServer,
   FaUserTag,
+  FaShieldAlt,
 } from 'react-icons/fa'
 import { useTranslation } from '../hooks/useTranslation'
 import type { UserRole } from '../types/domain'
-import { strapiLogin, checkStrapiHealth } from '../services/strapi'
 import RoleRegistrationLinks from '../components/auth/RoleRegistrationLinks'
 
-type LoginTab = 'neon' | 'strapi' | 'demo'
+type ActiveTab = 'auth' | 'demo'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -29,7 +26,6 @@ export default function Login() {
     user,
     users,
     login,
-    loginWithUser,
     loginWithNeon,
     registerWithNeon,
     ensureDemoUsers,
@@ -37,11 +33,11 @@ export default function Login() {
   } = useAuthStore()
   const { t } = useTranslation()
 
-  // Active top-level login tab
-  const [activeTab, setActiveTab] = useState<LoginTab>('neon')
+  // Primary tab: Better Auth vs Demo Personas
+  const [activeTab, setActiveTab] = useState<ActiveTab>('auth')
 
-  // Neon Auth mode: 'signin' | 'signup'
-  const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+  // Better Auth mode: 'signin' | 'signup'
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
@@ -50,30 +46,16 @@ export default function Login() {
   const [registrationNumber, setRegistrationNumber] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
-  // Strapi credentials state
-  const [identifier, setIdentifier] = useState('')
-  const [strapiPassword, setStrapiPassword] = useState('')
-  const [isSubmittingStrapi, setIsSubmittingStrapi] = useState(false)
-  const [strapiError, setStrapiError] = useState<string | null>(null)
-  const [strapiOnline, setStrapiOnline] = useState<boolean | null>(null)
-
-  // Demo user selection state
+  // Demo personas state
   const [demoUserId, setDemoUserId] = useState('')
 
-  // Dev switcher collapsible state
-  const [showDevSwitcher, setShowDevSwitcher] = useState(false)
-  const [devUserId, setDevUserId] = useState('')
-
-  // UI state for Neon Auth
+  // UI state
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
   useEffect(() => {
     ensureDemoUsers()
-    checkStrapiHealth()
-      .then((res) => setStrapiOnline(res.ok))
-      .catch(() => setStrapiOnline(false))
   }, [ensureDemoUsers])
 
   useEffect(() => {
@@ -82,7 +64,7 @@ export default function Login() {
     }
   }, [user, navigate])
 
-  // Partition users into verified pros, lips, and unverified pros
+  // Partition users for demo personas tab
   const { verifiedPros, lips, unverifiedPros } = useMemo(() => {
     const verifiedPros = users.filter((u) => u.role !== 'LIP' && Boolean(u.isVerified))
     const lips = users.filter((u) => u.role === 'LIP')
@@ -91,17 +73,16 @@ export default function Login() {
   }, [users])
 
   const selectedDemoUser = useMemo(() => users.find((u) => u.id === demoUserId), [users, demoUserId])
-  const selectedDevUser = useMemo(() => users.find((u) => u.id === devUserId), [users, devUserId])
 
-  // Neon Auth submit handler
-  async function handleNeonSubmit(e: React.FormEvent) {
+  // Neon Managed Better Auth submit
+  async function handleAuthSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setSuccessMsg(null)
     setLoading(true)
 
     try {
-      if (mode === 'signin') {
+      if (authMode === 'signin') {
         const result = await loginWithNeon(email, password)
         if (!result.success) {
           setError(result.error || 'Authentication failed. Please check your credentials.')
@@ -150,27 +131,7 @@ export default function Login() {
     }
   }
 
-  // Strapi submit handler
-  async function handleStrapiSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!identifier.trim() || !strapiPassword) return
-
-    setIsSubmittingStrapi(true)
-    setStrapiError(null)
-
-    try {
-      const { user: strapiUser } = await strapiLogin(identifier.trim(), strapiPassword)
-      loginWithUser(strapiUser)
-      navigate(strapiUser.role === 'LIP' ? '/cases' : '/professional-dashboard', { replace: true })
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Authentication failed. Please verify credentials.'
-      setStrapiError(message)
-    } finally {
-      setIsSubmittingStrapi(false)
-    }
-  }
-
-  // Demo user submit handler
+  // Demo Persona 1-click submit
   function handleDemoSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!demoUserId) return
@@ -179,54 +140,53 @@ export default function Login() {
     navigate(targetUser?.role === 'LIP' ? '/cases' : '/professional-dashboard', { replace: true })
   }
 
-  // Quick dev switcher submit handler
-  function handleDevSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!devUserId) return
-    const targetUser = users.find((u) => u.id === devUserId)
-    login(devUserId)
-    navigate(targetUser?.role === 'LIP' ? '/cases' : '/professional-dashboard', { replace: true })
-  }
-
   return (
     <Container className="d-flex justify-content-center align-items-center min-vh-50 py-4 py-md-5">
-      <Card className="shadow-lg border-0" style={{ maxWidth: '580px', width: '100%', borderRadius: '16px' }}>
-        <Card.Header className="text-center py-4 bg-white border-bottom">
-          <h1 className="h3 fw-bold mb-1">{t('common.appName')}</h1>
-          <p className="text-muted mb-0">{t('auth.signInTitle')}</p>
+      <Card
+        className="shadow-lg border-0 overflow-hidden"
+        style={{ maxWidth: '540px', width: '100%', borderRadius: '16px' }}
+      >
+        {/* Header */}
+        <Card.Header className="text-center py-4 bg-white border-bottom position-relative">
+          <h1 className="h4 fw-bold mb-1 text-dark">{t('common.appName')}</h1>
+          <p className="text-muted small mb-0">
+            {activeTab === 'auth'
+              ? authMode === 'signin'
+                ? t('auth.signInTitle')
+                : 'Create an account to manage your cases and peer support'
+              : 'Development Sandbox: Switch between pre-configured personas'}
+          </p>
 
-          <Nav
-            variant="pills"
-            className="justify-content-center mt-3 gap-2"
-            activeKey={activeTab}
-            onSelect={(k) => {
-              setActiveTab((k as LoginTab) || 'neon')
-              setError(null)
-              setStrapiError(null)
-              setSuccessMsg(null)
-            }}
-          >
+          {/* Primary Tabs: Better Auth vs Demo Personas */}
+          <Nav variant="pills" className="justify-content-center mt-3 gap-2">
             <Nav.Item>
-              <Nav.Link eventKey="neon" className="d-flex align-items-center gap-1.5 py-1 px-3 small">
+              <Nav.Link
+                active={activeTab === 'auth'}
+                onClick={() => {
+                  setActiveTab('auth')
+                  setError(null)
+                  setSuccessMsg(null)
+                }}
+                className={`d-flex align-items-center gap-1.5 py-1.5 px-3 rounded-pill fw-semibold small ${
+                  activeTab === 'auth' ? 'bg-primary text-white shadow-xs' : 'bg-light text-secondary border'
+                }`}
+              >
                 <FaLock size={12} />
                 <span>Better Auth</span>
               </Nav.Link>
             </Nav.Item>
             <Nav.Item>
-              <Nav.Link eventKey="strapi" className="d-flex align-items-center gap-1.5 py-1 px-3 small">
-                <FaServer size={12} />
-                <span>Strapi API</span>
-                {strapiOnline !== null && (
-                  <span
-                    className={`rounded-circle ms-1 ${strapiOnline ? 'bg-success' : 'bg-secondary'}`}
-                    style={{ width: 6, height: 6, display: 'inline-block' }}
-                    title={strapiOnline ? 'Strapi Online' : 'Strapi Offline'}
-                  />
-                )}
-              </Nav.Link>
-            </Nav.Item>
-            <Nav.Item>
-              <Nav.Link eventKey="demo" className="d-flex align-items-center gap-1.5 py-1 px-3 small">
+              <Nav.Link
+                active={activeTab === 'demo'}
+                onClick={() => {
+                  setActiveTab('demo')
+                  setError(null)
+                  setSuccessMsg(null)
+                }}
+                className={`d-flex align-items-center gap-1.5 py-1.5 px-3 rounded-pill fw-semibold small ${
+                  activeTab === 'demo' ? 'bg-primary text-white shadow-xs' : 'bg-light text-secondary border'
+                }`}
+              >
                 <FaUserTag size={12} />
                 <span>Demo Personas</span>
               </Nav.Link>
@@ -235,32 +195,74 @@ export default function Login() {
         </Card.Header>
 
         <Card.Body className="p-4">
-          {/* TAB 1: Neon Managed Better Auth */}
-          {activeTab === 'neon' && (
-            <>
-              {error && (
-                <Alert
-                  variant="danger"
-                  dismissible
-                  onClose={() => setError(null)}
-                  className="mb-3 py-2 px-3 small rounded-3"
-                >
-                  {error}
-                </Alert>
-              )}
-              {successMsg && (
-                <Alert
-                  variant="success"
-                  dismissible
-                  onClose={() => setSuccessMsg(null)}
-                  className="mb-3 py-2 px-3 small rounded-3"
-                >
-                  {successMsg}
-                </Alert>
-              )}
+          {error && (
+            <Alert
+              variant="danger"
+              dismissible
+              onClose={() => setError(null)}
+              className="py-2 px-3 small rounded-3 mb-3"
+            >
+              {error}
+            </Alert>
+          )}
 
-              <Form onSubmit={handleNeonSubmit}>
-                {mode === 'signup' && (
+          {successMsg && (
+            <Alert
+              variant="success"
+              dismissible
+              onClose={() => setSuccessMsg(null)}
+              className="py-2 px-3 small rounded-3 mb-3"
+            >
+              {successMsg}
+            </Alert>
+          )}
+
+          {/* TAB 1: Better Auth (Sign In / Create Account) */}
+          {activeTab === 'auth' && (
+            <>
+              {/* Sub-toggle: Sign In vs Create Account */}
+              <div className="d-flex justify-content-center mb-4">
+                <Nav variant="pills" className="bg-light p-1 rounded-pill border" style={{ width: '100%', maxWidth: '320px' }}>
+                  <Nav.Item className="flex-fill text-center">
+                    <Nav.Link
+                      active={authMode === 'signin'}
+                      onClick={() => {
+                        setAuthMode('signin')
+                        setError(null)
+                        setSuccessMsg(null)
+                      }}
+                      className={`rounded-pill py-1.5 fw-semibold ${
+                        authMode === 'signin' ? 'bg-white text-primary shadow-xs' : 'text-secondary'
+                      }`}
+                      style={{ fontSize: '0.8125rem' }}
+                    >
+                      <FaSignInAlt className="me-1" />
+                      <span>{t('common.signIn')}</span>
+                    </Nav.Link>
+                  </Nav.Item>
+                  <Nav.Item className="flex-fill text-center">
+                    <Nav.Link
+                      active={authMode === 'signup'}
+                      onClick={() => {
+                        setAuthMode('signup')
+                        setError(null)
+                        setSuccessMsg(null)
+                      }}
+                      className={`rounded-pill py-1.5 fw-semibold ${
+                        authMode === 'signup' ? 'bg-white text-primary shadow-xs' : 'text-secondary'
+                      }`}
+                      style={{ fontSize: '0.8125rem' }}
+                    >
+                      <FaUserPlus className="me-1" />
+                      <span>Create Account</span>
+                    </Nav.Link>
+                  </Nav.Item>
+                </Nav>
+              </div>
+
+              <Form onSubmit={handleAuthSubmit}>
+                {/* Full Name (Sign Up only) */}
+                {authMode === 'signup' && (
                   <Form.Group className="mb-3">
                     <Form.Label className="fw-semibold small text-secondary">Full Name</Form.Label>
                     <div className="input-group">
@@ -280,6 +282,7 @@ export default function Login() {
                   </Form.Group>
                 )}
 
+                {/* Email Address */}
                 <Form.Group className="mb-3">
                   <Form.Label className="fw-semibold small text-secondary">Email Address</Form.Label>
                   <div className="input-group">
@@ -299,10 +302,11 @@ export default function Login() {
                   </div>
                 </Form.Group>
 
+                {/* Password */}
                 <Form.Group className="mb-3">
                   <div className="d-flex justify-content-between align-items-center">
                     <Form.Label className="fw-semibold small text-secondary">Password</Form.Label>
-                    {mode === 'signup' && (
+                    {authMode === 'signup' && (
                       <small className="text-muted" style={{ fontSize: '0.75rem' }}>
                         Min 8 characters
                       </small>
@@ -320,7 +324,7 @@ export default function Login() {
                       required
                       size="lg"
                       disabled={loading}
-                      autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
+                      autoComplete={authMode === 'signin' ? 'current-password' : 'new-password'}
                     />
                     <Button
                       variant="outline-secondary"
@@ -334,7 +338,8 @@ export default function Login() {
                   </div>
                 </Form.Group>
 
-                {mode === 'signup' && (
+                {/* Additional Fields for Sign Up */}
+                {authMode === 'signup' && (
                   <>
                     <Form.Group className="mb-3">
                       <Form.Label className="fw-semibold small text-secondary">Family Court Role</Form.Label>
@@ -382,6 +387,7 @@ export default function Login() {
                   </>
                 )}
 
+                {/* Primary Submit Button */}
                 <Button
                   type="submit"
                   variant="primary"
@@ -392,268 +398,123 @@ export default function Login() {
                   {loading ? (
                     <>
                       <Spinner size="sm" animation="border" />
-                      <span>{mode === 'signin' ? 'Signing in...' : 'Creating Account...'}</span>
+                      <span>{authMode === 'signin' ? 'Signing in...' : 'Creating Account...'}</span>
                     </>
                   ) : (
                     <>
-                      {mode === 'signin' ? <FaSignInAlt /> : <FaUserPlus />}
-                      <span>{mode === 'signin' ? t('common.signIn') : 'Create Account'}</span>
+                      {authMode === 'signin' ? <FaSignInAlt /> : <FaUserPlus />}
+                      <span>{authMode === 'signin' ? t('common.signIn') : 'Create Account'}</span>
                     </>
                   )}
                 </Button>
               </Form>
 
-              <div className="text-center mb-3">
+              {/* Mode Switch Prompt */}
+              <div className="text-center mb-2">
                 <span className="text-muted small">
-                  {mode === 'signin' ? "Don't have an account? " : 'Already registered? '}
+                  {authMode === 'signin' ? "Don't have an account? " : 'Already registered? '}
                 </span>
                 <Button
                   variant="link"
                   className="p-0 small fw-bold text-decoration-none"
                   onClick={() => {
-                    setMode(mode === 'signin' ? 'signup' : 'signin')
+                    setAuthMode(authMode === 'signin' ? 'signup' : 'signin')
                     setError(null)
+                    setSuccessMsg(null)
                   }}
                 >
-                  {mode === 'signin' ? 'Create an account' : 'Sign in'}
+                  {authMode === 'signin' ? 'Create an account' : 'Sign in'}
                 </Button>
               </div>
             </>
           )}
 
-          {/* TAB 2: Strapi API Account */}
-          {activeTab === 'strapi' && (
-            <Form onSubmit={handleStrapiSubmit}>
-              {strapiError && (
-                <Alert
-                  variant="danger"
-                  className="py-2 px-3 small mb-3 rounded-3"
-                  dismissible
-                  onClose={() => setStrapiError(null)}
-                >
-                  {strapiError}
-                </Alert>
-              )}
-
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-semibold small text-secondary">Email or Username</Form.Label>
-                <div className="input-group">
-                  <span className="input-group-text bg-white text-muted">
-                    <FaUser size={14} />
-                  </span>
-                  <Form.Control
-                    type="text"
-                    placeholder="name@example.com"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    required
-                    size="lg"
-                    disabled={isSubmittingStrapi}
-                  />
-                </div>
-              </Form.Group>
-
-              <Form.Group className="mb-4">
-                <Form.Label className="fw-semibold small text-secondary">Password</Form.Label>
-                <div className="input-group">
-                  <span className="input-group-text bg-white text-muted">
-                    <FaLock size={14} />
-                  </span>
-                  <Form.Control
-                    type="password"
-                    placeholder="Enter your Strapi password"
-                    value={strapiPassword}
-                    onChange={(e) => setStrapiPassword(e.target.value)}
-                    required
-                    size="lg"
-                    disabled={isSubmittingStrapi}
-                  />
-                </div>
-              </Form.Group>
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                disabled={isSubmittingStrapi}
-                className="w-100 mb-3 d-flex align-items-center justify-content-center gap-2 shadow-xs fw-semibold"
-              >
-                {isSubmittingStrapi ? (
-                  <>
-                    <Spinner size="sm" animation="border" />
-                    <span>Signing In...</span>
-                  </>
-                ) : (
-                  <>
-                    <FaServer />
-                    <span>Sign In with Strapi</span>
-                  </>
-                )}
-              </Button>
-            </Form>
-          )}
-
-          {/* TAB 3: Demo Personas */}
+          {/* TAB 2: Demo Personas (Development Purpose) */}
           {activeTab === 'demo' && (
             <Form onSubmit={handleDemoSubmit}>
-              <Form.Group className="mb-3">
-                <Form.Label className="fw-bold">{t('auth.chooseUser')}</Form.Label>
-                <Form.Select
-                  value={demoUserId}
-                  onChange={(e) => setDemoUserId(e.target.value)}
-                  required
+              <div className="p-3 bg-light rounded-3 border mb-3">
+                <div className="d-flex align-items-center gap-2 text-primary small fw-semibold mb-2">
+                  <FaShieldAlt size={14} />
+                  <span>Quick Persona Switcher</span>
+                </div>
+                <p className="text-muted small mb-3" style={{ fontSize: '0.8rem' }}>
+                  Pick any pre-configured persona below to simulate their exact access rights and perspective.
+                </p>
+
+                <Form.Group className="mb-3">
+                  <Form.Label className="fw-semibold small text-secondary">{t('auth.chooseUser')}</Form.Label>
+                  <Form.Select
+                    value={demoUserId}
+                    onChange={(e) => setDemoUserId(e.target.value)}
+                    required
+                    size="lg"
+                    className="mb-2"
+                  >
+                    <option value="">{t('auth.selectUserPrompt')}</option>
+                    {verifiedPros.length > 0 && (
+                      <optgroup label={`✓ ${t('auth.verifiedProfessionalsGroup')} (${verifiedPros.length})`}>
+                        {verifiedPros.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.name} — {u.role} [✓ {t('common.verified')}]
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {lips.length > 0 && (
+                      <optgroup label={`${t('auth.lipsGroup')} (${lips.length})`}>
+                        {lips.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.name} — LIP
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {unverifiedPros.length > 0 && (
+                      <optgroup label={`⚠️ ${t('auth.unverifiedProfessionalsGroup')} (${unverifiedPros.length})`}>
+                        {unverifiedPros.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.name} — {u.role} [⚠️ {t('common.unverified')}]
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                  </Form.Select>
+
+                  {/* Instant Verification Banner if unverified pro selected */}
+                  {selectedDemoUser && !selectedDemoUser.isVerified && selectedDemoUser.role !== 'LIP' && (
+                    <div className="alert alert-warning py-2 px-3 small d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-2 rounded-3 border-warning-subtle">
+                      <span>⚠️ {t('auth.accountUnverifiedAlert')}</span>
+                      <Button
+                        variant="warning"
+                        size="sm"
+                        className="fw-bold py-1 px-2 text-dark shadow-xs flex-shrink-0"
+                        onClick={() => verifyUserById(selectedDemoUser.id)}
+                      >
+                        <FaCheckCircle className="me-1" />
+                        {t('auth.verifySelectedBtn')}
+                      </Button>
+                    </div>
+                  )}
+                </Form.Group>
+
+                <Button
+                  type="submit"
+                  variant="primary"
                   size="lg"
-                  className="mb-2"
+                  className="w-100 d-flex align-items-center justify-content-center gap-2 shadow-xs fw-semibold"
+                  disabled={!demoUserId}
                 >
-                  <option value="">{t('auth.selectUserPrompt')}</option>
-                  {verifiedPros.length > 0 && (
-                    <optgroup label={`✓ ${t('auth.verifiedProfessionalsGroup')} (${verifiedPros.length})`}>
-                      {verifiedPros.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.name} — {u.role} [✓ {t('common.verified')}]
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  {lips.length > 0 && (
-                    <optgroup label={`${t('auth.lipsGroup')} (${lips.length})`}>
-                      {lips.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.name} — LIP
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  {unverifiedPros.length > 0 && (
-                    <optgroup label={`⚠️ ${t('auth.unverifiedProfessionalsGroup')} (${unverifiedPros.length})`}>
-                      {unverifiedPros.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.name} — {u.role} [⚠️ {t('common.unverified')}]
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                </Form.Select>
-
-                {selectedDemoUser && !selectedDemoUser.isVerified && selectedDemoUser.role !== 'LIP' && (
-                  <div className="alert alert-warning py-2 px-3 small d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3 rounded-3 border-warning-subtle">
-                    <span>⚠️ {t('auth.accountUnverifiedAlert')}</span>
-                    <Button
-                      variant="warning"
-                      size="sm"
-                      className="fw-bold py-1 px-2 text-dark shadow-xs flex-shrink-0"
-                      onClick={() => verifyUserById(selectedDemoUser.id)}
-                    >
-                      <FaCheckCircle className="me-1" />
-                      {t('auth.verifySelectedBtn')}
-                    </Button>
-                  </div>
-                )}
-              </Form.Group>
-
-              <Button
-                type="submit"
-                variant="primary"
-                size="lg"
-                className="w-100 mb-3 d-flex align-items-center justify-content-center gap-2 shadow-xs fw-semibold"
-                disabled={!demoUserId}
-              >
-                <FaSignInAlt />
-                <span>{t('common.signIn')}</span>
-              </Button>
+                  <FaSignInAlt />
+                  <span>Sign In as Demo Persona</span>
+                </Button>
+              </div>
             </Form>
           )}
 
           <hr className="my-3" />
 
-          {/* Collapsible Fast Dev Switcher */}
-          <div className="text-center">
-            <Button
-              variant="outline-light"
-              size="sm"
-              className="text-secondary border-0 small py-1 px-2 d-inline-flex align-items-center gap-1"
-              onClick={() => setShowDevSwitcher(!showDevSwitcher)}
-            >
-              <FaBolt className="text-warning" size={12} />
-              <span>{showDevSwitcher ? 'Hide Quick Dev Switcher' : 'Quick Dev Switcher (Demo Personas)'}</span>
-            </Button>
-          </div>
-
-          {showDevSwitcher && (
-            <div className="mt-3 p-3 bg-light rounded-3 border">
-              <div className="d-flex align-items-center gap-1 text-muted small fw-semibold mb-2">
-                <FaShieldAlt size={12} />
-                <span>Instant Demo Persona Switcher</span>
-              </div>
-
-              <Form onSubmit={handleDevSubmit}>
-                <Form.Select
-                  value={devUserId}
-                  onChange={(e) => setDevUserId(e.target.value)}
-                  size="sm"
-                  className="mb-2"
-                >
-                  <option value="">{t('auth.selectUserPrompt')}</option>
-                  {verifiedPros.length > 0 && (
-                    <optgroup label={`✓ Verified Legal Professionals (${verifiedPros.length})`}>
-                      {verifiedPros.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.name} — {u.role}
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  {lips.length > 0 && (
-                    <optgroup label={`Litigants in Person (${lips.length})`}>
-                      {lips.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.name} — LIP
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                  {unverifiedPros.length > 0 && (
-                    <optgroup label={`⚠️ Unverified Professionals (${unverifiedPros.length})`}>
-                      {unverifiedPros.map((u) => (
-                        <option key={u.id} value={u.id}>
-                          {u.name} — {u.role} (Unverified)
-                        </option>
-                      ))}
-                    </optgroup>
-                  )}
-                </Form.Select>
-
-                {selectedDevUser && !selectedDevUser.isVerified && selectedDevUser.role !== 'LIP' && (
-                  <div className="alert alert-warning py-1 px-2 small d-flex justify-content-between align-items-center mb-2">
-                    <span>Account unverified</span>
-                    <Button
-                      variant="warning"
-                      size="sm"
-                      className="py-0 px-2 small text-dark"
-                      onClick={() => verifyUserById(selectedDevUser.id)}
-                    >
-                      <FaCheckCircle className="me-1" size={10} /> Verify
-                    </Button>
-                  </div>
-                )}
-
-                <Button
-                  type="submit"
-                  variant="outline-dark"
-                  size="sm"
-                  className="w-100"
-                  disabled={!devUserId}
-                >
-                  Switch to Demo User
-                </Button>
-              </Form>
-            </div>
-          )}
-
           {/* Reusable Role Registration Shortcuts */}
-          <div className="mt-3">
-            <RoleRegistrationLinks onSelectRole={(role) => navigate(`/register/${role}`)} />
-          </div>
+          <RoleRegistrationLinks onSelectRole={(role) => navigate(`/register/${role}`)} />
         </Card.Body>
       </Card>
     </Container>

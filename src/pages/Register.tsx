@@ -5,7 +5,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from '../hooks/useTranslation'
 import type { UserRole } from '../types/domain'
 import { USER_ROLES } from '../utils/caseConstants'
-import { isStrapiEnabled, strapiRegister } from '../services/strapi'
 import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
 import { FaEye, FaEyeSlash, FaLock, FaUserPlus } from 'react-icons/fa'
 
@@ -68,22 +67,6 @@ export default function Register() {
         firm: firm.trim() || undefined,
         registrationNumber: registrationNumber.trim() || undefined,
       })
-
-      // Automatically sync registration with Strapi if enabled
-      if (isStrapiEnabled()) {
-        try {
-          await strapiRegister({
-            username: email.trim(),
-            email: email.trim(),
-            password: password || 'CaseBuddy2026!',
-            userRole,
-            firm: firm.trim() || undefined,
-            registrationNumber: registrationNumber.trim() || undefined,
-          })
-        } catch (strapiErr: unknown) {
-          console.warn('Strapi auto-registration sync info:', strapiErr)
-        }
-      }
 
       if (!result.success || !result.user) {
         setError(result.error || 'Registration failed. Please try again.')
