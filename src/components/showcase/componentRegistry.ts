@@ -55,6 +55,7 @@ import {
   RegistrationPendingCardPreview,
   RoleRegistrationLinksPreview,
   LanguageSwitcherPreview,
+  StrapiSyncModalPreview,
 } from './CaseDetailsPreviews'
 
 export const COMPONENT_CATALOG: ComponentItem[] = [
@@ -1029,5 +1030,21 @@ export const COMPONENT_CATALOG: ComponentItem[] = [
       { name: 'showLabel', type: 'boolean', defaultVal: 'true', description: 'Whether to display the language label next to flag' },
     ],
     renderPreview: (onFeedback) => createElement(LanguageSwitcherPreview, { onFeedback }),
+  },
+  {
+    id: 'strapi-sync-modal',
+    name: 'Strapi Sync & Backend Settings Modal',
+    category: 'Case Management & Records',
+    filePath: 'src/components/strapi/StrapiSyncModal.tsx',
+    importStatement: "import { StrapiSyncModal } from '../components/strapi/StrapiSyncModal'",
+    description:
+      'Full-featured modal providing live Strapi REST connection testing, Neon PostgreSQL database status, Clerk webhook information, backend mode toggling, and 1-click LocalStorage migration.',
+    badges: ['Strapi Headless CMS', 'Neon Postgres', 'Clerk Auth', 'Data Migration'],
+    codeSnippet: `<StrapiSyncModal show={showModal} onHide={() => setShowModal(false)} />`,
+    propsDoc: [
+      { name: 'show', type: 'boolean', required: true, description: 'Controls modal open/close visibility' },
+      { name: 'onHide', type: '() => void', required: true, description: 'Callback invoked when modal is dismissed' },
+    ],
+    renderPreview: (onFeedback) => createElement(StrapiSyncModalPreview, { onFeedback }),
   },
 ]

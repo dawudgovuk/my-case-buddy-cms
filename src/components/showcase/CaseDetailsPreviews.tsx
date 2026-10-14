@@ -6,6 +6,7 @@ import PeerSupportRequestModal from '../directory/PeerSupportRequestModal'
 import RegistrationPendingCard from '../auth/RegistrationPendingCard'
 import RoleRegistrationLinks from '../auth/RoleRegistrationLinks'
 import LanguageSwitcher from '../common/LanguageSwitcher'
+import { StrapiSyncModal } from '../strapi/StrapiSyncModal'
 import type { FamilyCase } from '../../types/domain'
 
 const SAMPLE_CASE: FamilyCase = {
@@ -169,3 +170,25 @@ export function LanguageSwitcherPreview({ onFeedback }: { onFeedback: (msg: stri
     </div>
   )
 }
+
+export function StrapiSyncModalPreview({ onFeedback }: { onFeedback: (msg: string) => void }) {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="p-4 bg-white rounded border d-flex flex-column align-items-start gap-3">
+      <p className="small text-muted mb-0">
+        Interactive modal for managing Strapi REST backend connection, Neon PostgreSQL status, and 1-click database migration.
+      </p>
+      <Button
+        variant="primary"
+        onClick={() => {
+          setShow(true)
+          onFeedback('Opened Strapi Sync Modal preview')
+        }}
+      >
+        Open Strapi Sync Modal
+      </Button>
+      <StrapiSyncModal show={show} onHide={() => setShow(false)} />
+    </div>
+  )
+}
+

@@ -1,5 +1,5 @@
-import { Row, Col, Button } from 'react-bootstrap'
-import { FaPlus, FaFolder, FaBalanceScale, FaCalendarAlt, FaChild } from 'react-icons/fa'
+import { Row, Col, Button, Badge } from 'react-bootstrap'
+import { FaPlus, FaFolder, FaBalanceScale, FaCalendarAlt, FaChild, FaDatabase } from 'react-icons/fa'
 import { useTranslation } from '../../hooks/useTranslation'
 
 export interface CasesHeaderProps {
@@ -8,6 +8,8 @@ export interface CasesHeaderProps {
   upcomingHearingsCount: number
   childrenCount: number
   onNewCase: () => void
+  onOpenStrapiSync?: () => void
+  isStrapiMode?: boolean
   className?: string
 }
 
@@ -17,6 +19,8 @@ export default function CasesHeader({
   upcomingHearingsCount,
   childrenCount,
   onNewCase,
+  onOpenStrapiSync,
+  isStrapiMode = false,
   className = '',
 }: CasesHeaderProps) {
   const { t } = useTranslation()
@@ -34,15 +38,32 @@ export default function CasesHeader({
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          className="fw-semibold px-3 py-2 d-inline-flex align-items-center gap-2 shadow-sm rounded-3 flex-shrink-0"
-          onClick={onNewCase}
-          style={{ backgroundColor: '#2563eb', borderColor: '#2563eb' }}
-        >
-          <FaPlus size={13} />
-          <span>{t('common.newCase')}</span>
-        </Button>
+        <div className="d-flex align-items-center gap-2 flex-wrap">
+          {onOpenStrapiSync && (
+            <Button
+              variant={isStrapiMode ? 'outline-success' : 'outline-secondary'}
+              className="px-3 py-2 d-inline-flex align-items-center gap-2 rounded-3 shadow-none bg-white"
+              onClick={onOpenStrapiSync}
+              title="Strapi Headless CMS & Neon PostgreSQL Settings"
+            >
+              <FaDatabase size={13} className={isStrapiMode ? 'text-success' : 'text-primary'} />
+              <span>Strapi</span>
+              <Badge bg={isStrapiMode ? 'success' : 'light'} className={isStrapiMode ? 'text-white' : 'text-muted border'}>
+                {isStrapiMode ? 'Live' : 'Local'}
+              </Badge>
+            </Button>
+          )}
+
+          <Button
+            variant="primary"
+            className="fw-semibold px-3 py-2 d-inline-flex align-items-center gap-2 shadow-sm rounded-3 flex-shrink-0"
+            onClick={onNewCase}
+            style={{ backgroundColor: '#2563eb', borderColor: '#2563eb' }}
+          >
+            <FaPlus size={13} />
+            <span>{t('common.newCase')}</span>
+          </Button>
+        </div>
       </div>
 
       {/* 4 Crisp Metric Stat Cards */}

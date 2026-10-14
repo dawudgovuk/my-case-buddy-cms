@@ -1,6 +1,37 @@
 # Change Log
 
-## Case Details Executive Redesign, Non-Overflowing Header & Modern Underline Tabs
+## Strapi Headless CMS Integration with Neon PostgreSQL & Clerk Authentication
+
+### Features & Capabilities Added:
+1. **Standalone Strapi v5 Backend Scaffolding (`my-case-buddy-api`)**:
+   - Initialized standalone Strapi v5 TypeScript backend in adjacent project directory [`my-case-buddy-api`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-api).
+   - Configured `config/database.ts` with native **Neon PostgreSQL** serverless connection support (`pg` client, SSL parameter mapping, `DATABASE_URL` connection strings).
+   - Generated domain collection types with complete schemas, controllers, core routers, and services:
+     - `api::case.case`: Complete schema with procedural stage, judge, court type, peer-support, and relational linkages.
+     - `api::party.party`: Parties, solicitors, and children in proceedings.
+     - `api::hearing.hearing`: Court listings, locations, and outcomes.
+     - `api::order.order`: Court orders and expiration dates.
+     - `api::document.document`: Case bundles and statements.
+     - `api::case-note.case-note`: Chronological audit notes.
+     - `api::case-invite.case-invite`: Cryptographic collaboration tokens.
+     - `api::document-deadline.document-deadline`: Assigned filing deadlines.
+2. **Clerk Authentication & Subscription Sync**:
+   - Extended Strapi user schema (`src/extensions/users-permissions/content-types/user/schema.json`) with `clerkId`, `subscriptionTier` (`free`, `standard`, `premium`, `professional`), `subscriptionStatus`, `firm`, and professional roles.
+   - Implemented public Clerk webhook handler (`src/api/clerk-webhook/`) to automatically synchronize Clerk user signups, role assignments, and subscription updates into Strapi without manual database intervention.
+3. **Frontend Strapi Service Architecture (`my-case-buddy-cms/src/services/strapi/`)**:
+   - `strapiConfig.ts`: Base URL configuration, JWT token management, and lightweight server health pinging.
+   - `strapiClient.ts`: Generic, type-safe HTTP client with JWT injection and normalized error reporting.
+   - `strapiAdapters.ts`: Bi-directional transformers converting between Strapi REST responses (v4 nested and v5 flattened) and canonical `FamilyCase` domain models (zero `any`).
+   - `casesApiService.ts`: CRUD endpoints for cases, including relational population queries and peer support updates.
+   - `migrationService.ts`: 1-click migration utility exporting browser `localStorage` snapshots directly into Strapi.
+4. **Dual-Mode Cases Store (`src/store/casesStore.ts`)**:
+   - Integrated `isStrapiMode`, `setStrapiMode`, and `syncWithStrapi` into Zustand store.
+   - Backwards-compatible fallback: preserves `localStorage` as an offline cache when Strapi is offline or disabled.
+5. **Interactive Strapi Sync Modal & Component Showcase Registration**:
+   - Built [`StrapiSyncModal.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/strapi/StrapiSyncModal.tsx): Live health status pinging, Neon and Clerk connection badges, mode toggle switch, and animated migration progress bar.
+   - Registered `strapi-sync-modal` in [`componentRegistry.ts`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/showcase/componentRegistry.ts) under `Case Management & Records`.
+   - Added Strapi status button into [`CasesHeader.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CasesHeader.tsx) on the [`CasesList.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/CasesList.tsx) dashboard.
+
 
 ### Features & Capabilities Added:
 1. **Case Summary Card Redesign (`CaseSummaryCard.tsx`)**:
