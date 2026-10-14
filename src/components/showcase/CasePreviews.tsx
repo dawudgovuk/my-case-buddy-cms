@@ -3,6 +3,7 @@ import { Row, Col, Form, Badge } from 'react-bootstrap'
 import CaseCard from '../case/CaseCard'
 import CaseSteps from '../case/CaseSteps'
 import CaseTimeline from '../case/CaseTimeline'
+import NextHearingBanner from '../case/NextHearingBanner'
 import { getStagesForCase } from '../../utils/caseStages'
 import type { FamilyCase } from '../../types/domain'
 
@@ -246,3 +247,20 @@ export function CaseTimelinePreview({ onFeedback }: { onFeedback: (msg: string) 
     </div>
   )
 }
+
+export function NextHearingBannerPreview() {
+  return (
+    <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+      <NextHearingBanner
+        hearing={{
+          id: 'h-preview',
+          type: 'Fact-Finding',
+          date: '2026-07-02',
+          time: '13:00 PM',
+          location: 'Courtroom 1, Central Family Court',
+        }}
+      />
+    </div>
+  )
+}
+

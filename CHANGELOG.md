@@ -1,6 +1,53 @@
 # Change Log
 
-## [Unreleased] - Peer-to-Peer Legal Support & Professional Email Verification
+## [Unreleased] - Professional Dashboard Redesign & Newcomer Onboarding Experience
+
+### Features & Capabilities Added:
+1. **Professional Dashboard Redesign (`/professional-dashboard`)**:
+   - Redesigned the dashboard to be welcoming, intuitive, and educational for newcomers unfamiliar with UK Family Court proceedings and McKenzie Friend duties.
+   - Built an executive [`ProfessionalHeader.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/dashboard/ProfessionalHeader.tsx) with user role badging, email verification status pill, 4-metric interactive summary pills (Assigned Cases, Peer Requests, Hearings, Deadlines), and instant guide triggers.
+   - Created beginner-friendly [`SystemQuickGuide.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/dashboard/SystemQuickGuide.tsx) with a 3-step visual walkthrough explaining user roles, FPR/GDPR safeguarding verification rationale, and the difference between assigned and peer support cases.
+   - Authoring accessible [`ProfessionalFaqModal.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/dashboard/ProfessionalFaqModal.tsx) explaining core concepts in plain English: Litigants in Person (LIP), McKenzie Friends, confidentiality, hearing stages, and case collaboration.
+   - Re-engineered [`VerificationGateCard.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/verification/VerificationGateCard.tsx) with 3-step visual cards, one-click demo verification, simulated resend link feedback, alternate routing to already-accessible assigned cases, and UK GDPR/FPR compliance badges.
+   - Added friendly context headers to [`AssignedCasesTab.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/dashboard/AssignedCasesTab.tsx) and [`PeerSupportCasesTab.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/dashboard/PeerSupportCasesTab.tsx).
+2. **Component Explorer Integration (`/components`)**:
+   - All 3 new components catalogued in `componentRegistry.ts` with live interactive previews in [`ProfessionalDashboardPreviews.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/showcase/ProfessionalDashboardPreviews.tsx).
+
+## Cases Page Redesign & Enhanced Case Management
+
+### Features & Capabilities Added:
+1. **Cases Dashboard Redesign (`/cases`)**:
+   - Transformed the plain cases list into a high-end legal proceedings dashboard.
+   - Added executive metrics header displaying total cases, active proceedings, scheduled upcoming hearings, and protected children.
+   - Implemented real-time multi-dimensional search with status pills (All, Open, Stayed, Concluded), case type filter, sorting, and List/Grid view toggling.
+   - Enhanced case list cards with status color-coded left borders, upcoming hearing alerts, and clean action buttons.
+   - Integrated delete confirmation modal with irreversible deletion safeguards.
+2. **New Standalone Modular Components (<300 lines, Zero `any`)**:
+   - [`CasesHeader.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CasesHeader.tsx): Executive overview header with stat pills and primary "+ Create New Case" CTA.
+   - [`CasesFilterBar.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CasesFilterBar.tsx): Multi-dimensional search, status filter pills with counts, sorting, and list/grid layout switcher.
+   - [`EmptyCasesState.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/EmptyCasesState.tsx): Differentiated empty states for active search filters versus empty repositories.
+   - [`DeleteCaseModal.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/DeleteCaseModal.tsx): Confirmation modal safeguarding against accidental loss of case records.
+   - Redesigned [`CaseListItemCard.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CaseListItemCard.tsx): Premium interactive case card with status accent, next hearing alert, and metadata chips.
+3. **Component Explorer Integration (`/components`)**:
+   - All 4 new components catalogued in `componentRegistry.ts` with interactive previews in [`CaseListPreviews.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/showcase/CaseListPreviews.tsx).
+
+## Guided Case Creation Wizard & Design Redesign
+
+### Features & Capabilities Added:
+1. **Guided 3-Step Case Creation Stepper (`/cases/new` & `/cases/:id/edit`)**:
+   - Replaced flat, monolithic form with an intuitive 3-step wizard with direct step navigation:
+     - **Step 1: Case Details & Jurisdiction**: Quick proceeding template chips, grouped court registry details, auto-ID generator info, and LIP tips.
+     - **Step 2: Parties & Children**: Dedicated sections for adult parties (applicants, respondents, guardians) and children subject to proceedings with FPR confidentiality protection.
+     - **Step 3: Review & Launch**: Pre-filing readiness checklist, comprehensive case summary cards, and quick step-edit shortcuts before launch.
+2. **New Standalone Modular Components (<300 lines, Zero `any`)**:
+   - [`CaseCreationStepper.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/forms/CaseCreationStepper.tsx): Interactive step navigation bar with progress percentage and status badges.
+   - [`CaseQuickPresets.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/forms/CaseQuickPresets.tsx): Standardized application chips for Child Arrangements, Prohibited Steps, Non-Molestation, and Financial Remedies.
+   - [`PartyInlineEditor.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/PartyInlineEditor.tsx): Card-based editor with role selection, automatic child age calculation, and FPR rules notice.
+   - [`CaseReadinessChecklist.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/forms/CaseReadinessChecklist.tsx): Status checklist verifying key filings before proceeding creation.
+   - [`CaseReviewSummary.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/forms/CaseReviewSummary.tsx): Comprehensive review and launch confirmation dashboard.
+3. **Component Explorer Integration (`/components`)**:
+   - All 5 new components catalogued in `componentRegistry.ts` with interactive previews in [`CaseWizardPreviews.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/showcase/CaseWizardPreviews.tsx).
+
 
 ### Features & Capabilities Added:
 1. **Peer-to-Peer Support Directory (`/peer-directory`)**:

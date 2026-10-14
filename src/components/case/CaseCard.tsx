@@ -1,11 +1,12 @@
 import type { ReactNode } from 'react'
-import { Card, Badge, Alert } from 'react-bootstrap'
+import { Card, Badge } from 'react-bootstrap'
 import type { FamilyCase } from '../../types/domain'
 import { getStagesForCase, getCurrentStageIndex } from '../../utils/caseStages'
 import CaseSteps from './CaseSteps'
 import CaseTimeline from './CaseTimeline'
+import NextHearingBanner from './NextHearingBanner'
 import { PeerSupportButton, ViewCaseButton, EditCaseButton, CaseCardActions } from '../common/CaseCardButtons'
-import { FaCalendarAlt, FaMapMarkerAlt, FaUsers, FaChild } from 'react-icons/fa'
+import { FaUsers, FaChild, FaGavel } from 'react-icons/fa'
 
 export interface CaseCardProps {
   caseData: FamilyCase
@@ -30,7 +31,7 @@ export default function CaseCard({
   showProgress = true,
   showNextHearing = true,
   progressComponent = 'steps',
-  className = 'mb-3',
+  className = '',
 }: CaseCardProps) {
   const stages = getStagesForCase(caseData)
   const currentStageIndex = getCurrentStageIndex(caseData)
@@ -42,59 +43,59 @@ export default function CaseCard({
     caseData.parties?.filter((p) => p.role !== 'Child' || (p.role === 'Child' && p.solicitorFirm)).length || 0
 
   return (
-    <Card className={`shadow-sm border-0 ${className}`}>
-      <Card.Body>
-        <div className="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
-          <div>
-            <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
-              <h5 className="fw-bold mb-0 text-dark">
-                {caseData.id} — {caseData.title}
-              </h5>
-              <Badge bg={caseData.status === 'Open' ? 'success' : 'secondary'} className="px-2 py-1">
+    <Card className={`premium-card h-100 d-flex flex-column border-0 ${className}`}>
+      <Card.Body className="d-flex flex-column h-100 p-4">
+        {/* Case Header: ID, Status, Title, Court */}
+        <div className="mb-3">
+          <div className="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">
+            <div className="d-flex align-items-center gap-2">
+              <span className="badge bg-light text-dark border font-monospace px-2 py-1 small">
+                {caseData.id}
+              </span>
+              <Badge
+                bg={caseData.status === 'Open' ? 'success' : 'secondary'}
+                className="px-2 py-1 fw-semibold small"
+              >
                 {caseData.status}
               </Badge>
             </div>
-            <div className="small text-muted">
-              {caseData.court} • {caseData.caseType}
+
+            <div className="d-flex gap-1 flex-wrap">
+              <Badge bg="primary-subtle" className="text-primary border border-primary-subtle fw-semibold px-2 py-1 d-inline-flex align-items-center gap-1">
+                <FaUsers size={10} />
+                <span>Parties: {partiesCount}</span>
+              </Badge>
+              {childrenCount > 0 && (
+                <Badge bg="info-subtle" className="text-info border border-info-subtle fw-semibold px-2 py-1 d-inline-flex align-items-center gap-1">
+                  <FaChild size={10} />
+                  <span>
+                    {childrenCount} Child{childrenCount === 1 ? '' : 'ren'}
+                  </span>
+                </Badge>
+              )}
             </div>
           </div>
 
-          <div className="d-flex gap-2 flex-wrap">
-            <Badge bg="primary" className="fw-semibold px-2 py-1 d-inline-flex align-items-center gap-1">
-              <FaUsers size={10} />
-              <span>Parties: {partiesCount}</span>
-            </Badge>
-            {childrenCount > 0 && (
-              <Badge bg="info" className="fw-semibold px-2 py-1 d-inline-flex align-items-center gap-1">
-                <FaChild size={10} />
-                <span>
-                  {childrenCount} Child{childrenCount === 1 ? '' : 'ren'}
-                </span>
-              </Badge>
-            )}
+          <h5 className="fw-bold mb-1 text-dark" style={{ letterSpacing: '-0.2px' }}>
+            {caseData.title}
+          </h5>
+
+          <div className="small text-muted d-flex align-items-center gap-2">
+            <FaGavel size={11} className="text-secondary flex-shrink-0" />
+            <span>{caseData.court}</span>
+            <span>•</span>
+            <span>{caseData.caseType}</span>
           </div>
         </div>
 
-        {/* Next Hearing Alert */}
+        {/* Next Hearing Alert Banner */}
         {showNextHearing && nextHearing && (
-          <Alert variant="info" className="py-2 px-3 mb-3 d-flex align-items-center gap-2">
-            <FaCalendarAlt className="text-info flex-shrink-0" />
-            <div className="small">
-              <strong>Next Hearing:</strong> {nextHearing.type} on {nextHearing.date}
-              {nextHearing.time ? ` at ${nextHearing.time}` : ''}
-              {nextHearing.location && (
-                <span className="ms-2">
-                  <FaMapMarkerAlt className="me-1" />
-                  {nextHearing.location}
-                </span>
-              )}
-            </div>
-          </Alert>
+          <NextHearingBanner hearing={nextHearing} className="mb-3" />
         )}
 
-        {/* Progression Section */}
+        {/* Progression Stepper Section */}
         {showProgress && (
-          <div className="mb-3">
+          <div className="flex-grow-1 mb-3">
             {progressComponent === 'timeline' ? (
               <CaseTimeline
                 stages={stages}
@@ -109,8 +110,8 @@ export default function CaseCard({
           </div>
         )}
 
-        {/* Action Buttons Section */}
-        <div className="mt-3 pt-2 border-top">
+        {/* Action Buttons Section (Sticky to Bottom) */}
+        <div className="mt-auto pt-3 border-top">
           {actions ? (
             actions
           ) : (

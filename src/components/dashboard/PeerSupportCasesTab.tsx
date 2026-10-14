@@ -9,9 +9,16 @@ import VerificationGateCard from '../verification/VerificationGateCard'
 interface PeerSupportCasesTabProps {
   user: User
   cases: FamilyCase[]
+  onSwitchToAssigned?: () => void
+  assignedCasesCount?: number
 }
 
-export default function PeerSupportCasesTab({ user, cases }: PeerSupportCasesTabProps) {
+export default function PeerSupportCasesTab({
+  user,
+  cases,
+  onSwitchToAssigned,
+  assignedCasesCount = 0,
+}: PeerSupportCasesTabProps) {
   const navigate = useNavigate()
   const { addOrUpdate } = useCasesStore()
   const [filterType, setFilterType] = useState('all')
@@ -73,6 +80,8 @@ export default function PeerSupportCasesTab({ user, cases }: PeerSupportCasesTab
         userEmail={user.email}
         verificationToken={tokenToUse}
         onVerifyClick={(token) => navigate(`/verify-email/${token}`)}
+        onSwitchToAssigned={onSwitchToAssigned}
+        assignedCasesCount={assignedCasesCount}
       />
     )
   }

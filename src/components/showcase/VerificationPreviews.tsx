@@ -8,6 +8,9 @@ export function VerificationGateCardPreview({ onFeedback }: { onFeedback: (msg: 
         userEmail="barrister.thorne@temple-chambers.co.uk"
         verificationToken="token_preview_sample_123"
         onVerifyClick={(token) => onFeedback(`Verification simulated with token: ${token}`)}
+        assignedCasesCount={2}
+        onSwitchToAssigned={() => onFeedback('Switched to assigned cases tab')}
+        onResendEmail={() => onFeedback('Resend verification email clicked')}
       />
     </div>
   )

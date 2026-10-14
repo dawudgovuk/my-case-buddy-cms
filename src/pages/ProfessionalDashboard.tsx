@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Container, Row, Col, Alert, Badge } from 'react-bootstrap'
+import { Container, Row, Col, Alert } from 'react-bootstrap'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
 import { getDeadlinesForUser, updateDeadline } from '../services/storage'
@@ -8,16 +9,22 @@ import UpcomingHearingsCard, { type HearingItem } from '../components/dashboard/
 import DeadlinesCard from '../components/dashboard/DeadlinesCard'
 import AssignedCasesTab from '../components/dashboard/AssignedCasesTab'
 import PeerSupportCasesTab from '../components/dashboard/PeerSupportCasesTab'
+import ProfessionalHeader from '../components/dashboard/ProfessionalHeader'
+import SystemQuickGuide from '../components/dashboard/SystemQuickGuide'
+import ProfessionalFaqModal from '../components/dashboard/ProfessionalFaqModal'
 import TabNav, { type TabItem } from '../components/common/TabNav'
-import { FaUserCheck, FaExclamationCircle, FaHandshake, FaGavel, FaCalendarAlt } from 'react-icons/fa'
+import { FaHandshake, FaGavel, FaCalendarAlt, FaLock } from 'react-icons/fa'
 
 type DashboardTab = 'peer' | 'assigned' | 'schedule'
 
 export default function ProfessionalDashboard() {
+  const navigate = useNavigate()
   const { user } = useAuthStore()
   const { cases } = useCasesStore()
   const [deadlines, setDeadlines] = useState<DocumentDeadline[]>([])
   const [activeTab, setActiveTab] = useState<DashboardTab>('peer')
+  const [isGuideOpen, setIsGuideOpen] = useState<boolean>(!user?.isVerified)
+  const [showFaqModal, setShowFaqModal] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -54,14 +61,18 @@ export default function ProfessionalDashboard() {
     return list.sort((a, b) => new Date(a.hearing.date).getTime() - new Date(b.hearing.date).getTime())
   }, [userCases])
 
+  const pendingDeadlinesCount = useMemo(() => {
+    return deadlines.filter((d) => d.status === 'pending').length
+  }, [deadlines])
+
   const dashboardTabs = useMemo<TabItem<DashboardTab>[]>(
     () => [
       {
         key: 'peer',
-        label: 'Peer Support Cases',
+        label: user?.isVerified ? 'Peer Support Cases' : 'Peer Support Requests',
         count: peerSupportCasesCount,
-        badgeVariant: 'primary',
-        icon: <FaHandshake />,
+        badgeVariant: user?.isVerified ? 'primary' : 'warning',
+        icon: user?.isVerified ? <FaHandshake /> : <FaLock className="text-warning" />,
       },
       {
         key: 'assigned',
@@ -73,10 +84,12 @@ export default function ProfessionalDashboard() {
       {
         key: 'schedule',
         label: 'Hearings & Deadlines',
+        count: upcomingHearings.length + pendingDeadlinesCount,
+        badgeVariant: 'info',
         icon: <FaCalendarAlt />,
       },
     ],
-    [peerSupportCasesCount, userCases.length]
+    [peerSupportCasesCount, userCases.length, user?.isVerified, upcomingHearings.length, pendingDeadlinesCount]
   )
 
   function handleDeadlineToggle(deadlineId: string, currentStatus: DocumentDeadline['status']) {
@@ -94,6 +107,12 @@ export default function ProfessionalDashboard() {
     )
   }
 
+  function handleVerifyClick() {
+    if (!user) return
+    const token = user.verificationToken || 'demo_token_verify_now'
+    navigate(`/verify-email/${token}`)
+  }
+
   if (!user) {
     return (
       <Container className="py-4">
@@ -103,34 +122,44 @@ export default function ProfessionalDashboard() {
   }
 
   return (
-    <Container fluid className="py-2">
-      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
-        <div>
-          <h1 className="h2 mb-1">Professional Dashboard</h1>
-          <p className="lead mb-0 text-secondary">
-            Welcome, <span className="fw-bold">{user.name}</span> ({user.role})
-            {user.firm && <span> • {user.firm}</span>}
-          </p>
-        </div>
+    <Container fluid className="px-lg-4 py-2">
+      {/* Redesigned Executive Professional Header with Metrics and Actions */}
+      <ProfessionalHeader
+        user={user}
+        assignedCasesCount={userCases.length}
+        peerSupportCasesCount={peerSupportCasesCount}
+        upcomingHearingsCount={upcomingHearings.length}
+        pendingDeadlinesCount={pendingDeadlinesCount}
+        isGuideOpen={isGuideOpen}
+        onToggleGuide={() => setIsGuideOpen(!isGuideOpen)}
+        onOpenFaq={() => setShowFaqModal(true)}
+        onVerifyClick={handleVerifyClick}
+        onSelectTab={(tab) => setActiveTab(tab)}
+      />
 
-        <div>
-          {user.isVerified ? (
-            <Badge bg="success" className="px-3 py-2 fs-6 d-inline-flex align-items-center gap-1">
-              <FaUserCheck />
-              <span>Verified Account</span>
-            </Badge>
-          ) : (
-            <Badge bg="warning" className="px-3 py-2 fs-6 text-dark d-inline-flex align-items-center gap-1">
-              <FaExclamationCircle />
-              <span>Pending Email Verification</span>
-            </Badge>
-          )}
-        </div>
-      </div>
+      {/* Beginner-friendly System Quick Guide for Newcomers */}
+      <SystemQuickGuide
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        isVerified={Boolean(user.isVerified)}
+        onVerifyClick={handleVerifyClick}
+        onViewAssignedClick={() => setActiveTab('assigned')}
+        onOpenFaq={() => setShowFaqModal(true)}
+        assignedCasesCount={userCases.length}
+      />
 
+      {/* Main Tab Navigation */}
       <TabNav items={dashboardTabs} activeKey={activeTab} onSelect={setActiveTab} />
 
-      {activeTab === 'peer' && <PeerSupportCasesTab user={user} cases={cases} />}
+      {/* Tab Panels */}
+      {activeTab === 'peer' && (
+        <PeerSupportCasesTab
+          user={user}
+          cases={cases}
+          onSwitchToAssigned={() => setActiveTab('assigned')}
+          assignedCasesCount={userCases.length}
+        />
+      )}
 
       {activeTab === 'assigned' && <AssignedCasesTab cases={userCases} deadlines={deadlines} />}
 
@@ -144,6 +173,9 @@ export default function ProfessionalDashboard() {
           </Col>
         </Row>
       )}
+
+      {/* Accessible Beginner / System FAQ Modal */}
+      <ProfessionalFaqModal show={showFaqModal} onHide={() => setShowFaqModal(false)} />
     </Container>
   )
 }

@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
 import CaseCard from '../components/case/CaseCard'
-import { FaUserShield } from 'react-icons/fa'
+import DashboardHeader from '../components/dashboard/DashboardHeader'
+import { FaFolderPlus } from 'react-icons/fa'
 
 export default function LIPDashboard() {
   const navigate = useNavigate()
@@ -11,6 +12,8 @@ export default function LIPDashboard() {
   const { cases, togglePeerSupport } = useCasesStore()
 
   const userCases = cases.filter((c) => c.members?.some((m) => m.userId === user?.id && m.role === 'Owner'))
+  const upcomingHearingsCount = userCases.reduce((acc, c) => acc + (c.hearings ? c.hearings.length : 0), 0)
+  const peerSupportCount = userCases.filter((c) => c.seekingPeerSupport).length
 
   if (!user) {
     return (
@@ -21,30 +24,30 @@ export default function LIPDashboard() {
   }
 
   return (
-    <Container fluid className="py-2">
-      <div className="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-        <div>
-          <h1 className="h2 mb-1">My Cases Dashboard</h1>
-          <p className="lead mb-0 text-secondary">
-            Welcome, <span className="fw-bold">{user.name}</span>. Track your case progression and connect with peer legal support.
-          </p>
-        </div>
-        <Button
-          variant="outline-primary"
-          className="d-flex align-items-center gap-2"
-          onClick={() => navigate('/peer-directory')}
-        >
-          <FaUserShield />
-          <span>Find Experienced Legal People</span>
-        </Button>
-      </div>
+    <Container fluid className="px-lg-4 py-2">
+      {/* Dashboard Executive Header & Metric Pills */}
+      <DashboardHeader
+        userName={user.name}
+        userRole="Litigant in Person"
+        title="My Cases Dashboard"
+        totalCases={userCases.length}
+        upcomingHearingsCount={upcomingHearingsCount}
+        peerSupportCount={peerSupportCount}
+        onFindSupporters={() => navigate('/peer-directory')}
+        onNewCase={() => navigate('/cases/new')}
+      />
 
       {userCases.length === 0 ? (
-        <Card className="text-center p-5 shadow-sm border-0">
-          <Card.Body>
-            <h3 className="mb-3 fw-bold">No Cases Yet</h3>
-            <p className="mb-4 text-secondary">Start managing your cases by creating your first one.</p>
-            <Button variant="primary" size="lg" className="fw-bold px-4 py-2" onClick={() => navigate('/cases/new')}>
+        <Card className="premium-card text-center p-5 border-0">
+          <Card.Body className="py-5">
+            <div className="d-flex align-items-center justify-content-center mx-auto rounded-circle bg-primary-subtle text-primary mb-3" style={{ width: 64, height: 64 }}>
+              <FaFolderPlus size={28} />
+            </div>
+            <h3 className="mb-2 fw-bold text-dark">No Active Cases</h3>
+            <p className="mb-4 text-muted" style={{ maxWidth: 440, margin: '0 auto' }}>
+              You don&apos;t have any active cases yet. Start managing your court proceedings and tracking stages by creating your first case.
+            </p>
+            <Button variant="primary" size="lg" className="fw-semibold px-4 py-2 rounded-3 shadow-sm" onClick={() => navigate('/cases/new')}>
               Create Your First Case
             </Button>
           </Card.Body>
@@ -52,7 +55,7 @@ export default function LIPDashboard() {
       ) : (
         <Row className="g-4">
           {userCases.map((caseData) => (
-            <Col key={caseData.id} xs={12} md={6} lg={4}>
+            <Col key={caseData.id} xs={12} md={6} lg={4} className="d-flex">
               <CaseCard
                 caseData={caseData}
                 onTogglePeerSupport={(caseId, currentSeeking) =>

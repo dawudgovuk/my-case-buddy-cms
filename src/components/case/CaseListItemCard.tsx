@@ -1,12 +1,22 @@
-import { Card, Badge } from 'react-bootstrap'
+import { Badge, Button } from 'react-bootstrap'
 import type { FamilyCase } from '../../types/domain'
-import CaseStatusBadge from '../common/CaseStatusBadge'
-import { EditCaseButton, DeleteCaseButton } from '../common/CaseCardButtons'
-import { FaChild, FaUsers, FaCalendarAlt } from 'react-icons/fa'
+import {
+  FaFolder,
+  FaBalanceScale,
+  FaChild,
+  FaUsers,
+  FaCalendarAlt,
+  FaArrowRight,
+  FaEdit,
+  FaTrash,
+  FaHandshake,
+  FaCalendarCheck,
+} from 'react-icons/fa'
 
 export interface CaseListItemCardProps {
   caseData: FamilyCase
   onViewCase?: (caseId: string) => void
+  onEditCase?: (caseId: string) => void
   onDeleteCase?: (caseId: string) => void
   showActions?: boolean
   className?: string
@@ -15,6 +25,7 @@ export interface CaseListItemCardProps {
 export default function CaseListItemCard({
   caseData,
   onViewCase,
+  onEditCase,
   onDeleteCase,
   showActions = true,
   className = '',
@@ -23,51 +34,152 @@ export default function CaseListItemCard({
   const partiesCount =
     caseData.parties?.filter((p) => p.role !== 'Child' || (p.role === 'Child' && p.solicitorFirm)).length || 0
   const hearingsCount = caseData.hearings?.length || 0
+  const nextHearing = caseData.hearings && caseData.hearings.length > 0 ? caseData.hearings[0] : null
+
+  // Status styling colors
+  const isOpen = caseData.status === 'Open'
+  const isStayed = caseData.status === 'Stayed'
+
+  const statusBadgeBg = isOpen ? 'bg-success-subtle text-success border-success-subtle' : isStayed ? 'bg-warning-subtle text-warning-emphasis border-warning-subtle' : 'bg-secondary-subtle text-secondary border-secondary-subtle'
+  const iconBoxBg = isOpen ? '#f0fdf4' : isStayed ? '#fffbeb' : '#f8fafc'
+  const iconBoxColor = isOpen ? '#16a34a' : isStayed ? '#d97706' : '#64748b'
 
   return (
-    <Card className={`mb-3 p-3 shadow-sm border bg-white d-flex flex-row align-items-center gap-3 ${className}`}>
-      <div
-        className="flex-grow-1 min-width-0"
-        style={{ cursor: onViewCase ? 'pointer' : 'default' }}
-        onClick={() => onViewCase?.(caseData.id)}
-      >
-        <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
-          <h6 className="fw-bold text-primary mb-0 text-truncate">
-            {caseData.id} — {caseData.title}
-          </h6>
-          <CaseStatusBadge status={caseData.status} size="sm" />
+    <div
+      className={`case-row-item p-3 p-md-3 mb-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 ${className}`}
+      style={{ cursor: onViewCase ? 'pointer' : 'default' }}
+      onClick={() => onViewCase?.(caseData.id)}
+    >
+      {/* Left Icon + Core Information */}
+      <div className="d-flex align-items-start gap-3 flex-grow-1 min-width-0">
+        {/* Soft Icon Avatar */}
+        <div
+          className="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 mt-1 mt-md-0"
+          style={{
+            width: 44,
+            height: 44,
+            backgroundColor: iconBoxBg,
+            color: iconBoxColor,
+            border: `1px solid ${isOpen ? '#dcfce7' : isStayed ? '#fef3c7' : '#e2e8f0'}`,
+          }}
+        >
+          {caseData.caseType.includes('Child') ? <FaFolder size={20} /> : <FaBalanceScale size={20} />}
         </div>
 
-        <div className="small text-muted text-truncate mb-2">
-          {caseData.court} • {caseData.caseType} • Judge: {caseData.allocatedJudge || 'Unassigned'}
-        </div>
+        {/* Content Details */}
+        <div className="overflow-hidden flex-grow-1">
+          {/* Row 1: Title, Reference, Status Pill */}
+          <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
+            <h6 className="fw-bold text-dark mb-0 case-title-link text-truncate" style={{ fontSize: '1.025rem' }}>
+              {caseData.title || '(Untitled Case)'}
+            </h6>
 
-        <div className="d-flex gap-2 flex-wrap">
-          <Badge bg="primary" className="fw-semibold px-2 py-1 d-inline-flex align-items-center gap-1">
-            <FaUsers size={10} />
-            <span>Parties: {partiesCount}</span>
-          </Badge>
-          {childrenCount > 0 && (
-            <Badge bg="info" className="fw-semibold px-2 py-1 d-inline-flex align-items-center gap-1">
-              <FaChild size={10} />
-              <span>
-                {childrenCount} child{childrenCount === 1 ? '' : 'ren'}
+            <span className={`badge border rounded-pill px-2 py-1 font-monospace ${statusBadgeBg}`} style={{ fontSize: '0.72rem' }}>
+              ● {caseData.status}
+            </span>
+
+            <span className="badge bg-light text-muted border font-monospace px-2 py-0" style={{ fontSize: '0.72rem' }}>
+              {caseData.id}
+            </span>
+
+            {caseData.seekingPeerSupport && (
+              <span className="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1 py-1 px-2" style={{ fontSize: '0.7rem' }}>
+                <FaHandshake size={10} />
+                <span>Peer Support</span>
               </span>
+            )}
+          </div>
+
+          {/* Row 2: Secondary Metadata (Single Clean Flow) */}
+          <div className="text-secondary small mb-2 text-truncate" style={{ fontSize: '0.825rem' }}>
+            <span className="fw-medium text-dark">{caseData.court}</span>
+            <span className="mx-2 text-muted">•</span>
+            <span>{caseData.caseType}</span>
+            <span className="mx-2 text-muted">•</span>
+            <span>Judge: {caseData.allocatedJudge || 'Unassigned'}</span>
+            {caseData.startedAt && (
+              <>
+                <span className="mx-2 text-muted">•</span>
+                <span className="text-muted">Started: {caseData.startedAt}</span>
+              </>
+            )}
+          </div>
+
+          {/* Row 3: Stat Badges + Next Hearing Pill */}
+          <div className="d-flex align-items-center gap-2 flex-wrap">
+            <Badge bg="light" className="text-dark border fw-normal px-2 py-1 d-inline-flex align-items-center gap-1" style={{ fontSize: '0.75rem' }}>
+              <FaUsers size={11} className="text-primary" />
+              <span>{partiesCount} {partiesCount === 1 ? 'Party' : 'Parties'}</span>
             </Badge>
-          )}
-          <Badge bg="warning" className="text-dark fw-semibold px-2 py-1 d-inline-flex align-items-center gap-1">
-            <FaCalendarAlt size={10} />
-            <span>Hearings: {hearingsCount}</span>
-          </Badge>
+
+            {childrenCount > 0 && (
+              <Badge bg="warning-subtle" className="text-warning-emphasis border border-warning-subtle fw-normal px-2 py-1 d-inline-flex align-items-center gap-1" style={{ fontSize: '0.75rem' }}>
+                <FaChild size={11} />
+                <span>
+                  {childrenCount} child{childrenCount === 1 ? '' : 'ren'}
+                </span>
+              </Badge>
+            )}
+
+            <Badge bg="light" className="text-dark border fw-normal px-2 py-1 d-inline-flex align-items-center gap-1" style={{ fontSize: '0.75rem' }}>
+              <FaCalendarAlt size={11} className="text-secondary" />
+              <span>{hearingsCount} {hearingsCount === 1 ? 'Hearing' : 'Hearings'}</span>
+            </Badge>
+
+            {nextHearing && (
+              <span className="badge bg-amber-subtle text-dark border border-warning-subtle d-inline-flex align-items-center gap-1 py-1 px-2" style={{ backgroundColor: '#fffbeb', fontSize: '0.75rem' }}>
+                <FaCalendarCheck size={11} className="text-warning" />
+                <span>
+                  Next: <strong>{nextHearing.date}</strong> ({nextHearing.type})
+                </span>
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Right Side: Primary CTA & Action Buttons */}
       {showActions && (
-        <div className="d-flex gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
-          <EditCaseButton caseId={caseData.id} />
-          {onDeleteCase && <DeleteCaseButton caseId={caseData.id} onDelete={() => onDeleteCase(caseData.id)} />}
+        <div
+          className="d-flex align-items-center gap-2 flex-shrink-0 align-self-end align-self-md-center pt-2 pt-md-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {onViewCase && (
+            <Button
+              variant="primary"
+              size="sm"
+              className="fw-semibold px-3 py-1 d-inline-flex align-items-center gap-2 shadow-xs rounded-3"
+              onClick={() => onViewCase(caseData.id)}
+              style={{ backgroundColor: '#2563eb', borderColor: '#2563eb', fontSize: '0.825rem' }}
+            >
+              <span>Open Case</span>
+              <FaArrowRight size={11} />
+            </Button>
+          )}
+
+          {onEditCase && (
+            <button
+              type="button"
+              className="action-btn-subtle"
+              onClick={() => onEditCase(caseData.id)}
+              title="Edit Case Details"
+            >
+              <FaEdit size={12} />
+            </button>
+          )}
+
+          {onDeleteCase && (
+            <button
+              type="button"
+              className="action-btn-subtle action-btn-danger"
+              onClick={() => onDeleteCase(caseData.id)}
+              title="Delete Case"
+            >
+              <FaTrash size={12} />
+            </button>
+          )}
         </div>
       )}
-    </Card>
+    </div>
   )
 }

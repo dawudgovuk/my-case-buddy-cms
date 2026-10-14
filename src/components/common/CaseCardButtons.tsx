@@ -48,7 +48,7 @@ export function CaseActionButton({
       disabled={disabled}
       onClick={onClick}
       title={title}
-      className={`d-inline-flex align-items-center justify-content-center gap-2 ${fullWidth ? 'w-100' : ''} ${className}`}
+      className={`d-inline-flex align-items-center justify-content-center gap-2 py-2 px-3 fw-semibold rounded-3 shadow-none ${fullWidth ? 'w-100' : ''} ${className}`}
     >
       {icon && <span className="btn-icon">{icon}</span>}
       <span>{children}</span>
@@ -103,7 +103,7 @@ export function ViewCaseButton({
   href,
   fullWidth = false,
   className = '',
-  variant = 'outline-secondary',
+  variant = 'primary',
   size = 'sm',
   label = 'View Details',
 }: ViewCaseButtonProps) {

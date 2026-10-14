@@ -6,6 +6,7 @@ import {
   CaseCardStepsPreview,
   CaseTimelinePreview,
   CaseStepsPreview,
+  NextHearingBannerPreview,
 } from './CasePreviews'
 import {
   TabNavPreview,
@@ -13,6 +14,7 @@ import {
   AppHeaderPreview,
   UpcomingHearingsPreview,
   DeadlinesPreview,
+  DashboardHeaderPreview,
 } from './WidgetPreviews'
 import { PeerSupporterCardPreview } from './DirectoryPreviews'
 import { VerificationGateCardPreview, CaseStatusBadgePreview } from './VerificationPreviews'
@@ -28,6 +30,24 @@ import {
   PartyFormSectionPreview,
 } from './CaseRecordPreviews'
 import { CaseMetadataFormPreview, FormInputsSuitePreview } from './FormPreviews'
+import {
+  CaseCreationStepperPreview,
+  CaseQuickPresetsPreview,
+  PartyInlineEditorPreview,
+  CaseReviewSummaryPreview,
+  CaseReadinessChecklistPreview,
+} from './CaseWizardPreviews'
+import {
+  CasesHeaderPreview,
+  CasesFilterBarPreview,
+  EmptyCasesStatePreview,
+  DeleteCaseModalPreview,
+} from './CaseListPreviews'
+import {
+  ProfessionalHeaderPreview,
+  SystemQuickGuidePreview,
+  ProfessionalFaqModalPreview,
+} from './ProfessionalDashboardPreviews'
 
 export const COMPONENT_CATALOG: ComponentItem[] = [
   // 1. Cases & Progression
@@ -125,6 +145,22 @@ export const COMPONENT_CATALOG: ComponentItem[] = [
       { name: 'currentStageIndex', type: 'number', required: true, description: 'Zero-based index of currently active stage' },
     ],
     renderPreview: (onFeedback) => createElement(CaseStepsPreview, { onFeedback }),
+  },
+  {
+    id: 'next-hearing-banner',
+    name: 'Next Hearing Alert Banner',
+    category: 'Cases & Progression',
+    filePath: 'src/components/case/NextHearingBanner.tsx',
+    importStatement: "import NextHearingBanner from '../components/case/NextHearingBanner'",
+    description:
+      'Executive styled notification banner displaying upcoming court hearings, dates, times, courtroom locations, and status badge.',
+    badges: ['Court Hearing', 'Date-Fns Aware', 'Accessible'],
+    codeSnippet: `<NextHearingBanner hearing={hearingData} />`,
+    propsDoc: [
+      { name: 'hearing', type: 'Hearing', required: true, description: 'Hearing metadata with type, date, time, location' },
+      { name: 'className', type: 'string', required: false, description: 'Optional custom CSS class name' },
+    ],
+    renderPreview: () => createElement(NextHearingBannerPreview),
   },
 
   // 2. Case Management & Records (Extracted from CaseDetails.tsx)
@@ -303,8 +339,120 @@ export const COMPONENT_CATALOG: ComponentItem[] = [
     ],
     renderPreview: (onFeedback) => createElement(PartyFormSectionPreview, { onFeedback }),
   },
+  {
+    id: 'party-inline-editor',
+    name: 'Party Inline Editor',
+    category: 'Case Management & Records',
+    filePath: 'src/components/case/PartyInlineEditor.tsx',
+    importStatement: "import PartyInlineEditor from '../components/case/PartyInlineEditor'",
+    description:
+      'Streamlined card editor for adding and editing adult parties or children, featuring age auto-calculation and FPR child protection notice.',
+    badges: ['Inline Card Form', 'Age Calculation', 'FPR Safeguarded'],
+    codeSnippet: `<PartyInlineEditor
+  isChild={false}
+  defaultRole="Applicant"
+  onSave={handleSave}
+  onCancel={handleCancel}
+/>`,
+    propsDoc: [
+      { name: 'isChild', type: 'boolean', required: true, description: 'Toggles between adult party and child record fields' },
+      { name: 'defaultRole', type: 'Party["role"]', description: 'Default preselected role for adult parties' },
+      { name: 'initialData', type: 'Party', description: 'Existing party to pre-fill when editing' },
+      { name: 'onSave', type: '(party: Party) => void', required: true, description: 'Callback with sanitized party payload' },
+      { name: 'onCancel', type: '() => void', required: true, description: 'Cancel callback dismissing the editor' },
+    ],
+    renderPreview: (onFeedback) => createElement(PartyInlineEditorPreview, { onFeedback }),
+  },
+  {
+    id: 'case-review-summary',
+    name: 'Case Review & Launch Summary',
+    category: 'Case Management & Records',
+    filePath: 'src/components/forms/CaseReviewSummary.tsx',
+    importStatement: "import CaseReviewSummary from '../components/forms/CaseReviewSummary'",
+    description:
+      'Pre-filing verification view with interactive readiness checklist, party overview chips, judicial allocation summary, and launch actions.',
+    badges: ['Readiness Checklist', 'Step 3 Review', 'Interactive'],
+    codeSnippet: `<CaseReviewSummary
+  caseData={caseData}
+  onEditStep={(step) => setStep(step)}
+  isEditMode={false}
+  onSubmit={handleSubmit}
+  onCancel={handleCancel}
+/>`,
+    propsDoc: [
+      { name: 'caseData', type: 'FamilyCase', required: true, description: 'Case object under review' },
+      { name: 'onEditStep', type: '(step: number) => void', required: true, description: 'Callback to navigate back to a specific step' },
+      { name: 'isEditMode', type: 'boolean', required: true, description: 'Whether the form is in edit or creation mode' },
+      { name: 'onSubmit', type: '() => void', required: true, description: 'Submission callback' },
+      { name: 'onCancel', type: '() => void', required: true, description: 'Cancellation callback' },
+    ],
+    renderPreview: (onFeedback) => createElement(CaseReviewSummaryPreview, { onFeedback }),
+  },
+  {
+    id: 'case-readiness-checklist',
+    name: 'Case Readiness Checklist',
+    category: 'Case Management & Records',
+    filePath: 'src/components/forms/CaseReadinessChecklist.tsx',
+    importStatement: "import CaseReadinessChecklist from '../components/forms/CaseReadinessChecklist'",
+    description:
+      'Pre-filing status cards verifying title presence, court jurisdiction, and party registration requirements.',
+    badges: ['Status Verification', 'Checklist', 'Pre-Filing'],
+    codeSnippet: `<CaseReadinessChecklist
+  hasTitle={true}
+  court="Family Court"
+  applicantsCount={1}
+  respondentsCount={1}
+/>`,
+    propsDoc: [
+      { name: 'hasTitle', type: 'boolean', required: true, description: 'Whether case title is populated' },
+      { name: 'court', type: 'string', required: true, description: 'Court jurisdiction' },
+      { name: 'applicantsCount', type: 'number', required: true, description: 'Number of registered applicants' },
+      { name: 'respondentsCount', type: 'number', required: true, description: 'Number of registered respondents' },
+    ],
+    renderPreview: (onFeedback) => createElement(CaseReadinessChecklistPreview, { onFeedback }),
+  },
 
   // 3. Form Inputs & Controls (Extracted from /cases/new)
+  {
+    id: 'case-creation-stepper',
+    name: 'Case Creation Stepper',
+    category: 'Form Inputs & Controls',
+    filePath: 'src/components/forms/CaseCreationStepper.tsx',
+    importStatement: "import CaseCreationStepper from '../components/forms/CaseCreationStepper'",
+    description:
+      'Guided 3-step progress stepper with clickable step buttons, completion badges, and dynamic progress bar indicator.',
+    badges: ['Progress Stepper', '3-Step Wizard', 'Interactive Navigation'],
+    codeSnippet: `<CaseCreationStepper
+  currentStep={currentStep}
+  onSelectStep={setCurrentStep}
+  status={{ detailsValid: true, partiesCount: 2, childrenCount: 1 }}
+/>`,
+    propsDoc: [
+      { name: 'currentStep', type: 'number', required: true, description: 'Zero-indexed active step (0, 1, or 2)' },
+      { name: 'onSelectStep', type: '(step: number) => void', required: true, description: 'Step selection callback' },
+      { name: 'status', type: 'StepperStatus', required: true, description: 'Validation status tracking completion of steps' },
+    ],
+    renderPreview: (onFeedback) => createElement(CaseCreationStepperPreview, { onFeedback }),
+  },
+  {
+    id: 'case-quick-presets',
+    name: 'Case Quick Presets Bar',
+    category: 'Form Inputs & Controls',
+    filePath: 'src/components/forms/CaseQuickPresets.tsx',
+    importStatement: "import CaseQuickPresets from '../components/forms/CaseQuickPresets'",
+    description:
+      'Quick-action preset pills for common UK Family Court applications (Child Arrangements, Prohibited Steps, Non-Molestation, Financial Remedy).',
+    badges: ['Quick Start', 'Litigant Friendly', 'Auto-Fill'],
+    codeSnippet: `<CaseQuickPresets
+  currentTitle={title}
+  onSelectPreset={(p) => handleSelect(p)}
+/>`,
+    propsDoc: [
+      { name: 'onSelectPreset', type: '(preset) => void', required: true, description: 'Callback providing preset title, court, and caseType' },
+      { name: 'currentTitle', type: 'string', description: 'Current active title for selected highlighting' },
+    ],
+    renderPreview: (onFeedback) => createElement(CaseQuickPresetsPreview, { onFeedback }),
+  },
   {
     id: 'case-metadata-form',
     name: 'Case Metadata Form (from /cases/new)',
@@ -392,6 +540,113 @@ export const COMPONENT_CATALOG: ComponentItem[] = [
       { name: 'showIcon', type: 'boolean', defaultVal: 'true', description: 'Whether to display icon bullet' },
     ],
     renderPreview: () => createElement(CaseStatusBadgePreview),
+  },
+  {
+    id: 'cases-header',
+    name: 'Cases Dashboard Header',
+    category: 'Case Lists & Badges',
+    filePath: 'src/components/case/CasesHeader.tsx',
+    importStatement: "import CasesHeader from '../components/case/CasesHeader'",
+    description:
+      'Executive case repository header with proceedings count, active cases, upcoming hearing stats, and primary creation CTA.',
+    badges: ['Executive Header', 'Stat Pills', 'Action CTA'],
+    codeSnippet: `<CasesHeader
+  totalCases={4}
+  openCasesCount={3}
+  upcomingHearingsCount={2}
+  childrenCount={3}
+  onNewCase={() => navigate('/cases/new')}
+/>`,
+    propsDoc: [
+      { name: 'totalCases', type: 'number', required: true, description: 'Total number of recorded proceedings' },
+      { name: 'openCasesCount', type: 'number', required: true, description: 'Number of active/open cases' },
+      { name: 'upcomingHearingsCount', type: 'number', required: true, description: 'Total upcoming hearings across cases' },
+      { name: 'childrenCount', type: 'number', required: true, description: 'Number of linked protected children' },
+      { name: 'onNewCase', type: '() => void', required: true, description: 'Callback fired when new case CTA is clicked' },
+    ],
+    renderPreview: (onFeedback) => createElement(CasesHeaderPreview, { onFeedback }),
+  },
+  {
+    id: 'cases-filter-bar',
+    name: 'Cases Filter & Search Bar',
+    category: 'Case Lists & Badges',
+    filePath: 'src/components/case/CasesFilterBar.tsx',
+    importStatement: "import CasesFilterBar from '../components/case/CasesFilterBar'",
+    description:
+      'Multi-dimensional control bar featuring real-time search, status pills with counts, case type dropdown, sorting, and list/grid layout toggle.',
+    badges: ['Search & Filter', 'List/Grid Switcher', 'Sorting'],
+    codeSnippet: `<CasesFilterBar
+  searchTerm={q}
+  onSearchChange={setQ}
+  selectedStatus={status}
+  onStatusChange={setStatus}
+  statusCounts={{ all: 4, open: 3, stayed: 1, concluded: 0 }}
+  selectedCaseType={type}
+  onCaseTypeChange={setType}
+  caseTypeOptions={['Private Law', 'Public Law']}
+  sortBy="recent"
+  onSortChange={setSortBy}
+  viewMode="list"
+  onViewModeChange={setViewMode}
+  hasActiveFilters={false}
+  onResetFilters={handleReset}
+/>`,
+    propsDoc: [
+      { name: 'searchTerm', type: 'string', required: true, description: 'Current search query string' },
+      { name: 'onSearchChange', type: '(val: string) => void', required: true, description: 'Search input handler' },
+      { name: 'selectedStatus', type: "CaseStatus | 'All'", required: true, description: 'Active status filter' },
+      { name: 'statusCounts', type: 'object', required: true, description: 'Case counts per status' },
+      { name: 'viewMode', type: "'list' | 'grid'", required: true, description: 'Layout mode toggle' },
+    ],
+    renderPreview: (onFeedback) => createElement(CasesFilterBarPreview, { onFeedback }),
+  },
+  {
+    id: 'empty-cases-state',
+    name: 'Empty Cases State Card',
+    category: 'Case Lists & Badges',
+    filePath: 'src/components/case/EmptyCasesState.tsx',
+    importStatement: "import EmptyCasesState from '../components/case/EmptyCasesState'",
+    description:
+      'Differentiated empty state card distinguishing between zero search results and empty case repository with quick actions.',
+    badges: ['Empty State', 'Search Fallback', 'Welcoming UI'],
+    codeSnippet: `<EmptyCasesState
+  isFiltered={true}
+  searchTerm="FC-123"
+  onReset={handleReset}
+  onNewCase={() => navigate('/cases/new')}
+/>`,
+    propsDoc: [
+      { name: 'isFiltered', type: 'boolean', required: true, description: 'Whether active filters produced the zero result' },
+      { name: 'searchTerm', type: 'string', description: 'Active query string if filtered' },
+      { name: 'onReset', type: '() => void', description: 'Reset filter action callback' },
+      { name: 'onNewCase', type: '() => void', description: 'Create case action callback' },
+    ],
+    renderPreview: (onFeedback) => createElement(EmptyCasesStatePreview, { onFeedback }),
+  },
+  {
+    id: 'delete-case-modal',
+    name: 'Delete Case Modal',
+    category: 'Case Lists & Badges',
+    filePath: 'src/components/case/DeleteCaseModal.tsx',
+    importStatement: "import DeleteCaseModal from '../components/case/DeleteCaseModal'",
+    description:
+      'Confirmation modal dialog safeguarding against accidental deletion of court proceedings, orders, and associated hearings.',
+    badges: ['Modal Safeguard', 'Destructive Action', 'Accessible'],
+    codeSnippet: `<DeleteCaseModal
+  show={showModal}
+  caseId="FC-23-000035"
+  caseTitle="Child Arrangements"
+  onConfirm={handleDelete}
+  onCancel={() => setShowModal(false)}
+/>`,
+    propsDoc: [
+      { name: 'show', type: 'boolean', required: true, description: 'Modal visibility state' },
+      { name: 'caseId', type: 'string', required: true, description: 'Unique case reference identifier' },
+      { name: 'caseTitle', type: 'string', required: true, description: 'Title of the case to delete' },
+      { name: 'onConfirm', type: '() => void', required: true, description: 'Deletion execution callback' },
+      { name: 'onCancel', type: '() => void', required: true, description: 'Cancellation dismiss callback' },
+    ],
+    renderPreview: (onFeedback) => createElement(DeleteCaseModalPreview, { onFeedback }),
   },
 
   // 5. Legal Directory & Safeguarding
@@ -554,5 +809,100 @@ export const COMPONENT_CATALOG: ComponentItem[] = [
       { name: 'onToggleDeadline', type: '(id: string, status: string) => void', required: true, description: 'Triggered when a deadline checkbox is clicked' },
     ],
     renderPreview: (onFeedback) => createElement(DeadlinesPreview, { onFeedback }),
+  },
+  {
+    id: 'dashboard-header',
+    name: 'Dashboard Executive Header',
+    category: 'Dashboard Widgets',
+    filePath: 'src/components/dashboard/DashboardHeader.tsx',
+    importStatement: "import DashboardHeader from '../components/dashboard/DashboardHeader'",
+    description:
+      'Executive dashboard greeting hero with user role badge, quick stats metric pills (cases, hearings, peer support), and primary CTA buttons.',
+    badges: ['Executive Summary', 'Stats Metrics', 'Role-Aware'],
+    codeSnippet: `<DashboardHeader userName="Samuel Anderson" totalCases={3} upcomingHearingsCount={1} peerSupportCount={2} />`,
+    propsDoc: [
+      { name: 'userName', type: 'string', required: true, description: 'Full name of logged-in user' },
+      { name: 'userRole', type: 'string', required: false, description: 'Display role name for pill badge' },
+      { name: 'totalCases', type: 'number', required: false, description: 'Count of total user cases' },
+      { name: 'upcomingHearingsCount', type: 'number', required: false, description: 'Count of upcoming scheduled hearings' },
+      { name: 'peerSupportCount', type: 'number', required: false, description: 'Count of active peer support requests' },
+      { name: 'onFindSupporters', type: '() => void', required: false, description: 'Callback for directory navigation' },
+      { name: 'onNewCase', type: '() => void', required: false, description: 'Callback for creating new case' },
+    ],
+    renderPreview: (onFeedback) => createElement(DashboardHeaderPreview, { onFeedback }),
+  },
+  {
+    id: 'professional-header',
+    name: 'Professional Dashboard Header',
+    category: 'Dashboard Widgets',
+    filePath: 'src/components/dashboard/ProfessionalHeader.tsx',
+    importStatement: "import ProfessionalHeader from '../components/dashboard/ProfessionalHeader'",
+    description:
+      'Executive dashboard hero for McKenzie Friends, solicitors, and barristers featuring role badge, verification indicator, 4-metric summary bar, and system guide triggers.',
+    badges: ['Professional UI', 'Role-Aware', 'Interactive Metrics'],
+    codeSnippet: `<ProfessionalHeader
+  user={user}
+  assignedCasesCount={2}
+  peerSupportCasesCount={4}
+  upcomingHearingsCount={3}
+  pendingDeadlinesCount={1}
+  isGuideOpen={true}
+  onToggleGuide={() => setOpen(!open)}
+  onOpenFaq={() => setShowFaq(true)}
+/>`,
+    propsDoc: [
+      { name: 'user', type: 'User', required: true, description: 'Current professional user object' },
+      { name: 'assignedCasesCount', type: 'number', required: true, description: 'Count of cases assigned directly to user' },
+      { name: 'peerSupportCasesCount', type: 'number', required: true, description: 'Count of cases seeking peer support' },
+      { name: 'upcomingHearingsCount', type: 'number', required: true, description: 'Count of upcoming court hearings' },
+      { name: 'pendingDeadlinesCount', type: 'number', required: true, description: 'Count of pending filing deadlines' },
+      { name: 'isGuideOpen', type: 'boolean', required: true, description: 'Whether the beginner quick guide is expanded' },
+      { name: 'onToggleGuide', type: '() => void', required: true, description: 'Handler to toggle beginner guide' },
+      { name: 'onOpenFaq', type: '() => void', required: true, description: 'Handler to open the system FAQ modal' },
+    ],
+    renderPreview: (onFeedback) => createElement(ProfessionalHeaderPreview, { onFeedback }),
+  },
+  {
+    id: 'system-quick-guide',
+    name: 'System Quick Guide (Newcomers)',
+    category: 'Dashboard Widgets',
+    filePath: 'src/components/dashboard/SystemQuickGuide.tsx',
+    importStatement: "import SystemQuickGuide from '../components/dashboard/SystemQuickGuide'",
+    description:
+      'Beginner-friendly 3-step walkthrough explaining roles, safeguarding verification, and case collaboration for users unfamiliar with UK Family Court CMS.',
+    badges: ['Onboarding', 'Beginner Guide', 'Safeguarding UX'],
+    codeSnippet: `<SystemQuickGuide
+  isOpen={true}
+  onClose={() => setOpen(false)}
+  isVerified={false}
+  assignedCasesCount={2}
+  onVerifyClick={() => handleVerify()}
+  onOpenFaq={() => setShowFaq(true)}
+/>`,
+    propsDoc: [
+      { name: 'isOpen', type: 'boolean', required: true, description: 'Whether the guide banner is shown' },
+      { name: 'onClose', type: '() => void', required: true, description: 'Dismiss callback' },
+      { name: 'isVerified', type: 'boolean', required: true, description: 'Email verification status of user' },
+      { name: 'assignedCasesCount', type: 'number', required: false, description: 'Number of assigned cases available' },
+      { name: 'onVerifyClick', type: '() => void', required: false, description: 'Action to trigger 1-click verification' },
+      { name: 'onOpenFaq', type: '() => void', required: false, description: 'Action to open system FAQ modal' },
+    ],
+    renderPreview: (onFeedback) => createElement(SystemQuickGuidePreview, { onFeedback }),
+  },
+  {
+    id: 'professional-faq-modal',
+    name: 'Professional & System FAQ Modal',
+    category: 'Dashboard Widgets',
+    filePath: 'src/components/dashboard/ProfessionalFaqModal.tsx',
+    importStatement: "import ProfessionalFaqModal from '../components/dashboard/ProfessionalFaqModal'",
+    description:
+      'Accessible accordion modal explaining Litigant in Person (LIP), McKenzie Friend duties, FPR safeguarding rules, and hearings.',
+    badges: ['Accessible Modal', 'Legal Terminology', 'Safeguarding'],
+    codeSnippet: `<ProfessionalFaqModal show={showModal} onHide={() => setShowModal(false)} />`,
+    propsDoc: [
+      { name: 'show', type: 'boolean', required: true, description: 'Controls modal visibility' },
+      { name: 'onHide', type: '() => void', required: true, description: 'Modal close callback' },
+    ],
+    renderPreview: (onFeedback) => createElement(ProfessionalFaqModalPreview, { onFeedback }),
   },
 ]

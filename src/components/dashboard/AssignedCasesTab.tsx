@@ -105,7 +105,20 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
   }
 
   return (
-    <Card className="shadow-sm border-0">
+    <div className="my-2">
+      <div className="mb-3">
+        <h4 className="fw-bold mb-1 d-flex align-items-center gap-2">
+          <span>My Assigned Family Cases</span>
+          <Badge bg="secondary" className="fs-6 px-2 py-1">
+            {cases.length} Active
+          </Badge>
+        </h4>
+        <p className="text-secondary small mb-0">
+          Private court cases where you have been invited by a litigant as their McKenzie Friend, legal representative, or collaborator.
+        </p>
+      </div>
+
+      <Card className="shadow-sm border rounded-4 overflow-hidden">
       <Card.Body className="p-0">
         <Table responsive hover className="mb-0 align-middle">
           <thead className="table-light">
@@ -184,5 +197,6 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
         </Table>
       </Card.Body>
     </Card>
+    </div>
   )
 }

@@ -3,6 +3,7 @@ import { Row, Col, Form } from 'react-bootstrap'
 import TabNav, { type TabItem } from '../common/TabNav'
 import Logo from '../common/Logo'
 import AppHeader from '../common/AppHeader'
+import DashboardHeader from '../dashboard/DashboardHeader'
 import UpcomingHearingsCard, { type HearingItem } from '../dashboard/UpcomingHearingsCard'
 import DeadlinesCard from '../dashboard/DeadlinesCard'
 import type { DocumentDeadline } from '../../types/domain'
@@ -145,3 +146,18 @@ export function DeadlinesPreview({ onFeedback }: { onFeedback: (msg: string) => 
     </div>
   )
 }
+
+export function DashboardHeaderPreview({ onFeedback }: { onFeedback: (msg: string) => void }) {
+  return (
+    <DashboardHeader
+      userName="Samuel Anderson"
+      userRole="Litigant in Person"
+      totalCases={3}
+      upcomingHearingsCount={1}
+      peerSupportCount={2}
+      onFindSupporters={() => onFeedback('Clicked "Find Legal Supporters"')}
+      onNewCase={() => onFeedback('Clicked "+ New Case"')}
+    />
+  )
+}
+
