@@ -1,5 +1,6 @@
 import { Modal, Button } from 'react-bootstrap'
 import { FaTrash, FaExclamationTriangle, FaTimes } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface DeleteCaseModalProps {
   show: boolean
@@ -16,6 +17,8 @@ export default function DeleteCaseModal({
   onConfirm,
   onCancel,
 }: DeleteCaseModalProps) {
+  const { t } = useTranslation()
+
   return (
     <Modal show={show} onHide={onCancel} centered backdrop="static" keyboard={false}>
       <Modal.Header closeButton className="border-bottom-0 pb-0">
@@ -26,36 +29,40 @@ export default function DeleteCaseModal({
           >
             <FaExclamationTriangle size={18} />
           </div>
-          <Modal.Title className="h5 fw-bold text-dark mb-0">Confirm Case Deletion</Modal.Title>
+          <Modal.Title className="h5 fw-bold text-dark mb-0">
+            {t('casesList.confirmDeleteTitle')}
+          </Modal.Title>
         </div>
       </Modal.Header>
 
       <Modal.Body className="py-3">
         <p className="text-secondary mb-2">
-          Are you sure you want to delete this court case? All associated hearing records, parties, and uploaded bundles will be permanently removed.
+          {t('casesList.confirmDeleteDesc')}
         </p>
 
         <div className="p-3 bg-light rounded-3 border mb-2">
           <div className="small text-muted text-uppercase fw-bold" style={{ fontSize: '0.72rem' }}>
-            Case to be Deleted:
+            {t('casesList.caseToBeDeleted')}
           </div>
           <div className="fw-bold text-dark">{caseTitle || '(Untitled Case)'}</div>
-          <div className="text-muted small font-monospace">Reference ID: {caseId}</div>
+          <div className="text-muted small font-monospace">
+            {t('casesList.refId', { id: caseId })}
+          </div>
         </div>
 
         <div className="small text-danger fw-semibold">
-          Warning: This action cannot be undone.
+          {t('casesList.warningPermanent')}
         </div>
       </Modal.Body>
 
       <Modal.Footer className="border-top-0 pt-0">
         <Button variant="outline-secondary" size="sm" onClick={onCancel} className="px-3">
           <FaTimes className="me-1" size={12} />
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button variant="danger" size="sm" onClick={onConfirm} className="px-3 fw-semibold shadow-xs">
           <FaTrash className="me-1" size={12} />
-          Delete Case
+          {t('casesList.deleteCaseBtn')}
         </Button>
       </Modal.Footer>
     </Modal>

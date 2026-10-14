@@ -14,6 +14,7 @@ import SystemQuickGuide from '../components/dashboard/SystemQuickGuide'
 import ProfessionalFaqModal from '../components/dashboard/ProfessionalFaqModal'
 import TabNav, { type TabItem } from '../components/common/TabNav'
 import { FaHandshake, FaGavel, FaCalendarAlt, FaLock } from 'react-icons/fa'
+import { useTranslation } from '../hooks/useTranslation'
 
 type DashboardTab = 'peer' | 'assigned' | 'schedule'
 
@@ -21,6 +22,7 @@ export default function ProfessionalDashboard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { cases } = useCasesStore()
+  const { t } = useTranslation()
   const [deadlines, setDeadlines] = useState<DocumentDeadline[]>([])
   const [activeTab, setActiveTab] = useState<DashboardTab>('peer')
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(!user?.isVerified)
@@ -69,27 +71,29 @@ export default function ProfessionalDashboard() {
     () => [
       {
         key: 'peer',
-        label: user?.isVerified ? 'Peer Support Cases' : 'Peer Support Requests',
+        label: user?.isVerified
+          ? t('professionalDashboard.peerSupportTab')
+          : t('professionalDashboard.peerSupportRequestsTab'),
         count: peerSupportCasesCount,
         badgeVariant: user?.isVerified ? 'primary' : 'warning',
         icon: user?.isVerified ? <FaHandshake /> : <FaLock className="text-warning" />,
       },
       {
         key: 'assigned',
-        label: 'My Assigned Cases',
+        label: t('professionalDashboard.assignedCasesTab'),
         count: userCases.length,
         badgeVariant: 'secondary',
         icon: <FaGavel />,
       },
       {
         key: 'schedule',
-        label: 'Hearings & Deadlines',
+        label: t('professionalDashboard.scheduleTab'),
         count: upcomingHearings.length + pendingDeadlinesCount,
         badgeVariant: 'info',
         icon: <FaCalendarAlt />,
       },
     ],
-    [peerSupportCasesCount, userCases.length, user?.isVerified, upcomingHearings.length, pendingDeadlinesCount]
+    [peerSupportCasesCount, userCases.length, user?.isVerified, upcomingHearings.length, pendingDeadlinesCount, t]
   )
 
   function handleDeadlineToggle(deadlineId: string, currentStatus: DocumentDeadline['status']) {

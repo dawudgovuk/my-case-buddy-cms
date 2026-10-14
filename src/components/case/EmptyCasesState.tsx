@@ -1,5 +1,6 @@
 import { Card, Button } from 'react-bootstrap'
 import { FaFolderPlus, FaSearchMinus, FaTimes } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface EmptyCasesStateProps {
   isFiltered: boolean
@@ -16,6 +17,8 @@ export default function EmptyCasesState({
   onNewCase,
   className = '',
 }: EmptyCasesStateProps) {
+  const { t } = useTranslation()
+
   if (isFiltered) {
     return (
       <Card className={`border shadow-sm bg-white text-center p-5 rounded-3 ${className}`}>
@@ -25,17 +28,17 @@ export default function EmptyCasesState({
         >
           <FaSearchMinus size={24} />
         </div>
-        <h5 className="fw-bold text-dark mb-1">No Matching Cases Found</h5>
+        <h5 className="fw-bold text-dark mb-1">{t('casesList.noCasesFound')}</h5>
         <p className="text-muted small mb-3" style={{ maxWidth: 420, margin: '0 auto' }}>
           {searchTerm
-            ? `No proceedings match your search for "${searchTerm}" under the selected filters.`
-            : 'No proceedings match the currently selected filter options.'}
+            ? `"${searchTerm}"`
+            : t('casesList.noCasesFound')}
         </p>
         {onReset && (
           <div>
             <Button variant="outline-primary" size="sm" onClick={onReset} className="px-3">
               <FaTimes className="me-1" size={11} />
-              Reset All Filters
+              {t('casesList.resetFilters')}
             </Button>
           </div>
         )}
@@ -51,9 +54,9 @@ export default function EmptyCasesState({
       >
         <FaFolderPlus size={28} />
       </div>
-      <h4 className="fw-bold text-dark mb-1">No Cases Registered Yet</h4>
+      <h4 className="fw-bold text-dark mb-1">{t('lipDashboard.noActiveCasesTitle')}</h4>
       <p className="text-muted small mb-4" style={{ maxWidth: 460, margin: '0 auto' }}>
-        Start tracking your family court proceedings, listing parties and children, managing hearing directions, and sharing access with legal supporters.
+        {t('lipDashboard.noActiveCasesDesc')}
       </p>
       {onNewCase && (
         <div>
@@ -64,7 +67,7 @@ export default function EmptyCasesState({
             onClick={onNewCase}
           >
             <FaFolderPlus className="me-2" size={16} />
-            Create Your First Case
+            {t('lipDashboard.createFirstCaseBtn')}
           </Button>
         </div>
       )}

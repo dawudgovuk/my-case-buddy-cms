@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useCasesStore } from '../store/casesStore'
-import { Card, Tabs, Tab } from 'react-bootstrap'
+import { useTranslation } from '../hooks/useTranslation'
+import { Card, Tabs, Tab, Badge } from 'react-bootstrap'
 import CaseSummaryCard from '../components/case/CaseSummaryCard'
 import CaseOverviewTab from '../components/case/tabs/CaseOverviewTab'
 import PartiesTab from '../components/case/tabs/PartiesTab'
@@ -11,58 +12,155 @@ import OrdersTab from '../components/case/tabs/OrdersTab'
 import NotesTab from '../components/case/tabs/NotesTab'
 import TeamInvitesTab from '../components/case/tabs/TeamInvitesTab'
 import { CASE_DETAILS_TABS } from '../utils/caseConstants'
+import {
+  FaInfoCircle,
+  FaUsers,
+  FaCalendarAlt,
+  FaFileAlt,
+  FaBalanceScale,
+  FaStickyNote,
+  FaUserFriends,
+} from 'react-icons/fa'
 
 export default function CaseDetails() {
   const { caseId } = useParams()
   const navigate = useNavigate()
   const { getById } = useCasesStore()
+  const { t } = useTranslation()
   const fc = useMemo(() => (caseId ? getById(caseId) : undefined), [caseId, getById])
   const [tab, setTab] = useState<number>(CASE_DETAILS_TABS.OVERVIEW)
 
-  if (!caseId || !fc) return <div className="text-danger p-4">Case not found.</div>
+  if (!caseId || !fc) return <div className="text-danger p-4">{t('caseDetails.notFound')}</div>
+
+  const partiesCount = fc.parties?.length || 0
+  const hearingsCount = fc.hearings?.length || 0
+  const documentsCount = fc.documents?.length || 0
+  const ordersCount = fc.orders?.length || 0
+  const notesCount = fc.notes?.length || 0
 
   return (
-    <div className="container-fluid p-0">
+    <div className="py-2" style={{ maxWidth: '1240px', margin: '0 auto' }}>
       {/* Reusable Case Header Summary */}
       <CaseSummaryCard
         caseData={fc}
         onEdit={() => navigate(`/cases/${fc.id}/edit`)}
-        onBack={() => navigate('/')}
+        onBack={() => navigate('/cases')}
       />
 
-      <Card className="shadow-sm border-0">
-        <Card.Body>
+      <Card className="shadow-sm border rounded-3 overflow-hidden bg-white">
+        <Card.Body className="p-3 p-md-4 case-details-tabs-wrapper">
           <Tabs
             id="case-details-tabs"
             activeKey={tab}
             onSelect={(k: string | null) => setTab(Number(k))}
             className="mb-4"
           >
-            <Tab eventKey={CASE_DETAILS_TABS.OVERVIEW} title="Case Overview">
+            <Tab
+              eventKey={CASE_DETAILS_TABS.OVERVIEW}
+              title={
+                <span className="d-inline-flex align-items-center gap-2">
+                  <FaInfoCircle size={13} />
+                  <span>{t('caseDetails.overviewTab')}</span>
+                </span>
+              }
+            >
               <CaseOverviewTab caseData={fc} />
             </Tab>
 
-            <Tab eventKey={CASE_DETAILS_TABS.PARTIES} title="Parties">
+            <Tab
+              eventKey={CASE_DETAILS_TABS.PARTIES}
+              title={
+                <span className="d-inline-flex align-items-center gap-2">
+                  <FaUsers size={13} />
+                  <span>{t('caseDetails.partiesTab')}</span>
+                  {partiesCount > 0 && (
+                    <Badge bg="light" text="dark" pill className="border font-monospace" style={{ fontSize: '0.68rem' }}>
+                      {partiesCount}
+                    </Badge>
+                  )}
+                </span>
+              }
+            >
               <PartiesTab caseId={fc.id} />
             </Tab>
 
-            <Tab eventKey={CASE_DETAILS_TABS.HEARINGS} title="Hearings">
+            <Tab
+              eventKey={CASE_DETAILS_TABS.HEARINGS}
+              title={
+                <span className="d-inline-flex align-items-center gap-2">
+                  <FaCalendarAlt size={13} />
+                  <span>{t('caseDetails.hearingsTab')}</span>
+                  {hearingsCount > 0 && (
+                    <Badge bg="light" text="dark" pill className="border font-monospace" style={{ fontSize: '0.68rem' }}>
+                      {hearingsCount}
+                    </Badge>
+                  )}
+                </span>
+              }
+            >
               <HearingsTab caseId={fc.id} />
             </Tab>
 
-            <Tab eventKey={CASE_DETAILS_TABS.DOCUMENTS} title="Documents">
+            <Tab
+              eventKey={CASE_DETAILS_TABS.DOCUMENTS}
+              title={
+                <span className="d-inline-flex align-items-center gap-2">
+                  <FaFileAlt size={13} />
+                  <span>{t('caseDetails.documentsTab')}</span>
+                  {documentsCount > 0 && (
+                    <Badge bg="light" text="dark" pill className="border font-monospace" style={{ fontSize: '0.68rem' }}>
+                      {documentsCount}
+                    </Badge>
+                  )}
+                </span>
+              }
+            >
               <DocumentsTab caseId={fc.id} />
             </Tab>
 
-            <Tab eventKey={CASE_DETAILS_TABS.ORDERS} title="Orders">
+            <Tab
+              eventKey={CASE_DETAILS_TABS.ORDERS}
+              title={
+                <span className="d-inline-flex align-items-center gap-2">
+                  <FaBalanceScale size={13} />
+                  <span>{t('caseDetails.ordersTab')}</span>
+                  {ordersCount > 0 && (
+                    <Badge bg="light" text="dark" pill className="border font-monospace" style={{ fontSize: '0.68rem' }}>
+                      {ordersCount}
+                    </Badge>
+                  )}
+                </span>
+              }
+            >
               <OrdersTab caseId={fc.id} />
             </Tab>
 
-            <Tab eventKey={CASE_DETAILS_TABS.NOTES} title="Notes">
+            <Tab
+              eventKey={CASE_DETAILS_TABS.NOTES}
+              title={
+                <span className="d-inline-flex align-items-center gap-2">
+                  <FaStickyNote size={13} />
+                  <span>{t('caseDetails.notesTab')}</span>
+                  {notesCount > 0 && (
+                    <Badge bg="light" text="dark" pill className="border font-monospace" style={{ fontSize: '0.68rem' }}>
+                      {notesCount}
+                    </Badge>
+                  )}
+                </span>
+              }
+            >
               <NotesTab caseId={fc.id} />
             </Tab>
 
-            <Tab eventKey={CASE_DETAILS_TABS.TEAM} title="Team & Invites">
+            <Tab
+              eventKey={CASE_DETAILS_TABS.TEAM}
+              title={
+                <span className="d-inline-flex align-items-center gap-2">
+                  <FaUserFriends size={13} />
+                  <span>{t('caseDetails.teamTab')}</span>
+                </span>
+              }
+            >
               <TeamInvitesTab caseId={fc.id} />
             </Tab>
           </Tabs>

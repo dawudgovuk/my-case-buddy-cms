@@ -11,12 +11,14 @@ import CaseCreationStepper from '../components/forms/CaseCreationStepper'
 import CaseQuickPresets from '../components/forms/CaseQuickPresets'
 import CaseReviewSummary from '../components/forms/CaseReviewSummary'
 import { FaSave, FaArrowRight, FaArrowLeft, FaTimes } from 'react-icons/fa'
+import { useTranslation } from '../hooks/useTranslation'
 
 export default function CaseForm() {
   const navigate = useNavigate()
   const { caseId } = useParams()
   const { getById, addOrUpdate } = useCasesStore()
   const { user } = useAuthStore()
+  const { t } = useTranslation()
 
   const existing = useMemo(() => (caseId ? getById(caseId) : undefined), [caseId, getById])
   const [currentStep, setCurrentStep] = useState<number>(0)
@@ -112,13 +114,13 @@ export default function CaseForm() {
       <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
         <div>
           <div className="text-primary small fw-bold text-uppercase mb-1" style={{ letterSpacing: '0.5px' }}>
-            {existing ? 'Case Management' : 'Family Proceedings Setup'}
+            {existing ? t('caseForm.categoryManage') : t('caseForm.categorySetup')}
           </div>
-          <h2 className="fw-bold text-dark mb-0">{existing ? 'Edit Case' : 'Create New Case'}</h2>
+          <h2 className="fw-bold text-dark mb-0">{existing ? t('caseForm.editTitle') : t('caseForm.createTitle')}</h2>
           <p className="text-secondary small mb-0">
             {existing
-              ? `Update proceedings details, register parties, or modify children records for ${existing.id}.`
-              : 'Set up proceedings, track key dates, and register all parties and children.'}
+              ? t('caseForm.managementSubtitle', { id: existing.id })
+              : t('caseForm.setupSubtitle')}
           </p>
         </div>
 
@@ -127,10 +129,10 @@ export default function CaseForm() {
             variant="outline-secondary"
             size="sm"
             className="px-3 d-flex align-items-center gap-1 shadow-xs"
-            onClick={() => navigate(existing ? `/cases/${existing.id}` : '/')}
+            onClick={() => navigate(existing ? `/cases/${existing.id}` : '/cases')}
           >
             <FaTimes size={12} />
-            <span>Cancel</span>
+            <span>{t('common.cancel')}</span>
           </Button>
 
           {existing && (
@@ -142,7 +144,7 @@ export default function CaseForm() {
               disabled={!isDetailsValid}
             >
               <FaSave size={12} />
-              <span>Save Changes</span>
+              <span>{t('common.saveChanges')}</span>
             </Button>
           )}
         </div>
@@ -185,20 +187,20 @@ export default function CaseForm() {
           />
 
           <Card className="p-3 border shadow-sm bg-white rounded-3">
-            <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2">
               <Button
                 variant="outline-secondary"
                 onClick={() => navigate(existing ? `/cases/${existing.id}` : '/')}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button
                 variant="primary"
-                className="px-4 fw-semibold d-flex align-items-center gap-2"
+                className="px-4 fw-semibold d-flex align-items-center justify-content-center gap-2"
                 onClick={() => setCurrentStep(1)}
                 disabled={!isDetailsValid}
               >
-                <span>Continue to Parties & Children</span>
+                <span>{t('caseForm.continueToParties')}</span>
                 <FaArrowRight size={12} />
               </Button>
             </div>
@@ -228,21 +230,21 @@ export default function CaseForm() {
           />
 
           <Card className="p-3 border shadow-sm bg-white rounded-3">
-            <div className="d-flex justify-content-between align-items-center">
+            <div className="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2">
               <Button
                 variant="outline-secondary"
-                className="d-flex align-items-center gap-2"
+                className="d-flex align-items-center justify-content-center gap-2"
                 onClick={() => setCurrentStep(0)}
               >
                 <FaArrowLeft size={12} />
-                <span>Back to Case Details</span>
+                <span>{t('caseForm.backToDetails')}</span>
               </Button>
               <Button
                 variant="primary"
-                className="px-4 fw-semibold d-flex align-items-center gap-2"
+                className="px-4 fw-semibold d-flex align-items-center justify-content-center gap-2"
                 onClick={() => setCurrentStep(2)}
               >
-                <span>Proceed to Review & Confirm</span>
+                <span>{t('caseForm.proceedToReview')}</span>
                 <FaArrowRight size={12} />
               </Button>
             </div>

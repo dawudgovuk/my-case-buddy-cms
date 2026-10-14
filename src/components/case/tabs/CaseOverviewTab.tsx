@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { Accordion } from 'react-bootstrap'
 import type { FamilyCase } from '../../../types/domain'
 import { useCasesStore } from '../../../store/casesStore'
+import { useTranslation } from '../../../hooks/useTranslation'
 import CaseTimeline from '../CaseTimeline'
 import PartyCard from '../PartyCard'
 import HearingCard from '../HearingCard'
@@ -23,6 +24,8 @@ export interface CaseOverviewTabProps {
  */
 export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabProps) {
   const { getById } = useCasesStore()
+  const { t } = useTranslation()
+
   const resolvedCase = useMemo(() => {
     if (caseData) return caseData
     if (caseId) return getById(caseId)
@@ -30,7 +33,7 @@ export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabPro
   }, [caseData, caseId, getById])
 
   if (!resolvedCase) {
-    return <div className="text-muted p-3">No case overview data available.</div>
+    return <div className="text-muted p-3">{t('caseDetails.noOverviewData')}</div>
   }
 
   const stages = getStagesForCase(resolvedCase)
@@ -53,17 +56,19 @@ export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabPro
       {/* Collapsible Detail Sections */}
       <Accordion activeKey={['0', '1', '1a', '2', '3', '4', '5']} alwaysOpen>
         <Accordion.Item eventKey="0">
-          <Accordion.Header>Case Metadata</Accordion.Header>
+          <Accordion.Header>{t('caseDetails.metadataTitle')}</Accordion.Header>
           <Accordion.Body>
             <CaseMetadataOverview caseData={resolvedCase} />
           </Accordion.Body>
         </Accordion.Item>
 
         <Accordion.Item eventKey="1">
-          <Accordion.Header>Parties ({adultsAndRepresented.length})</Accordion.Header>
+          <Accordion.Header>
+            {t('caseDetails.partiesCount', { count: adultsAndRepresented.length })}
+          </Accordion.Header>
           <Accordion.Body>
             {adultsAndRepresented.length === 0 ? (
-              <div className="text-muted">No adult parties recorded.</div>
+              <div className="text-muted">{t('caseDetails.noAdultParties')}</div>
             ) : (
               adultsAndRepresented.map((p) => <PartyCard key={p.id} party={p} readOnly={true} />)
             )}
@@ -71,10 +76,12 @@ export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabPro
         </Accordion.Item>
 
         <Accordion.Item eventKey="1a">
-          <Accordion.Header>Children ({children.length})</Accordion.Header>
+          <Accordion.Header>
+            {t('caseDetails.childrenCount', { count: children.length })}
+          </Accordion.Header>
           <Accordion.Body>
             {children.length === 0 ? (
-              <div className="text-muted">No children recorded.</div>
+              <div className="text-muted">{t('caseDetails.noChildren')}</div>
             ) : (
               children.map((p) => <PartyCard key={p.id} party={p} readOnly={true} />)
             )}
@@ -82,10 +89,12 @@ export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabPro
         </Accordion.Item>
 
         <Accordion.Item eventKey="2">
-          <Accordion.Header>Scheduled Hearings ({resolvedCase.hearings.length})</Accordion.Header>
+          <Accordion.Header>
+            {t('caseDetails.hearingsCount', { count: resolvedCase.hearings.length })}
+          </Accordion.Header>
           <Accordion.Body>
             {resolvedCase.hearings.length === 0 ? (
-              <div className="text-muted">No hearings scheduled.</div>
+              <div className="text-muted">{t('caseDetails.noHearings')}</div>
             ) : (
               resolvedCase.hearings.map((h) => <HearingCard key={h.id} hearing={h} readOnly={true} />)
             )}
@@ -93,10 +102,12 @@ export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabPro
         </Accordion.Item>
 
         <Accordion.Item eventKey="3">
-          <Accordion.Header>Court Orders ({resolvedCase.orders.length})</Accordion.Header>
+          <Accordion.Header>
+            {t('caseDetails.ordersCount', { count: resolvedCase.orders.length })}
+          </Accordion.Header>
           <Accordion.Body>
             {resolvedCase.orders.length === 0 ? (
-              <div className="text-muted">No court orders recorded.</div>
+              <div className="text-muted">{t('caseDetails.noOrders')}</div>
             ) : (
               resolvedCase.orders.map((o) => <OrderCard key={o.id} order={o} readOnly={true} />)
             )}
@@ -104,10 +115,12 @@ export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabPro
         </Accordion.Item>
 
         <Accordion.Item eventKey="4">
-          <Accordion.Header>Documents & Evidence ({resolvedCase.documents.length})</Accordion.Header>
+          <Accordion.Header>
+            {t('caseDetails.documentsCount', { count: resolvedCase.documents.length })}
+          </Accordion.Header>
           <Accordion.Body>
             {resolvedCase.documents.length === 0 ? (
-              <div className="text-muted">No documents uploaded.</div>
+              <div className="text-muted">{t('caseDetails.noDocuments')}</div>
             ) : (
               resolvedCase.documents.map((d) => <DocumentCard key={d.id} document={d} readOnly={true} />)
             )}
@@ -115,10 +128,12 @@ export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabPro
         </Accordion.Item>
 
         <Accordion.Item eventKey="5">
-          <Accordion.Header>Notes & Updates ({resolvedCase.notes.length})</Accordion.Header>
+          <Accordion.Header>
+            {t('caseDetails.notesCount', { count: resolvedCase.notes.length })}
+          </Accordion.Header>
           <Accordion.Body>
             {resolvedCase.notes.length === 0 ? (
-              <div className="text-muted">No notes recorded.</div>
+              <div className="text-muted">{t('caseDetails.noNotes')}</div>
             ) : (
               resolvedCase.notes.map((n) => <CaseNoteCard key={n.id} note={n} />)
             )}

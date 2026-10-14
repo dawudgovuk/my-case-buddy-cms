@@ -1,5 +1,6 @@
 import { Badge, Button } from 'react-bootstrap'
 import type { FamilyCase } from '../../types/domain'
+import { useTranslation } from '../../hooks/useTranslation'
 import {
   FaFolder,
   FaBalanceScale,
@@ -30,6 +31,7 @@ export default function CaseListItemCard({
   showActions = true,
   className = '',
 }: CaseListItemCardProps) {
+  const { t } = useTranslation()
   const childrenCount = caseData.parties?.filter((p) => p.role === 'Child').length || 0
   const partiesCount =
     caseData.parties?.filter((p) => p.role !== 'Child' || (p.role === 'Child' && p.solicitorFirm)).length || 0
@@ -46,7 +48,7 @@ export default function CaseListItemCard({
 
   return (
     <div
-      className={`case-row-item p-3 p-md-3 mb-3 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3 ${className}`}
+      className={`case-row-item p-3 mb-3 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-3 ${className}`}
       style={{ cursor: onViewCase ? 'pointer' : 'default' }}
       onClick={() => onViewCase?.(caseData.id)}
     >
@@ -54,7 +56,7 @@ export default function CaseListItemCard({
       <div className="d-flex align-items-start gap-3 flex-grow-1 min-width-0">
         {/* Soft Icon Avatar */}
         <div
-          className="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 mt-1 mt-md-0"
+          className="rounded-3 d-flex align-items-center justify-content-center flex-shrink-0 mt-1 mt-sm-0"
           style={{
             width: 44,
             height: 44,
@@ -85,21 +87,21 @@ export default function CaseListItemCard({
             {caseData.seekingPeerSupport && (
               <span className="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1 py-1 px-2" style={{ fontSize: '0.7rem' }}>
                 <FaHandshake size={10} />
-                <span>Peer Support</span>
+                <span>{t('lipDashboard.peerSupportBadge')}</span>
               </span>
             )}
           </div>
 
-          {/* Row 2: Secondary Metadata (Single Clean Flow) */}
-          <div className="text-secondary small mb-2 text-truncate" style={{ fontSize: '0.825rem' }}>
+          {/* Row 2: Secondary Metadata (Flows smoothly across desktop, wraps on mobile) */}
+          <div className="text-secondary small mb-2 d-flex flex-wrap align-items-center" style={{ fontSize: '0.825rem', columnGap: '8px', rowGap: '2px' }}>
             <span className="fw-medium text-dark">{caseData.court}</span>
-            <span className="mx-2 text-muted">•</span>
+            <span className="text-muted">•</span>
             <span>{caseData.caseType}</span>
-            <span className="mx-2 text-muted">•</span>
+            <span className="text-muted">•</span>
             <span>Judge: {caseData.allocatedJudge || 'Unassigned'}</span>
             {caseData.startedAt && (
               <>
-                <span className="mx-2 text-muted">•</span>
+                <span className="text-muted">•</span>
                 <span className="text-muted">Started: {caseData.startedAt}</span>
               </>
             )}
@@ -141,43 +143,47 @@ export default function CaseListItemCard({
       {/* Right Side: Primary CTA & Action Buttons */}
       {showActions && (
         <div
-          className="d-flex align-items-center gap-2 flex-shrink-0 align-self-end align-self-md-center pt-2 pt-md-0"
+          className="d-flex align-items-center gap-2 flex-shrink-0 align-self-end align-self-sm-center pt-2 pt-sm-0"
           onClick={(e) => e.stopPropagation()}
         >
           {onViewCase && (
             <Button
               variant="primary"
               size="sm"
-              className="fw-semibold px-3 py-1 d-inline-flex align-items-center gap-2 shadow-xs rounded-3"
+              className="fw-semibold px-3 py-1 d-inline-flex align-items-center gap-2 shadow-xs rounded-3 text-nowrap"
               onClick={() => onViewCase(caseData.id)}
               style={{ backgroundColor: '#2563eb', borderColor: '#2563eb', fontSize: '0.825rem' }}
             >
-              <span>Open Case</span>
+              <span>{t('casesList.openCase')}</span>
               <FaArrowRight size={11} />
             </Button>
           )}
 
-          {onEditCase && (
-            <button
-              type="button"
-              className="action-btn-subtle"
-              onClick={() => onEditCase(caseData.id)}
-              title="Edit Case Details"
-            >
-              <FaEdit size={12} />
-            </button>
-          )}
+          <div className="d-flex align-items-center gap-1">
+            {onEditCase && (
+              <button
+                type="button"
+                className="action-btn-subtle"
+                onClick={() => onEditCase(caseData.id)}
+                title={t('common.edit')}
+                aria-label={t('common.edit')}
+              >
+                <FaEdit size={12} />
+              </button>
+            )}
 
-          {onDeleteCase && (
-            <button
-              type="button"
-              className="action-btn-subtle action-btn-danger"
-              onClick={() => onDeleteCase(caseData.id)}
-              title="Delete Case"
-            >
-              <FaTrash size={12} />
-            </button>
-          )}
+            {onDeleteCase && (
+              <button
+                type="button"
+                className="action-btn-subtle action-btn-danger"
+                onClick={() => onDeleteCase(caseData.id)}
+                title={t('common.delete')}
+                aria-label={t('common.delete')}
+              >
+                <FaTrash size={12} />
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

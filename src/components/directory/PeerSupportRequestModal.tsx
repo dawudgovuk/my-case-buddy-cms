@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Modal, Form, Button, Alert } from 'react-bootstrap'
 import type { FamilyCase } from '../../types/domain'
 import { FaPaperPlane } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface PeerSupportRequestModalProps {
   show: boolean
@@ -21,6 +22,7 @@ export default function PeerSupportRequestModal({
   onSendRequest,
   onCancel,
 }: PeerSupportRequestModalProps) {
+  const { t } = useTranslation()
   const [selectedCaseId, setSelectedCaseId] = useState<string>('')
   const [note, setNote] = useState<string>('')
 
@@ -39,17 +41,17 @@ export default function PeerSupportRequestModal({
   return (
     <Modal show={show && Boolean(targetUserId)} onHide={onCancel} centered>
       <Modal.Header closeButton>
-        <Modal.Title className="h5">Request Peer Support on Case</Modal.Title>
+        <Modal.Title className="h5">{t('peerDirectory.requestModalTitle')}</Modal.Title>
       </Modal.Header>
       <Modal.Body>
         {cases.length === 0 ? (
           <Alert variant="warning">
-            You do not have any active cases yet. Please create a case first to request peer support.
+            {t('peerDirectory.noCasesWarning')}
           </Alert>
         ) : (
           <div>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Select Your Case</Form.Label>
+              <Form.Label className="fw-bold">{t('peerDirectory.selectCaseLabel')}</Form.Label>
               <Form.Select
                 value={selectedCaseId}
                 onChange={(e) => setSelectedCaseId(e.target.value)}
@@ -62,11 +64,11 @@ export default function PeerSupportRequestModal({
               </Form.Select>
             </Form.Group>
             <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">What help or advice do you need?</Form.Label>
+              <Form.Label className="fw-bold">{t('peerDirectory.helpNeededLabel')}</Form.Label>
               <Form.Control
                 as="textarea"
                 rows={3}
-                placeholder="e.g. Need peer review of draft statement, help understanding court directions, bundle indexing..."
+                placeholder={t('peerDirectory.helpNeededPlaceholder')}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
               />
@@ -76,7 +78,7 @@ export default function PeerSupportRequestModal({
       </Modal.Body>
       <Modal.Footer>
         <Button variant="secondary" onClick={onCancel}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         {cases.length > 0 && (
           <Button
@@ -86,7 +88,7 @@ export default function PeerSupportRequestModal({
             className="d-flex align-items-center gap-2"
           >
             <FaPaperPlane />
-            <span>Send Request</span>
+            <span>{t('peerDirectory.sendRequestBtn')}</span>
           </Button>
         )}
       </Modal.Footer>

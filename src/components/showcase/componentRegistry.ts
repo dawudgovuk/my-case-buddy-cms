@@ -54,6 +54,7 @@ import {
   PeerSupportRequestModalPreview,
   RegistrationPendingCardPreview,
   RoleRegistrationLinksPreview,
+  LanguageSwitcherPreview,
 } from './CaseDetailsPreviews'
 
 export const COMPONENT_CATALOG: ComponentItem[] = [
@@ -1010,5 +1011,23 @@ export const COMPONENT_CATALOG: ComponentItem[] = [
       { name: 'onSelectRole', type: '(role: UserRole) => void', required: true, description: 'Callback when role button is clicked' },
     ],
     renderPreview: (onFeedback) => createElement(RoleRegistrationLinksPreview, { onFeedback }),
+  },
+  {
+    id: 'language-switcher',
+    name: 'Language Switcher Dropdown',
+    category: 'Navigation & Brand',
+    filePath: 'src/components/common/LanguageSwitcher.tsx',
+    importStatement: "import LanguageSwitcher from '../components/common/LanguageSwitcher'",
+    description:
+      'Accessible language selection dropdown supporting English (UK), Welsh (Cymraeg), Spanish (Español), and Polish (Polski).',
+    badges: ['i18n', 'Accessible Dropdown', 'Bilingual Support'],
+    codeSnippet: `<LanguageSwitcher size="sm" showLabel={true} />`,
+    propsDoc: [
+      { name: 'className', type: 'string', required: false, description: 'Optional CSS class' },
+      { name: 'size', type: "'sm' | 'lg'", defaultVal: "'sm'", description: 'Button size' },
+      { name: 'variant', type: 'string', defaultVal: "'light'", description: 'Bootstrap variant' },
+      { name: 'showLabel', type: 'boolean', defaultVal: 'true', description: 'Whether to display the language label next to flag' },
+    ],
+    renderPreview: (onFeedback) => createElement(LanguageSwitcherPreview, { onFeedback }),
   },
 ]

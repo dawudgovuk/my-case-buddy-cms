@@ -1,5 +1,6 @@
 import { Row, Col, Button } from 'react-bootstrap'
 import type { UserRole } from '../../types/domain'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface RoleRegistrationLinksProps {
   onSelectRole: (role: UserRole) => void
@@ -7,25 +8,27 @@ export interface RoleRegistrationLinksProps {
 
 interface RoleButtonConfig {
   role: UserRole
-  label: string
+  labelKey: 'roles.lipFull' | 'roles.mckenzieFriend' | 'roles.solicitor' | 'roles.barrister'
   variant: 'outline-primary' | 'outline-success' | 'outline-info' | 'outline-warning'
 }
 
 const ROLE_BUTTONS: readonly RoleButtonConfig[] = [
-  { role: 'LIP', label: 'Litigant in Person (LIP)', variant: 'outline-primary' },
-  { role: 'McKenzieFriend', label: 'McKenzie Friend', variant: 'outline-success' },
-  { role: 'Solicitor', label: 'Solicitor', variant: 'outline-info' },
-  { role: 'Barrister', label: 'Barrister', variant: 'outline-warning' },
+  { role: 'LIP', labelKey: 'roles.lipFull', variant: 'outline-primary' },
+  { role: 'McKenzieFriend', labelKey: 'roles.mckenzieFriend', variant: 'outline-success' },
+  { role: 'Solicitor', labelKey: 'roles.solicitor', variant: 'outline-info' },
+  { role: 'Barrister', labelKey: 'roles.barrister', variant: 'outline-warning' },
 ] as const
 
 /**
  * Reusable role selection navigation buttons for user registration.
  */
 export default function RoleRegistrationLinks({ onSelectRole }: RoleRegistrationLinksProps) {
+  const { t } = useTranslation()
+
   return (
     <div>
       <div className="text-center mb-3">
-        <p className="text-muted small mb-0 fw-semibold">Need to register a new account?</p>
+        <p className="text-muted small mb-0 fw-semibold">{t('auth.needToRegister')}</p>
       </div>
       <Row className="g-2">
         {ROLE_BUTTONS.map((btn) => (
@@ -36,7 +39,7 @@ export default function RoleRegistrationLinks({ onSelectRole }: RoleRegistration
               onClick={() => onSelectRole(btn.role)}
               size="sm"
             >
-              {btn.label}
+              {t(btn.labelKey)}
             </Button>
           </Col>
         ))}

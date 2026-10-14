@@ -1,6 +1,14 @@
 import { create } from 'zustand'
 import type { User } from '../types/domain'
-import { getCurrentUser, setCurrentUser, listUsers, saveUsers, verifyUserToken } from '../services/auth'
+import {
+  getCurrentUser,
+  setCurrentUser,
+  listUsers,
+  saveUsers,
+  verifyUserToken,
+  verifyUserById as verifyUserByIdService,
+  verifyAllProfessionals as verifyAllProfessionalsService,
+} from '../services/auth'
 
 interface AuthState {
   user: User | null
@@ -9,6 +17,8 @@ interface AuthState {
   logout: () => void
   ensureDemoUsers: () => void
   verifyUser: (token: string) => { success: boolean; user?: User; error?: string }
+  verifyUserById: (userId: string) => void
+  verifyAllProfessionals: () => void
   refreshUsers: () => void
 }
 
@@ -36,6 +46,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ users: allUsers, user: result.user })
     }
     return result
+  },
+  verifyUserById: (userId: string) => {
+    verifyUserByIdService(userId)
+    const allUsers = listUsers()
+    const current = getCurrentUser()
+    set({ users: allUsers, user: current })
+  },
+  verifyAllProfessionals: () => {
+    verifyAllProfessionalsService()
+    const allUsers = listUsers()
+    const current = getCurrentUser()
+    set({ users: allUsers, user: current })
   },
   ensureDemoUsers: () => {
     let users = listUsers()
@@ -75,6 +97,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           yearsExperience: 10,
         },
         {
+          id: 'u_mf_unverified',
+          name: 'Arthur Pendelton (Unverified)',
+          email: 'arthur.pendelton@unverified.co.uk',
+          role: 'McKenzieFriend',
+          isVerified: false,
+          verificationToken: 'verify_demo_token_arthur',
+          bio: 'Newly registered McKenzie Friend awaiting email verification.',
+        },
+        {
           id: 'u_sol_unverified',
           name: 'Marcus Bell (Unverified)',
           email: 'marcus.bell@unverified.co.uk',
@@ -84,6 +115,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isVerified: false,
           verificationToken: 'verify_demo_token_marcus',
           bio: 'Newly registered solicitor awaiting email verification.',
+        },
+        {
+          id: 'u_bar_unverified',
+          name: 'Helena Vance (Unverified)',
+          email: 'helena.vance@unverified.chambers.org',
+          role: 'Barrister',
+          firm: 'Matrix Chambers',
+          registrationNumber: 'BSB-112233',
+          isVerified: false,
+          verificationToken: 'verify_demo_token_helena',
+          bio: 'Pupil barrister awaiting email verification clearance.',
         },
       ]
       saveUsers(users)

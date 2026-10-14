@@ -1,5 +1,14 @@
 import { Modal, Button, Accordion, Badge } from 'react-bootstrap'
-import { FaQuestionCircle, FaUserFriends, FaBalanceScale, FaShieldAlt, FaCalendarAlt, FaCheckCircle } from 'react-icons/fa'
+import {
+  FaQuestionCircle,
+  FaUserFriends,
+  FaBalanceScale,
+  FaShieldAlt,
+  FaCalendarAlt,
+  FaCheckCircle,
+  FaLifeRing,
+  FaExternalLinkAlt,
+} from 'react-icons/fa'
 
 export interface ProfessionalFaqModalProps {
   show: boolean
@@ -110,9 +119,49 @@ export default function ProfessionalFaqModal({ show, onHide }: ProfessionalFaqMo
               all upcoming court dates and evidence submission due dates across your cases.
             </Accordion.Body>
           </Accordion.Item>
+
+          <Accordion.Item eventKey="5" className="border rounded-3 mb-0 overflow-hidden">
+            <Accordion.Header>
+              <div className="d-flex align-items-center gap-2">
+                <FaLifeRing className="text-primary" />
+                <span className="fw-semibold">Where can I find guidance on Children Case Law, Appeal Grounds & Video Calls?</span>
+              </div>
+            </Accordion.Header>
+            <Accordion.Body className="text-secondary small">
+              <p className="mb-2">
+                For in-depth legal articles, procedural guidance, and practical toolkits, visit our official Knowledge Base:
+              </p>
+              <ul className="mb-3 ps-3">
+                <li><strong>Children Case Law:</strong> Summary of key family court precedents and welfare principles.</li>
+                <li><strong>Grounds for Appeal:</strong> Procedural requirements and threshold criteria for family orders.</li>
+                <li><strong>Alienating Behaviours:</strong> The three necessary elements recognized in family proceedings.</li>
+                <li><strong>Video Calls with Children:</strong> Practical hints and tips for remote contact and evidence.</li>
+              </ul>
+              <a
+                href="https://support.mycourtbuddy.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3 py-1 fw-semibold"
+              >
+                <FaLifeRing size={12} />
+                <span>Visit MyCourtBuddy Support Centre</span>
+                <FaExternalLinkAlt size={10} className="text-muted" />
+              </a>
+            </Accordion.Body>
+          </Accordion.Item>
         </Accordion>
       </Modal.Body>
-      <Modal.Footer className="border-top pt-3">
+      <Modal.Footer className="border-top pt-3 d-flex justify-content-between align-items-center">
+        <a
+          href="https://support.mycourtbuddy.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3 shadow-xs"
+        >
+          <FaLifeRing size={12} className="text-primary" />
+          <span>Knowledge Base & Articles</span>
+          <FaExternalLinkAlt size={10} className="text-muted" />
+        </a>
         <Button variant="primary" onClick={onHide} className="px-4">
           Understood, Close
         </Button>

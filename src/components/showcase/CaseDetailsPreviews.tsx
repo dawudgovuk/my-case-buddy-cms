@@ -5,6 +5,7 @@ import CaseMetadataOverview from '../case/CaseMetadataOverview'
 import PeerSupportRequestModal from '../directory/PeerSupportRequestModal'
 import RegistrationPendingCard from '../auth/RegistrationPendingCard'
 import RoleRegistrationLinks from '../auth/RoleRegistrationLinks'
+import LanguageSwitcher from '../common/LanguageSwitcher'
 import type { FamilyCase } from '../../types/domain'
 
 const SAMPLE_CASE: FamilyCase = {
@@ -152,6 +153,19 @@ export function RoleRegistrationLinksPreview({ onFeedback }: { onFeedback: (msg:
   return (
     <div className="p-4 bg-white rounded border" style={{ maxWidth: 480 }}>
       <RoleRegistrationLinks onSelectRole={(role) => onFeedback(`Selected registration role: ${role}`)} />
+    </div>
+  )
+}
+
+export function LanguageSwitcherPreview({ onFeedback }: { onFeedback: (msg: string) => void }) {
+  return (
+    <div className="p-4 bg-white rounded border d-flex flex-column align-items-start gap-3">
+      <p className="small text-muted mb-0">
+        Interactive language switcher supporting English (UK), Welsh (Cymraeg), Spanish (Español), and Polish (Polski).
+      </p>
+      <div onClick={() => onFeedback('Language switcher clicked')}>
+        <LanguageSwitcher size="sm" showLabel={true} />
+      </div>
     </div>
   )
 }

@@ -1,5 +1,141 @@
 # Change Log
 
+## Case Details Executive Redesign, Non-Overflowing Header & Modern Underline Tabs
+
+### Features & Capabilities Added:
+1. **Case Summary Card Redesign (`CaseSummaryCard.tsx`)**:
+   - Fixed the critical horizontal overflow bug where non-existent Bootstrap class `w-md-auto` paired with `w-100` forced the action buttons to occupy 100% width with `flex-shrink: 0`, popping "Edit Case" out of the card boundary.
+   - Added clean "Back to Cases" breadcrumb navigation link at the top of the view.
+   - Streamlined title presentation: prominent case title header accompanied by subtle monospace ID badge and status pill, eliminating raw technical ID prefixes.
+   - Replaced solid high-contrast metric badges with elegant, muted `.stat-pill` elements featuring round icon containers and clear counts.
+2. **Modern Case Details Tab Navigation (`CaseDetails.tsx` & `index.css`)**:
+   - Replaced default Bootstrap rounded-outline tab styling with a sleek, Linear/Apple-inspired underline tab bar with smooth hover transitions, active indicators, and no jarring background outlines.
+   - Integrated semantic icons (`FaInfoCircle`, `FaUsers`, `FaCalendarAlt`, `FaFileAlt`, `FaBalanceScale`, `FaStickyNote`, `FaUserFriends`) and dynamic item count badges into each tab title.
+3. **Procedural Timeline Polish (`CaseTimeline.tsx`)**:
+   - Added missing `mediation` stage icon (`FaHandshake`) to `stageIcons` to replace the fallback numeric text for the Mediation/Assessment stage.
+4. **Fluid Responsive Viewports (`App.tsx`)**:
+   - Upgraded main `<Container>` to `<Container fluid="xl">`, ensuring full responsive breathing room on laptops, split-screen browsers, and DevTools viewports without artificial 720px cramping.
+
+## Cases Dashboard Design Polish, Canonical Routing (`/cases`) & Pixel-Perfect Favicon
+
+### Features & Capabilities Added:
+1. **Pixel-Perfect Brand Favicon (`public/` & `index.html`)**:
+   - Replaced icon with the exact two-tone heart logo centered within a crisp, rounded white container matching the browser tab aesthetic:
+     - Vector SVG: [`public/favicon.svg`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/public/favicon.svg) with rounded `#ffffff` background and `#ff6363` / `#ffa7a7` dual halves.
+     - Multi-resolution ICO: [`public/favicon.ico`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/public/favicon.ico) (16, 32, 48, 64px).
+     - High-DPI PNG: [`public/favicon.png`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/public/favicon.png) (32x32).
+     - Cache-busting query strings (`?v=3`) added to [`index.html`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/index.html).
+2. **Cases Dashboard Visual Bug Fixes (`CasesHeader.tsx`, `CasesFilterBar.tsx`, `CaseListItemCard.tsx`)**:
+   - **Header Button Fix**: Corrected "+ New Case" button in [`CasesHeader.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CasesHeader.tsx) to prevent horizontal stretching across the desktop viewport.
+   - **Unified Filter Bar**: Streamlined [`CasesFilterBar.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CasesFilterBar.tsx) into a single cohesive toolbar with no large empty gaps between the search box and filter pills. Replaced intrusive `title` attributes with accessible `aria-label` to remove unwanted browser tooltips.
+   - **Case Card Structure**: Restored clean horizontal card layout on desktop in [`CaseListItemCard.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CaseListItemCard.tsx), ensuring secondary metadata (court, case type, judge, start date) renders in a compact, inline arrangement rather than wrapping vertically into 5 lines.
+3. **Canonical Cases Routing (`/cases`)**:
+   - Added explicit `<Route path="/cases" element={...} />` in [`App.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/App.tsx) for `CasesList`.
+   - Configured root path (`/`) to redirect LIP users cleanly to `/cases` and professionals to `/professional-dashboard`.
+   - Updated navigation in [`AppHeader.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/common/AppHeader.tsx) so the "Cases" link routes to `/cases` and properly reflects active states.
+   - Updated post-login navigation in [`Login.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/Login.tsx) to route LIP users to `/cases`.
+   - Updated back navigation in [`CaseDetails.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/CaseDetails.tsx) and cancel action in [`CaseForm.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/CaseForm.tsx) to return to `/cases`.
+
+## Mobile-First Responsive Layout Overhaul & Mandatory Engineering Rules
+
+### Features & Capabilities Added:
+1. **Mandatory Mobile-First Responsive Directives for all AI Agents & Engineers**:
+   - Updated [`AGENTS.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/AGENTS.md), [`GEMINI.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/GEMINI.md), and [`.agents/rules/coding-standards.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/.agents/rules/coding-standards.md) to permanently mandate 100% fluid, mobile-first responsive layouts across all viewports (Mobile `<576px`, Tablet `576-991px`, Split-screen `992-1199px`, and Desktop `>=1200px`).
+   - Updated [`.agents/skills/code-reviewer/SKILL.md`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/.agents/skills/code-reviewer/SKILL.md) to require automated verification for zero horizontal scrollbar overflow, touch target sizing (min 44px), fluid toolbar wrapping, and smooth tab scrolling.
+2. **Global CSS & Viewport Hygiene (`src/index.css`)**:
+   - Added `overflow-x: hidden` and `max-width: 100vw` on `html` and `body` to eliminate horizontal scrollbar drift.
+   - Built `.nav-tabs-responsive` and `.case-details-tabs-wrapper` for native mobile touch-swipeable horizontal scrolling across multi-tab layouts.
+   - Added responsive adjustments for `.metric-card`, `.stat-pill`, `.case-row-item`, and action buttons on mobile screens (`<576px` and `<768px`).
+3. **App Header & Navigation Drawer (`AppHeader.tsx`)**:
+   - Replaced `expand="lg"` with `expand="xl"` to ensure tablets, small laptops, and split-screen browser windows with DevTools open collapse smoothly into a sleek mobile hamburger drawer instead of squishing navigation links.
+   - Added auto-closing controlled state (`expanded`, `setExpanded(false)`) so clicking any nav link immediately closes the mobile dropdown menu.
+   - Styled the mobile drawer with responsive controls for language switching and user profile menu.
+4. **Cases Dashboard & Filter Bar Overhaul (`CasesFilterBar.tsx` & `CasesHeader.tsx`)**:
+   - Redesigned `CasesFilterBar.tsx` into a modern 2-row fluid layout:
+     - Search input expands flexibly with clear button and view toggle controls.
+     - Status segmented filter pills swipe horizontally on mobile without breaking lines unevenly.
+     - Case Type and Sort dropdowns dynamically span 50/50 or full width on small screens and auto width on desktop.
+   - Enhanced `CasesHeader.tsx` metric stat cards with responsive padding, font scaling, and 2x2 mobile / 4x1 desktop layout.
+5. **Case List Item Card & Mobile Action Bar (`CaseListItemCard.tsx`)**:
+   - Replaced rigid single-line `text-truncate` on secondary metadata with clean responsive wrapping so court, case type, and judge are never cut off with `...`.
+   - Built a touch-friendly bottom action bar for mobile viewports (`w-100` with `flex-fill` on `<768px`), smoothly transitioning to right-aligned controls on desktop.
+6. **Executive Dashboards & Tab Navigation (`ProfessionalHeader.tsx`, `DashboardHeader.tsx`, `TabNav.tsx`, `CaseDetails.tsx`)**:
+   - Formatted stat metrics into responsive 2x2 grids on mobile and 4-column rows on tablet/desktop.
+   - Converted long tab collections into smooth, horizontally scrollable tab bars.
+7. **Form Ergonomics (`CaseForm.tsx`, `Register.tsx`, `Login.tsx`)**:
+   - Made stepper navigation buttons and verification alerts wrap responsively on narrow viewports.
+
+## Support & Knowledge Base Integration & Brand Favicon
+
+### Features & Capabilities Added:
+1. **Brand Favicon Fix (`index.html` & `public/`)**:
+   - Replaced default Vite placeholder with the official brand heart logo icon across all formats:
+     - Vector SVG: [`public/favicon.svg`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/public/favicon.svg)
+     - High-DPI PNG: [`public/favicon.png`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/public/favicon.png)
+     - Legacy fallback: [`public/favicon.ico`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/public/favicon.ico)
+     - Apple Touch Icon: `apple-touch-icon`
+   - Updated page title to `My Case Buddy - Family Court CMS`.
+2. **Official Support & Knowledge Base Integration (`https://support.mycourtbuddy.com/`)**:
+   - **Navbar Header ([`AppHeader.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/common/AppHeader.tsx))**:
+     - Added a dedicated "Support" navigation link with life-ring icon and external link badge opening [`https://support.mycourtbuddy.com/`](https://support.mycourtbuddy.com/) in a new tab.
+     - Added "Support & Help Centre" item to the user profile menu dropdown.
+   - **Application Footer ([`App.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/App.tsx))**:
+     - Enhanced legal footer with an actionable "Support & Knowledge Base" button.
+   - **Professional FAQ & Guidance ([`ProfessionalFaqModal.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/dashboard/ProfessionalFaqModal.tsx))**:
+     - Added dedicated topic detailing where to find legal articles on Children Case Law, Grounds for Appeal, Alienating Behaviours, and Hints for Video Calls with Children.
+     - Integrated direct CTA button in modal footer.
+   - **Localization (`src/i18n/`)**:
+     - Added translations for `common.support`, `common.supportKnowledgeBase`, and `common.supportCenter` across English, Welsh, Spanish, and Polish.
+
+## Verified & Unverified Professional Users Balanced Rollout & Clean Login
+
+### Features & Capabilities Added:
+1. **Balanced Distribution of Verified & Unverified Users (`src/services/auth.ts` & `src/seed.ts`)**:
+   - Implemented a clean, balanced split across all legal professional roles:
+     - **McKenzie Friends**: 8 Verified (`isVerified: true`), 7 Unverified (`isVerified: false`).
+     - **Solicitors**: 8 Verified (`isVerified: true`), 7 Unverified (`isVerified: false`).
+     - **Barristers**: 8 Verified (`isVerified: true`), 7 Unverified (`isVerified: false`).
+     - **Litigants in Person**: 15 LIP users (ready to file applications and seek support).
+   - Self-healing migration in [`listUsers()`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/services/auth.ts) balances existing browser storage automatically without wiping user cases.
+2. **Streamlined & Focused Login Experience (`Login.tsx`)**:
+   - Removed the extra "Quick Demo Profiles:" banner per user request.
+   - Organized the user selection dropdown with accessible `<optgroup>` categories:
+     - `✓ Verified Legal Professionals (Ready for Practice)` (24 verified professionals)
+     - `Litigants in Person (LIP)` (15 litigants)
+     - `⚠️ Unverified Professionals (Awaiting Email Verification)` (21 unverified professionals)
+   - Kept the instant 1-click verification alert for when an unverified user is selected, allowing instant account clearance directly from the login page.
+
+## Internationalization (i18n) Translation Engine & Full Page Localization
+
+### Features & Capabilities Added:
+1. **Type-Safe Internationalization Architecture (`src/i18n/`)**:
+   - Created a zero-dependency, pure TypeScript translation engine supporting 4 languages:
+     - **English (`en`)**: UK HMCTS Family Court standard terminology.
+     - **Welsh (`cy` - Cymraeg)**: Legally mandated bilingual support under the Welsh Language Act for HMCTS Welsh Family Courts and Cafcass Cymru.
+     - **Spanish (`es`)**: Complete localization for Hispanic court users and litigants.
+     - **Polish (`pl`)**: Complete localization for Polish-speaking UK court users.
+   - Built [`translate()`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/i18n/index.ts) with strict dot-notation path resolution, parameter interpolation (`{{param}}`), and graceful fallback to English.
+   - Built [`languageStore.ts`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/store/languageStore.ts) using Zustand and `localStorage` persistence with automatic HTML `lang` attribute synchronization.
+   - Authoring custom [`useTranslation`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/hooks/useTranslation.ts) hook exposing typed translation functions and active language metadata.
+2. **Language Switcher Component (`LanguageSwitcher.tsx`)**:
+   - Created accessible dropdown selector [`LanguageSwitcher.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/common/LanguageSwitcher.tsx) integrated directly into [`AppHeader.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/common/AppHeader.tsx) with native name labels and flag icons.
+   - Registered `LanguageSwitcher` in the Component Explorer registry (`/components`).
+3. **Comprehensive Multi-Page Localization (Every Page Translated)**:
+   - [`AppHeader.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/common/AppHeader.tsx): Navigation links, auth buttons, role indicators, and language switcher.
+   - [`App.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/App.tsx): Legal footer disclaimer and dynamic document titles.
+   - [`CaseDetails.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/CaseDetails.tsx): Tab navigation, breadcrumbs, action buttons, and not-found states.
+   - [`CaseOverviewTab.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/tabs/CaseOverviewTab.tsx) & [`CaseMetadataOverview.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CaseMetadataOverview.tsx): Metadata cards, judge indicators, and accordion section labels.
+   - [`CasesList.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/CasesList.tsx), [`CasesHeader.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CasesHeader.tsx), [`CasesFilterBar.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CasesFilterBar.tsx), [`EmptyCasesState.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/EmptyCasesState.tsx), [`CaseListItemCard.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/CaseListItemCard.tsx), & [`DeleteCaseModal.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/case/DeleteCaseModal.tsx): Full filter bar, sort controls, case action triggers, and irreversible deletion modals.
+   - [`CaseForm.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/CaseForm.tsx): 3-step wizard headers, navigation steps, and proceed buttons.
+   - [`LIPDashboard.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/LIPDashboard.tsx): Litigant dashboard header, empty states, and peer support badges.
+   - [`ProfessionalDashboard.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/ProfessionalDashboard.tsx): Practice tabs, email verification notices, and newcomer guide triggers.
+   - [`PeerDirectory.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/PeerDirectory.tsx) & [`PeerSupportRequestModal.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/directory/PeerSupportRequestModal.tsx): Professional directory filters, search inputs, and peer review request modals.
+   - [`Login.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/Login.tsx) & [`RoleRegistrationLinks.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/auth/RoleRegistrationLinks.tsx): Sign-in headers, user selector dropdown, and role registration cards.
+   - [`Register.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/Register.tsx) & [`RegistrationPendingCard.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/components/auth/RegistrationPendingCard.tsx): Registration form labels, verification simulation notices, and link buttons.
+   - [`VerifyEmail.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/VerifyEmail.tsx): Verification progress indicators, success welcome cards, and error fallback links.
+   - [`InviteAccept.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/InviteAccept.tsx): Invitation acceptance workflows, authentication gates, and member validation alerts.
+   - [`ComponentShowcase.tsx`](file:///Users/parvez/Documents/MyPersonal/my-case-buddy-cms/src/pages/ComponentShowcase.tsx): Component Explorer search, category tabs, and header descriptions.
+
 ## Code Optimization, Modular Decomposition & Agent Architecture Standards
 
 ### Features & Architectural Optimizations:

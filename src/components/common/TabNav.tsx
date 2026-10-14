@@ -27,7 +27,7 @@ export default function TabNav<T extends string = string>({
   return (
     <Nav
       variant={variant}
-      className={className}
+      className={`nav-tabs-responsive ${className}`}
       activeKey={activeKey}
       onSelect={(k) => {
         if (k) onSelect(k as T)

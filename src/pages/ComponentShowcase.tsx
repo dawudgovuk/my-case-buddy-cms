@@ -4,8 +4,10 @@ import { COMPONENT_CATALOG } from '../components/showcase/componentRegistry'
 import ComponentSidebar from '../components/showcase/ComponentSidebar'
 import ComponentStage from '../components/showcase/ComponentStage'
 import { FaInfoCircle, FaLayerGroup, FaEye } from 'react-icons/fa'
+import { useTranslation } from '../hooks/useTranslation'
 
 export default function ComponentShowcase() {
+  const { t } = useTranslation()
   const [viewMode, setViewMode] = useState<'all' | 'single'>('all')
   const [activeComponentId, setActiveComponentId] = useState<string>('case-card-timeline')
   const [searchQuery, setSearchQuery] = useState('')
@@ -46,9 +48,9 @@ export default function ComponentShowcase() {
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom gap-2">
         <div>
           <div className="d-flex align-items-center gap-2 mb-1">
-            <h1 className="h3 mb-0 fw-bold text-dark">Component Explorer</h1>
+            <h1 className="h3 mb-0 fw-bold text-dark">{t('common.components')} Explorer</h1>
             <Badge bg="primary" pill>
-              {COMPONENT_CATALOG.length} Components
+              {COMPONENT_CATALOG.length} {t('common.components')}
             </Badge>
           </div>
           <p className="text-secondary small mb-0">
@@ -64,7 +66,7 @@ export default function ComponentShowcase() {
             onClick={() => setViewMode('all')}
           >
             <FaLayerGroup />
-            <span>Show All Components</span>
+            <span>{t('common.all')}</span>
           </Button>
           <Button
             variant={viewMode === 'single' ? 'primary' : 'outline-primary'}
@@ -72,7 +74,7 @@ export default function ComponentShowcase() {
             onClick={() => setViewMode('single')}
           >
             <FaEye />
-            <span>Single Focus</span>
+            <span>Single</span>
           </Button>
         </ButtonGroup>
       </div>

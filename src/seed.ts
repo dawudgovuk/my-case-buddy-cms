@@ -104,51 +104,53 @@ function generateUsers(): User[] {
     })
   }
   
-  // Generate 15 McKenzie Friends (first one unverified for demonstration testing)
+  // Generate 15 McKenzie Friends (8 verified, 7 unverified)
   for (let i = 0; i < 15; i++) {
     const { firstName, lastName } = getUniqueName()
-    const isUnverified = i === 0
+    const isVerified = i < 8
     users.push({
       id: `u_mf_${i + 1}`,
-      name: `${firstName} ${lastName}${isUnverified ? ' (Pending Verification)' : ''}`,
+      name: `${firstName} ${lastName}${!isVerified ? ' (Pending Verification)' : ''}`,
       email: `mf.${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
       role: 'McKenzieFriend',
-      isVerified: !isUnverified,
-      ...(isUnverified && { verificationToken: 'demo_token_mf_unverified' }),
+      isVerified,
+      ...(!isVerified && { verificationToken: `demo_token_mf_${i + 1}` }),
       bio: 'Experienced McKenzie Friend helping litigants prepare court statements and cross-examination questions.',
       yearsExperience: 4 + (i % 8)
     })
   }
   
-  // Generate 15 Solicitors
+  // Generate 15 Solicitors (8 verified, 7 unverified)
   for (let i = 0; i < 15; i++) {
     const { firstName, lastName } = getUniqueName()
-    const isUnverified = i === 0
+    const isVerified = i < 8
     users.push({
       id: `u_sol_${i + 1}`,
-      name: `${firstName} ${lastName}${isUnverified ? ' (Pending Verification)' : ''}`,
+      name: `${firstName} ${lastName}${!isVerified ? ' (Pending Verification)' : ''}`,
       email: `solicitor.${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
       role: 'Solicitor',
       firm: randomElement(firms),
       registrationNumber: `SOL-${String(i + 1).padStart(6, '0')}`,
-      isVerified: !isUnverified,
-      ...(isUnverified && { verificationToken: 'demo_token_sol_unverified' }),
+      isVerified,
+      ...(!isVerified && { verificationToken: `demo_token_sol_${i + 1}` }),
       bio: 'Specialist family and child proceedings solicitor available for peer document review and support.',
       yearsExperience: 5 + (i % 12)
     })
   }
   
-  // Generate 15 Barristers
+  // Generate 15 Barristers (8 verified, 7 unverified)
   for (let i = 0; i < 15; i++) {
     const { firstName, lastName } = getUniqueName()
+    const isVerified = i < 8
     users.push({
       id: `u_bar_${i + 1}`,
-      name: `${firstName} ${lastName}`,
+      name: `${firstName} ${lastName}${!isVerified ? ' (Pending Verification)' : ''}`,
       email: `barrister.${firstName.toLowerCase()}.${lastName.toLowerCase()}${i}@example.com`,
       role: 'Barrister',
       firm: randomElement(chambers),
       registrationNumber: `BAR-${String(i + 1).padStart(6, '0')}`,
-      isVerified: true,
+      isVerified,
+      ...(!isVerified && { verificationToken: `demo_token_bar_${i + 1}` }),
       bio: 'Family Law Barrister offering peer guidance on advocacy, skeleton arguments, and dispute resolution.',
       yearsExperience: 6 + (i % 15)
     })

@@ -53,11 +53,11 @@ export default function DashboardHeader({
         </div>
 
         {/* Header Action Buttons */}
-        <div className="d-flex align-items-center gap-2 flex-wrap">
+        <div className="d-flex align-items-center gap-2 flex-wrap w-100 w-md-auto">
           {onFindSupporters && (
             <Button
               variant="outline-primary"
-              className="d-flex align-items-center gap-2 fw-semibold px-3 py-2 rounded-3 shadow-none"
+              className="d-flex align-items-center justify-content-center gap-2 fw-semibold px-3 py-2 rounded-3 shadow-none flex-fill flex-md-grow-0"
               onClick={onFindSupporters}
             >
               <FaUserShield size={14} />
@@ -68,7 +68,7 @@ export default function DashboardHeader({
           {onNewCase && (
             <Button
               variant="primary"
-              className="d-flex align-items-center gap-2 fw-semibold px-3 py-2 rounded-3 shadow-sm"
+              className="d-flex align-items-center justify-content-center gap-2 fw-semibold px-3 py-2 rounded-3 shadow-sm flex-fill flex-md-grow-0"
               onClick={onNewCase}
             >
               <FaPlus size={13} />
@@ -79,33 +79,33 @@ export default function DashboardHeader({
       </div>
 
       {/* Quick Overview Metric Pills */}
-      <div className="d-flex align-items-center gap-3 pt-3 border-top flex-wrap">
-        <div className="stat-pill d-flex align-items-center gap-2">
-          <div className="d-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary" style={{ width: 28, height: 28 }}>
+      <div className="d-flex align-items-center gap-2 gap-sm-3 pt-3 border-top flex-wrap">
+        <div className="stat-pill d-flex align-items-center gap-2 flex-fill flex-md-grow-0">
+          <div className="d-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary flex-shrink-0" style={{ width: 28, height: 28 }}>
             <FaBriefcase size={13} />
           </div>
-          <div>
+          <div className="text-truncate">
             <span className="small text-muted me-1">Total Cases:</span>
             <span className="fw-bold text-dark">{totalCases}</span>
           </div>
         </div>
 
-        <div className="stat-pill d-flex align-items-center gap-2">
-          <div className="d-flex align-items-center justify-content-center rounded-circle bg-info-subtle text-info" style={{ width: 28, height: 28 }}>
+        <div className="stat-pill d-flex align-items-center gap-2 flex-fill flex-md-grow-0">
+          <div className="d-flex align-items-center justify-content-center rounded-circle bg-info-subtle text-info flex-shrink-0" style={{ width: 28, height: 28 }}>
             <FaCalendarCheck size={13} />
           </div>
-          <div>
-            <span className="small text-muted me-1">Upcoming Hearings:</span>
+          <div className="text-truncate">
+            <span className="small text-muted me-1">Hearings:</span>
             <span className="fw-bold text-dark">{upcomingHearingsCount}</span>
           </div>
         </div>
 
-        <div className="stat-pill d-flex align-items-center gap-2">
-          <div className="d-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success" style={{ width: 28, height: 28 }}>
+        <div className="stat-pill d-flex align-items-center gap-2 flex-fill flex-md-grow-0">
+          <div className="d-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success flex-shrink-0" style={{ width: 28, height: 28 }}>
             <FaHandsHelping size={13} />
           </div>
-          <div>
-            <span className="small text-muted me-1">Peer Support Active:</span>
+          <div className="text-truncate">
+            <span className="small text-muted me-1">Peer Support:</span>
             <span className="fw-bold text-dark">{peerSupportCount}</span>
           </div>
         </div>

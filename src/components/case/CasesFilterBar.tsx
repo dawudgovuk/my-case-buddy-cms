@@ -1,6 +1,7 @@
 import { Form, InputGroup, Button, Badge } from 'react-bootstrap'
 import type { CaseStatus } from '../../types/domain'
 import { FaSearch, FaTimes, FaList, FaThLarge } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface CasesFilterBarProps {
   searchTerm: string
@@ -37,27 +38,29 @@ export default function CasesFilterBar({
   onResetFilters,
   className = '',
 }: CasesFilterBarProps) {
+  const { t } = useTranslation()
+
   const statuses: Array<{ key: CaseStatus | 'All'; label: string; count: number }> = [
-    { key: 'All', label: 'All Cases', count: statusCounts.all },
-    { key: 'Open', label: 'Open', count: statusCounts.open },
-    { key: 'Stayed', label: 'Stayed', count: statusCounts.stayed },
-    { key: 'Concluded', label: 'Concluded', count: statusCounts.concluded },
+    { key: 'All', label: t('common.all'), count: statusCounts.all },
+    { key: 'Open', label: t('common.open'), count: statusCounts.open },
+    { key: 'Stayed', label: t('common.stayed'), count: statusCounts.stayed },
+    { key: 'Concluded', label: t('common.concluded'), count: statusCounts.concluded },
   ]
 
   return (
     <div className={`bg-white p-3 rounded-3 border shadow-sm mb-3 ${className}`}>
-      <div className="d-flex flex-column flex-lg-row gap-3 align-items-stretch align-items-lg-center justify-content-between">
-        {/* Left Side: Search + Status Filter Pills */}
-        <div className="d-flex flex-column flex-md-row gap-2 align-items-stretch align-items-md-center flex-grow-1">
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 gap-lg-3">
+        {/* Left Side: Search Box + Status Filter Pills */}
+        <div className="d-flex flex-wrap align-items-center gap-2 flex-grow-1">
           {/* Search Box */}
-          <div style={{ minWidth: '260px', maxWidth: '380px' }} className="flex-grow-1">
+          <div style={{ minWidth: '220px', maxWidth: '340px' }} className="flex-grow-1">
             <InputGroup size="sm">
               <InputGroup.Text className="bg-light border-end-0 text-muted ps-3">
                 <FaSearch size={13} />
               </InputGroup.Text>
               <Form.Control
                 type="text"
-                placeholder="Search cases, references, judges..."
+                placeholder={t('casesList.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="border-start-0 bg-light"
@@ -76,8 +79,8 @@ export default function CasesFilterBar({
             </InputGroup>
           </div>
 
-          {/* Status Segmented Buttons */}
-          <div className="d-flex align-items-center gap-1 overflow-auto py-1">
+          {/* Status Segmented Buttons (Swipeable on Mobile) */}
+          <div className="filter-scroll-wrapper d-flex align-items-center gap-1 py-1">
             {statuses.map((st) => {
               const isActive = selectedStatus === st.key
               return (
@@ -85,7 +88,7 @@ export default function CasesFilterBar({
                   key={st.key}
                   type="button"
                   onClick={() => onStatusChange(st.key)}
-                  className={`btn btn-sm rounded-pill px-2 py-1 d-inline-flex align-items-center gap-1 transition-all ${
+                  className={`btn btn-sm rounded-pill px-2 py-1 d-inline-flex align-items-center gap-1 transition-all flex-shrink-0 ${
                     isActive
                       ? 'btn-primary shadow-xs'
                       : 'btn-outline-secondary bg-white text-secondary border-0 hover-bg-light'
@@ -109,16 +112,17 @@ export default function CasesFilterBar({
         </div>
 
         {/* Right Side: Filters, Sorting & View Toggle */}
-        <div className="d-flex align-items-center gap-2 justify-content-end flex-shrink-0 flex-wrap">
+        <div className="d-flex align-items-center gap-2 flex-wrap flex-shrink-0 ms-auto">
           {/* Case Type Filter */}
           <Form.Select
             size="sm"
             value={selectedCaseType}
             onChange={(e) => onCaseTypeChange(e.target.value)}
             className="bg-light border-secondary-subtle"
-            style={{ width: 'auto', minWidth: '150px', fontSize: '0.8rem' }}
+            style={{ width: 'auto', minWidth: '140px', fontSize: '0.8rem' }}
+            aria-label="Filter by case type"
           >
-            <option value="">All Case Types</option>
+            <option value="">{t('common.all')}</option>
             {caseTypeOptions.map((opt) => (
               <option key={opt} value={opt}>
                 {opt}
@@ -133,20 +137,21 @@ export default function CasesFilterBar({
             onChange={(e) => onSortChange(e.target.value as 'recent' | 'started' | 'title' | 'hearings')}
             className="bg-light border-secondary-subtle"
             style={{ width: 'auto', minWidth: '140px', fontSize: '0.8rem' }}
+            aria-label="Sort cases"
           >
-            <option value="recent">Recently Updated</option>
-            <option value="started">Started Date</option>
-            <option value="title">Title (A-Z)</option>
-            <option value="hearings">Most Hearings</option>
+            <option value="recent">{t('casesList.sortByRecent')}</option>
+            <option value="started">{t('casesList.sortByStarted')}</option>
+            <option value="title">{t('casesList.sortByTitle')}</option>
+            <option value="hearings">{t('casesList.sortByHearings')}</option>
           </Form.Select>
 
-          {/* View Toggle */}
+          {/* View Toggle (List / Grid) */}
           <div className="btn-group btn-group-sm shadow-xs">
             <Button
               variant={viewMode === 'list' ? 'primary' : 'outline-secondary'}
               size="sm"
               onClick={() => onViewModeChange('list')}
-              title="List View"
+              aria-label={t('casesList.viewList')}
               className="px-2"
             >
               <FaList size={12} />
@@ -155,7 +160,7 @@ export default function CasesFilterBar({
               variant={viewMode === 'grid' ? 'primary' : 'outline-secondary'}
               size="sm"
               onClick={() => onViewModeChange('grid')}
-              title="Grid View"
+              aria-label={t('casesList.viewGrid')}
               className="px-2"
             >
               <FaThLarge size={12} />
@@ -171,7 +176,7 @@ export default function CasesFilterBar({
               className="text-danger small p-0 text-decoration-none fw-semibold ms-1"
               style={{ fontSize: '0.78rem' }}
             >
-              Reset
+              {t('casesList.resetFilters')}
             </Button>
           )}
         </div>

@@ -229,3 +229,193 @@ body {
   border-color: rgba(13, 110, 253, 0.25);
 }
 
+/* ==========================================================================
+   Mobile-First Responsive System & Fluid Layouts
+   ========================================================================== */
+
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Responsive App Navbar Drawer (collapses below xl 1200px) */
+@media (max-width: 1199.98px) {
+  .app-navbar .navbar-collapse {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 1.25rem 1rem;
+    margin-top: 0.75rem;
+    border: 1px solid rgba(226, 232, 240, 0.95);
+    box-shadow: 0 16px 36px -4px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.05);
+  }
+
+  .app-navbar .navbar-nav {
+    width: 100%;
+    align-items: stretch !important;
+  }
+
+  .app-navbar .nav-link {
+    width: 100%;
+    padding: 0.7rem 1rem !important;
+    font-size: 0.95rem;
+  }
+
+  .app-navbar .nav-item {
+    width: 100%;
+  }
+
+  .app-navbar-mobile-controls {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 0.85rem;
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+}
+
+/* Responsive Horizontal Scrolling Tab Navigation */
+.nav-tabs-responsive {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.nav-tabs-responsive::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-tabs-responsive .nav-link {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Case Details Tab Modern Underline Bar */
+.case-details-tabs-wrapper .nav-tabs {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  border-bottom: 2px solid #e2e8f0 !important;
+  gap: 4px;
+}
+
+.case-details-tabs-wrapper .nav-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.case-details-tabs-wrapper .nav-tabs .nav-link {
+  white-space: nowrap;
+  flex-shrink: 0;
+  border: none !important;
+  border-bottom: 2px solid transparent !important;
+  border-radius: 0 !important;
+  color: #64748b !important;
+  font-weight: 500;
+  font-size: 0.9rem;
+  padding: 0.7rem 1rem !important;
+  background: transparent !important;
+  transition: all 0.18s ease;
+  margin-bottom: -2px;
+}
+
+.case-details-tabs-wrapper .nav-tabs .nav-link:hover {
+  color: #2563eb !important;
+  border-bottom-color: #cbd5e1 !important;
+  background-color: rgba(37, 99, 235, 0.04) !important;
+  border-radius: 6px 6px 0 0 !important;
+}
+
+.case-details-tabs-wrapper .nav-tabs .nav-link.active {
+  color: #2563eb !important;
+  font-weight: 600 !important;
+  border-bottom: 2px solid #2563eb !important;
+  background: transparent !important;
+}
+
+/* Accordion card polish */
+.accordion-item {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.accordion-item:first-of-type,
+.accordion-item:last-of-type {
+  border-radius: 12px !important;
+}
+
+.accordion-button {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1e293b;
+  padding: 0.9rem 1.25rem;
+  background-color: #ffffff;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #f8fafc;
+  color: #2563eb;
+  box-shadow: none;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+}
+
+/* Responsive Filter & Action Utilities */
+.filter-scroll-wrapper {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.filter-scroll-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
+/* Mobile Adjustments (<576px) */
+@media (max-width: 575.98px) {
+  .metric-card {
+    padding: 10px 12px !important;
+  }
+
+  .metric-card .h4 {
+    font-size: 1.15rem !important;
+  }
+
+  .stat-pill {
+    padding: 6px 10px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .dashboard-header-card,
+  .professional-header-card {
+    padding: 1rem !important;
+  }
+
+  .case-row-item {
+    padding: 0.85rem !important;
+  }
+}
+
+/* Touch targets for accessibility on mobile devices */
+@media (max-width: 767.98px) {
+  .action-btn-subtle {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+

@@ -16,6 +16,7 @@ import {
   FaUserCheck,
   FaChevronDown,
   FaChevronUp,
+  FaHandshake,
 } from 'react-icons/fa'
 
 export interface CaseTimelineProps {
@@ -34,6 +35,7 @@ const stageIcons: Record<string, ReactNode> = {
   application: <FaFileAlt size={12} />,
   'pre-proceedings': <FaExclamationTriangle size={12} />,
   'first-hearing': <FaCalendarAlt size={12} />,
+  mediation: <FaHandshake size={12} />,
   directions: <FaTasks size={12} />,
   'fact-finding': <FaSearch size={12} />,
   welfare: <FaHeart size={12} />,

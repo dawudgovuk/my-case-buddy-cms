@@ -2,6 +2,7 @@ import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
+import { useTranslation } from '../hooks/useTranslation'
 import CaseCard from '../components/case/CaseCard'
 import DashboardHeader from '../components/dashboard/DashboardHeader'
 import { FaFolderPlus } from 'react-icons/fa'
@@ -10,6 +11,7 @@ export default function LIPDashboard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
   const { cases, togglePeerSupport } = useCasesStore()
+  const { t } = useTranslation()
 
   const userCases = cases.filter((c) => c.members?.some((m) => m.userId === user?.id && m.role === 'Owner'))
   const upcomingHearingsCount = userCases.reduce((acc, c) => acc + (c.hearings ? c.hearings.length : 0), 0)
@@ -18,7 +20,7 @@ export default function LIPDashboard() {
   if (!user) {
     return (
       <Container className="py-4">
-        <Alert variant="warning">Please log in</Alert>
+        <Alert variant="warning">{t('auth.signInTitle')}</Alert>
       </Container>
     )
   }
@@ -28,8 +30,8 @@ export default function LIPDashboard() {
       {/* Dashboard Executive Header & Metric Pills */}
       <DashboardHeader
         userName={user.name}
-        userRole="Litigant in Person"
-        title="My Cases Dashboard"
+        userRole={t('lipDashboard.userRoleLabel')}
+        title={t('lipDashboard.title')}
         totalCases={userCases.length}
         upcomingHearingsCount={upcomingHearingsCount}
         peerSupportCount={peerSupportCount}
@@ -43,12 +45,12 @@ export default function LIPDashboard() {
             <div className="d-flex align-items-center justify-content-center mx-auto rounded-circle bg-primary-subtle text-primary mb-3" style={{ width: 64, height: 64 }}>
               <FaFolderPlus size={28} />
             </div>
-            <h3 className="mb-2 fw-bold text-dark">No Active Cases</h3>
+            <h3 className="mb-2 fw-bold text-dark">{t('lipDashboard.noActiveCasesTitle')}</h3>
             <p className="mb-4 text-muted" style={{ maxWidth: 440, margin: '0 auto' }}>
-              You don&apos;t have any active cases yet. Start managing your court proceedings and tracking stages by creating your first case.
+              {t('lipDashboard.noActiveCasesDesc')}
             </p>
             <Button variant="primary" size="lg" className="fw-semibold px-4 py-2 rounded-3 shadow-sm" onClick={() => navigate('/cases/new')}>
-              Create Your First Case
+              {t('lipDashboard.createFirstCaseBtn')}
             </Button>
           </Card.Body>
         </Card>

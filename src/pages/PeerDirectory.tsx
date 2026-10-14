@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react'
 import { Container, Row, Col, Card, Button, Form, Alert } from 'react-bootstrap'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
+import { useTranslation } from '../hooks/useTranslation'
 import { listUsers } from '../services/auth'
 import { FaHandshake, FaBalanceScale } from 'react-icons/fa'
 import PeerSupporterCard from '../components/directory/PeerSupporterCard'
@@ -10,6 +11,7 @@ import PeerSupportRequestModal from '../components/directory/PeerSupportRequestM
 export default function PeerDirectory() {
   const { user } = useAuthStore()
   const { cases, togglePeerSupport } = useCasesStore()
+  const { t } = useTranslation()
 
   const [roleFilter, setRoleFilter] = useState<string>('all')
   const [searchTerm, setSearchTerm] = useState('')
@@ -51,16 +53,16 @@ export default function PeerDirectory() {
 
   function handleSendRequest(caseId: string, note: string) {
     togglePeerSupport(caseId, true, note || 'Peer support requested from legal directory')
-    setSuccessMessage('Peer support request sent! The case has been flagged for peer review.')
+    setSuccessMessage(t('peerDirectory.requestSentSuccess'))
     setRequestTargetUser(null)
   }
 
   return (
     <Container fluid className="py-2">
       <div className="mb-4">
-        <h1>Find Experienced Legal People</h1>
+        <h1>{t('peerDirectory.title')}</h1>
         <p className="lead text-secondary">
-          Connect with email-verified Solicitors, Barristers, and McKenzie Friends for peer-to-peer legal support and guidance.
+          {t('peerDirectory.subtitle')}
         </p>
       </div>
 
@@ -74,46 +76,51 @@ export default function PeerDirectory() {
       <Card className="shadow-sm mb-4 border-0">
         <Card.Body className="p-3">
           <Row className="g-3 align-items-center">
-            <Col xs={12} md={7}>
+            <Col xs={12} lg={6}>
               <div className="position-relative">
                 <Form.Control
                   type="text"
-                  placeholder="Search by legal professional name, firm, chambers, or registration..."
+                  placeholder={t('peerDirectory.searchPlaceholder')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  size="lg"
+                  size="sm"
+                  className="py-2"
                 />
               </div>
             </Col>
-            <Col xs={12} md={5}>
-              <div className="d-flex gap-1 flex-wrap">
+            <Col xs={12} lg={6}>
+              <div className="filter-scroll-wrapper d-flex gap-1 py-1 justify-content-start justify-content-lg-end">
                 <Button
-                  variant={roleFilter === 'all' ? 'primary' : 'outline-primary'}
+                  variant={roleFilter === 'all' ? 'primary' : 'outline-secondary'}
                   size="sm"
+                  className="rounded-pill flex-shrink-0"
                   onClick={() => setRoleFilter('all')}
                 >
-                  All ({professionals.length})
+                  {t('peerDirectory.allFilter', { count: professionals.length })}
                 </Button>
                 <Button
-                  variant={roleFilter === 'McKenzieFriend' ? 'success' : 'outline-success'}
+                  variant={roleFilter === 'McKenzieFriend' ? 'success' : 'outline-secondary'}
                   size="sm"
+                  className="rounded-pill flex-shrink-0"
                   onClick={() => setRoleFilter('McKenzieFriend')}
                 >
-                  McKenzie Friends
+                  {t('peerDirectory.mckenzieFriendsFilter')}
                 </Button>
                 <Button
-                  variant={roleFilter === 'Solicitor' ? 'info' : 'outline-info'}
+                  variant={roleFilter === 'Solicitor' ? 'info' : 'outline-secondary'}
                   size="sm"
+                  className="rounded-pill flex-shrink-0"
                   onClick={() => setRoleFilter('Solicitor')}
                 >
-                  Solicitors
+                  {t('peerDirectory.solicitorsFilter')}
                 </Button>
                 <Button
-                  variant={roleFilter === 'Barrister' ? 'warning' : 'outline-warning'}
+                  variant={roleFilter === 'Barrister' ? 'warning' : 'outline-secondary'}
                   size="sm"
+                  className="rounded-pill flex-shrink-0 text-dark"
                   onClick={() => setRoleFilter('Barrister')}
                 >
-                  Barristers
+                  {t('peerDirectory.barristersFilter')}
                 </Button>
               </div>
             </Col>
@@ -125,8 +132,8 @@ export default function PeerDirectory() {
         <Card className="text-center p-5 border-0 shadow-sm">
           <Card.Body>
             <FaBalanceScale size={48} className="text-muted mb-3" />
-            <h5>No verified legal professionals found matching your filters.</h5>
-            <p className="text-muted">Try adjusting your search criteria or role filter.</p>
+            <h5>{t('peerDirectory.noProsFound')}</h5>
+            <p className="text-muted">{t('peerDirectory.noProsFound')}</p>
           </Card.Body>
         </Card>
       ) : (
