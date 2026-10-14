@@ -1,108 +1,35 @@
-import React, { useState, useEffect, useRef } from 'react'
-import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { Navbar, Nav, Container, Dropdown } from 'react-bootstrap'
-import { FaUser, FaSignOutAlt, FaHome, FaPlus, FaGavel } from 'react-icons/fa'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { Container } from 'react-bootstrap'
 import CasesList from './pages/CasesList'
 import CaseForm from './pages/CaseForm'
-import { useAuthStore } from './store/authStore';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import InviteAccept from './pages/InviteAccept';
-import LIPDashboard from './pages/LIPDashboard';
-import ProfessionalDashboard from './pages/ProfessionalDashboard';
-import CaseDetails from './pages/CaseDetails';
-import Logo from './components/Logo';
+import { useAuthStore } from './store/authStore'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import InviteAccept from './pages/InviteAccept'
+import LIPDashboard from './pages/LIPDashboard'
+import ProfessionalDashboard from './pages/ProfessionalDashboard'
+import CaseDetails from './pages/CaseDetails'
+import VerifyEmail from './pages/VerifyEmail'
+import PeerDirectory from './pages/PeerDirectory'
+import ComponentShowcase from './pages/ComponentShowcase'
+import AppHeader from './components/common/AppHeader'
+import { useTranslation } from './hooks/useTranslation'
+import { FaLifeRing, FaExternalLinkAlt } from 'react-icons/fa'
 
 function Shell() {
-  const navigate = useNavigate()
-  const { user, logout } = useAuthStore()
-  const [scrolled, setScrolled] = useState(false)
-  const [hideNav, setHideNav] = useState(false)
-  const lastScrollY = useRef(0)
-  const parallaxRef = useRef<HTMLDivElement>(null)
-
-  const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 40)
-      if (window.scrollY > lastScrollY.current && window.scrollY > 80) {
-        setHideNav(true)
-      } else {
-        setHideNav(false)
-      }
-      lastScrollY.current = window.scrollY
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
+  const { user } = useAuthStore()
+  const { t } = useTranslation()
 
   return (
     <div className="d-flex flex-column min-vh-100">
-      <div ref={parallaxRef} className="parallax-hero">
-        <Navbar
-          expand="lg"
-          className={`parallax-navbar shadow-sm${scrolled ? ' parallax-navbar-solid' : ''}${hideNav ? ' parallax-navbar-hide' : ''}`}
-          fixed="top"
-        >
-          <Container>
-            <Navbar.Brand
-              onClick={() => navigate(user ? (user.role === 'LIP' ? '/dashboard' : '/professional-dashboard') : '/login')}
-              style={{ cursor: 'pointer' }}
-            >
-              <Logo />
-            </Navbar.Brand>
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav">
-              <Nav className="ms-auto align-items-center">
-                {user ? (
-                  <>
-                    <Nav.Link onClick={() => navigate(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}>
-                      <FaHome className="me-1" />
-                      Dashboard
-                    </Nav.Link>
-                    {user.role === 'LIP' && (
-                      <>
-                        <Nav.Link onClick={() => navigate('/')}> 
-                          <FaGavel className="me-1" />
-                          Cases
-                        </Nav.Link>
-                        <Nav.Link onClick={() => navigate('/cases/new')}>
-                          <FaPlus className="me-1" />
-                          New Case
-                        </Nav.Link>
-                      </>
-                    )}
-                      <Dropdown align="end">
-                        <Dropdown.Toggle variant="link" className="text-decoration-none d-flex align-items-center">
-                          <FaUser className="me-1" />
-                          {user.name} ({user.role})
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                          <Dropdown.Item onClick={handleLogout}>
-                            <FaSignOutAlt className="me-2" />
-                            Logout
-                          </Dropdown.Item>
-                        </Dropdown.Menu>
-                      </Dropdown>
-                  </>
-                ) : (
-                  <Nav.Link onClick={() => navigate('/login')}>Login</Nav.Link>
-                )}
-              </Nav>
-            </Navbar.Collapse>
-          </Container>
-        </Navbar>
-        <div className="parallax-hero-bg" />
-      </div>
+      <AppHeader />
 
-      <Container className="py-4 flex-grow-1">
+      <Container fluid="xl" className="py-3 py-md-4 px-2 px-sm-3 px-md-4 flex-grow-1">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register/:role" element={<Register />} />
+          <Route path="/verify-email/:token" element={<VerifyEmail />} />
+          <Route path="/peer-directory" element={user ? <PeerDirectory /> : <Navigate to="/login" replace />} />
           <Route path="/invite/:token" element={<InviteAccept />} />
           <Route
             path="/dashboard"
@@ -133,7 +60,7 @@ function Shell() {
             }
           />
           <Route
-            path="/"
+            path="/cases"
             element={
               user ? (
                 user.role === 'LIP' ? (
@@ -146,15 +73,50 @@ function Shell() {
               )
             }
           />
+          <Route
+            path="/"
+            element={
+              user ? (
+                user.role === 'LIP' ? (
+                  <Navigate to="/cases" replace />
+                ) : (
+                  <Navigate to="/professional-dashboard" replace />
+                )
+              ) : (
+                <Navigate to="/login" replace />
+              )
+            }
+          />
           <Route path="/cases/new" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
           <Route path="/cases/:caseId" element={user ? <CaseDetails /> : <Navigate to="/login" replace />} />
           <Route path="/cases/:caseId/edit" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
-          <Route path="*" element={<div className="text-center py-5">Page not found</div>} />
+          <Route path="/components" element={<ComponentShowcase />} />
+          <Route path="*" element={<div className="text-center py-5 text-muted">{t('common.pageNotFound')}</div>} />
         </Routes>
       </Container>
 
-      <footer className="bg-light text-center py-3 mt-auto">
-        <small className="text-muted">For demonstration purposes only. Not legal advice or a court system.</small>
+      <footer className="bg-light py-4 mt-auto border-top">
+        <Container className="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 text-center text-md-start">
+          <div>
+            <div className="fw-semibold text-dark mb-1" style={{ fontSize: '0.875rem' }}>
+              My Case Buddy CMS
+            </div>
+            <small className="text-muted d-block">{t('common.disclaimer')}</small>
+          </div>
+          <div className="d-flex align-items-center gap-2 flex-shrink-0">
+            <a
+              href="https://support.mycourtbuddy.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3 py-1 shadow-xs"
+              style={{ fontSize: '0.8rem' }}
+            >
+              <FaLifeRing size={12} className="text-primary" />
+              <span>{t('common.supportKnowledgeBase')}</span>
+              <FaExternalLinkAlt size={10} className="text-muted" />
+            </a>
+          </div>
+        </Container>
       </footer>
     </div>
   )
@@ -163,3 +125,4 @@ function Shell() {
 export default function App() {
   return <Shell />
 }
+

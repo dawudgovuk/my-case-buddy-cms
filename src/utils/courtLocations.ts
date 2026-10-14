@@ -10,7 +10,7 @@ export async function getCourtNames(): Promise<string[]> {
   if (nameIdx === -1) return [];
   return lines.slice(1).map(line => {
     // Handle quoted names and commas, and trim spaces
-    const match = line.match(/^"([^\"]+)"/);
+    const match = line.match(/^"([^"]+)"/);
     if (match) return match[1].trim();
     const cols = line.split(',');
     return cols[nameIdx] ? cols[nameIdx].replace(/^"|"$/g, '').trim() : '';

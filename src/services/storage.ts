@@ -22,7 +22,7 @@ export function loadSnapshot(): AppStateSnapshot {
     return empty;
   }
   try {
-    const parsed = JSON.parse(raw) as AppStateSnapshot;
+    const parsed = JSON.parse(raw) as Partial<AppStateSnapshot>;
     if (parsed.version !== VERSION) {
       // Migration: add invites and deadlines if missing
       const migrated: AppStateSnapshot = {
@@ -30,13 +30,13 @@ export function loadSnapshot(): AppStateSnapshot {
         createdAt: parsed.createdAt ?? nowIso(),
         updatedAt: nowIso(),
         cases: parsed.cases ?? [],
-        invites: (parsed as any).invites ?? [],
-        deadlines: (parsed as any).deadlines ?? [],
+        invites: parsed.invites ?? [],
+        deadlines: parsed.deadlines ?? [],
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
       return migrated;
     }
-    return parsed;
+    return parsed as AppStateSnapshot;
   } catch {
     const reset: AppStateSnapshot = {
       version: VERSION,
@@ -139,4 +139,27 @@ export function getAllDeadlines(): DocumentDeadline[] {
   return loadSnapshot().deadlines;
 }
 
+export function getPeerSupportCases(): FamilyCase[] {
+  return loadSnapshot().cases.filter((c) => Boolean(c.seekingPeerSupport));
+}
 
+export function toggleCasePeerSupport(caseId: string, seeking: boolean, note?: string): FamilyCase | undefined {
+  let updated: FamilyCase | undefined;
+  saveSnapshot((prev) => {
+    const cases = prev.cases.map((c) => {
+      if (c.id === caseId) {
+        updated = {
+          ...c,
+          seekingPeerSupport: seeking,
+          peerSupportNote: note !== undefined ? note : c.peerSupportNote,
+          peerSupportRequestedAt: seeking ? (c.peerSupportRequestedAt || nowIso()) : undefined,
+          lastUpdatedAt: nowIso(),
+        };
+        return updated;
+      }
+      return c;
+    });
+    return { ...prev, cases };
+  });
+  return updated;
+}
