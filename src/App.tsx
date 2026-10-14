@@ -1,5 +1,6 @@
+import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { Container } from 'react-bootstrap'
+import { Container, Spinner } from 'react-bootstrap'
 import CasesList from './pages/CasesList'
 import CaseForm from './pages/CaseForm'
 import { useAuthStore } from './store/authStore'
@@ -17,8 +18,25 @@ import { useTranslation } from './hooks/useTranslation'
 import { FaLifeRing, FaExternalLinkAlt } from 'react-icons/fa'
 
 function Shell() {
-  const { user } = useAuthStore()
+  const { user, initNeonAuth, ensureDemoUsers, isLoadingSession } = useAuthStore()
   const { t } = useTranslation()
+
+  useEffect(() => {
+    ensureDemoUsers()
+    initNeonAuth()
+  }, [ensureDemoUsers, initNeonAuth])
+
+  if (isLoadingSession) {
+    return (
+      <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+        <div className="text-center p-4">
+          <Spinner animation="border" variant="primary" className="mb-3" />
+          <div className="text-dark fw-bold mb-1">My Case Buddy CMS</div>
+          <div className="text-muted small">Loading session...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="d-flex flex-column min-vh-100">

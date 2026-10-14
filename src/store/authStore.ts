@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { User } from '../types/domain'
+import type { User, UserRole } from '../types/domain'
 import {
   getCurrentUser,
   setCurrentUser,
@@ -9,12 +9,45 @@ import {
   verifyUserById as verifyUserByIdService,
   verifyAllProfessionals as verifyAllProfessionalsService,
 } from '../services/auth'
+import { generateId } from '../services/storage'
+import { authClient } from '../auth'
+
+export interface NeonSessionData {
+  id: string
+  userId: string
+  token: string
+  expiresAt: string | Date
+}
+
+export interface NeonUserData {
+  id: string
+  name: string
+  email: string
+  emailVerified: boolean
+  image?: string | null
+  role?: string
+  createdAt?: string | Date
+  updatedAt?: string | Date
+}
 
 interface AuthState {
   user: User | null
   users: User[]
+  neonUser: NeonUserData | null
+  neonSession: NeonSessionData | null
+  isLoadingSession: boolean
   login: (userId: string) => void
-  logout: () => void
+  loginWithNeon: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>
+  registerWithNeon: (params: {
+    name: string
+    email: string
+    password: string
+    role?: UserRole
+    firm?: string
+    registrationNumber?: string
+  }) => Promise<{ success: boolean; error?: string; user?: User }>
+  initNeonAuth: () => Promise<void>
+  logout: () => Promise<void>
   ensureDemoUsers: () => void
   verifyUser: (token: string) => { success: boolean; user?: User; error?: string }
   verifyUserById: (userId: string) => void
@@ -25,20 +58,180 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: getCurrentUser(),
   users: listUsers(),
+  neonUser: null,
+  neonSession: null,
+  isLoadingSession: true,
+
+  initNeonAuth: async () => {
+    try {
+      const res = await authClient.getSession()
+      if (res.data?.session && res.data?.user) {
+        const nUser = res.data.user as NeonUserData
+        const nSession = res.data.session as NeonSessionData
+        const users = get().users
+        let matched = users.find((u) => u.email.toLowerCase() === nUser.email.toLowerCase())
+        if (!matched) {
+          matched = {
+            id: nUser.id,
+            name: nUser.name || nUser.email.split('@')[0],
+            email: nUser.email,
+            role: 'LIP',
+            isVerified: Boolean(nUser.emailVerified),
+          }
+          const updatedUsers = [...users, matched]
+          saveUsers(updatedUsers)
+          set({ users: updatedUsers })
+        }
+        setCurrentUser(matched)
+        set({
+          user: matched,
+          neonUser: nUser,
+          neonSession: nSession,
+          isLoadingSession: false,
+        })
+        return
+      }
+    } catch (err) {
+      console.warn('Neon auth getSession check failed:', err)
+    }
+    set({ isLoadingSession: false })
+  },
+
+  loginWithNeon: async (email: string, password: string) => {
+    try {
+      const res = await authClient.signIn.email({ email: email.trim(), password })
+      if (res.error) {
+        return { success: false, error: res.error.message || 'Neon authentication failed' }
+      }
+
+      // Fetch or use session info
+      const sessionRes = await authClient.getSession()
+      const nUser = (sessionRes.data?.user || res.data?.user) as NeonUserData | undefined
+      const nSession = (sessionRes.data?.session || null) as NeonSessionData | null
+
+      if (!nUser) {
+        return { success: false, error: 'Could not resolve authenticated user' }
+      }
+
+      // Sync into application user list
+      const users = get().users
+      let matched = users.find((u) => u.email.toLowerCase() === nUser.email.toLowerCase())
+      if (!matched) {
+        matched = {
+          id: nUser.id,
+          name: nUser.name || email.split('@')[0],
+          email: nUser.email,
+          role: 'LIP',
+          isVerified: Boolean(nUser.emailVerified),
+        }
+        const updatedUsers = [...users, matched]
+        saveUsers(updatedUsers)
+        set({ users: updatedUsers })
+      } else {
+        // Keep verification state up to date with Neon
+        if (nUser.emailVerified && !matched.isVerified) {
+          matched = { ...matched, isVerified: true }
+          const updatedUsers = users.map((u) => (u.id === matched!.id ? matched! : u))
+          saveUsers(updatedUsers)
+          set({ users: updatedUsers })
+        }
+      }
+
+      setCurrentUser(matched)
+      set({
+        user: matched,
+        neonUser: nUser,
+        neonSession: nSession,
+      })
+
+      return { success: true, user: matched }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      return { success: false, error: message }
+    }
+  },
+
+  registerWithNeon: async ({ name, email, password, role = 'LIP', firm, registrationNumber }) => {
+    try {
+      const res = await authClient.signUp.email({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+      })
+      if (res.error) {
+        return { success: false, error: res.error.message || 'Registration failed' }
+      }
+
+      const sessionRes = await authClient.getSession()
+      const nUser = (sessionRes.data?.user || res.data?.user) as NeonUserData | undefined
+      const nSession = (sessionRes.data?.session || null) as NeonSessionData | null
+
+      const isProfessional = role !== 'LIP'
+      const verificationToken = isProfessional ? generateId('verify') : undefined
+
+      const users = get().users
+      const existingIndex = users.findIndex((u) => u.email.toLowerCase() === email.toLowerCase())
+
+      const appUser: User = {
+        id: nUser?.id || generateId('user'),
+        name: name.trim(),
+        email: email.trim(),
+        role,
+        firm: firm?.trim(),
+        registrationNumber: registrationNumber?.trim(),
+        isVerified: !isProfessional || Boolean(nUser?.emailVerified),
+        ...(verificationToken && !nUser?.emailVerified && {
+          verificationToken,
+          verificationSentAt: new Date().toISOString(),
+        }),
+      }
+
+      let updatedUsers: User[]
+      if (existingIndex >= 0) {
+        updatedUsers = [...users]
+        updatedUsers[existingIndex] = { ...updatedUsers[existingIndex], ...appUser }
+      } else {
+        updatedUsers = [...users, appUser]
+      }
+
+      saveUsers(updatedUsers)
+      setCurrentUser(appUser)
+      set({
+        users: updatedUsers,
+        user: appUser,
+        neonUser: nUser || null,
+        neonSession: nSession,
+      })
+
+      return { success: true, user: appUser }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      return { success: false, error: message }
+    }
+  },
+
   login: (userId: string) => {
     const u = get().users.find((u) => u.id === userId) || null
     setCurrentUser(u)
     set({ user: u })
   },
-  logout: () => {
+
+  logout: async () => {
+    try {
+      await authClient.signOut()
+    } catch (err) {
+      console.warn('Neon signOut error:', err)
+    }
     setCurrentUser(null)
-    set({ user: null })
+    set({ user: null, neonUser: null, neonSession: null })
   },
+
   refreshUsers: () => {
     const users = listUsers()
     const current = getCurrentUser()
     set({ users, user: current })
   },
+
   verifyUser: (token: string) => {
     const result = verifyUserToken(token)
     if (result.success && result.user) {
@@ -47,18 +240,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     return result
   },
+
   verifyUserById: (userId: string) => {
     verifyUserByIdService(userId)
     const allUsers = listUsers()
     const current = getCurrentUser()
     set({ users: allUsers, user: current })
   },
+
   verifyAllProfessionals: () => {
     verifyAllProfessionalsService()
     const allUsers = listUsers()
     const current = getCurrentUser()
     set({ users: allUsers, user: current })
   },
+
   ensureDemoUsers: () => {
     let users = listUsers()
     if (users.length === 0) {
@@ -133,5 +329,3 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ users })
   },
 }))
-
-

@@ -19,6 +19,7 @@ export function getNeonConfig(): NeonConfig {
       env.VITE_NEON_DATABASE_URL ||
       'postgresql://neondb_owner:npg_KER8cVz0nNsw@ep-dawn-boat-b58fw9yw-pooler.c-7.us-east-2.aws.neon.tech/neondb?channel_binding=require&sslmode=require',
     authBaseUrl:
+      env.VITE_NEON_AUTH_URL ||
       env.VITE_NEON_AUTH_BASE_URL ||
       'https://ep-dawn-boat-b58fw9yw.neonauth.c-7.us-east-2.aws.neon.tech/neondb/auth',
     authJwksUrl:
