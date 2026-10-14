@@ -2,9 +2,11 @@ import { useState } from 'react'
 import { Navbar, Container, Nav, Dropdown, Badge } from 'react-bootstrap'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
+import { useCasesStore } from '../../store/casesStore'
 import { useTranslation } from '../../hooks/useTranslation'
 import Logo from './Logo'
 import LanguageSwitcher from './LanguageSwitcher'
+import { StrapiSyncModal } from '../strapi/StrapiSyncModal'
 import {
   FaHome,
   FaGavel,
@@ -17,6 +19,7 @@ import {
   FaExclamationCircle,
   FaLifeRing,
   FaExternalLinkAlt,
+  FaDatabase,
 } from 'react-icons/fa'
 import type { UserRole } from '../../types/domain'
 
@@ -35,8 +38,10 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuthStore()
+  const { isStrapiMode } = useCasesStore()
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
+  const [showStrapiModal, setShowStrapiModal] = useState(false)
 
   const handleLogout = () => {
     setExpanded(false)
@@ -164,6 +169,22 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
 
                 {/* Responsive Mobile / Desktop Controls (Language + User Profile) */}
                 <div className="d-flex align-items-center justify-content-between gap-2 ms-xl-2 pt-2 pt-xl-0 border-top border-top-xl-0">
+                  {/* Strapi / Neon Backend Status Pill */}
+                  <button
+                    type="button"
+                    onClick={() => setShowStrapiModal(true)}
+                    className={`btn btn-sm py-1 px-2.5 rounded-pill border d-inline-flex align-items-center gap-1.5 shadow-xs ${
+                      isStrapiMode
+                        ? 'btn-outline-primary bg-primary-subtle text-primary border-primary-subtle'
+                        : 'btn-outline-secondary'
+                    }`}
+                    style={{ fontSize: '0.8rem' }}
+                    title="Strapi Backend & Neon Database Sync"
+                  >
+                    <FaDatabase size={11} className={isStrapiMode ? 'text-primary' : 'text-muted'} />
+                    <span className="fw-semibold">{isStrapiMode ? 'Strapi Mode' : 'Local Mode'}</span>
+                  </button>
+
                   {/* Language Switcher */}
                   <LanguageSwitcher className="my-1 my-xl-0" />
 
@@ -214,6 +235,17 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                       >
                         <FaHome className="text-muted" />
                         <span>{t('common.myDashboard')}</span>
+                      </Dropdown.Item>
+
+                      <Dropdown.Item
+                        onClick={() => {
+                          setExpanded(false)
+                          setShowStrapiModal(true)
+                        }}
+                        className="d-flex align-items-center gap-2 py-2"
+                      >
+                        <FaDatabase className="text-primary" />
+                        <span>Strapi & Neon Sync</span>
                       </Dropdown.Item>
 
                       <Dropdown.Item
@@ -279,6 +311,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
           </Nav>
         </Navbar.Collapse>
       </Container>
+      <StrapiSyncModal show={showStrapiModal} onHide={() => setShowStrapiModal(false)} />
     </Navbar>
   )
 }

@@ -9,11 +9,13 @@ import {
   verifyUserById as verifyUserByIdService,
   verifyAllProfessionals as verifyAllProfessionalsService,
 } from '../services/auth'
+import { strapiLogout } from '../services/strapi'
 
 interface AuthState {
   user: User | null
   users: User[]
   login: (userId: string) => void
+  loginWithUser: (user: User) => void
   logout: () => void
   ensureDemoUsers: () => void
   verifyUser: (token: string) => { success: boolean; user?: User; error?: string }
@@ -30,7 +32,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     setCurrentUser(u)
     set({ user: u })
   },
+  loginWithUser: (user: User) => {
+    const existing = get().users
+    const isExisting = existing.some((u) => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase())
+    const updated = isExisting
+      ? existing.map((u) => (u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase() ? user : u))
+      : [user, ...existing]
+    saveUsers(updated)
+    setCurrentUser(user)
+    set({ user, users: updated })
+  },
   logout: () => {
+    strapiLogout()
     setCurrentUser(null)
     set({ user: null })
   },

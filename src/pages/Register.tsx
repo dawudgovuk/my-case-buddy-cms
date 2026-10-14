@@ -6,6 +6,7 @@ import { useTranslation } from '../hooks/useTranslation'
 import type { User, UserRole } from '../types/domain'
 import { saveUsers, listUsers } from '../services/auth'
 import { generateId } from '../services/storage'
+import { isStrapiEnabled, strapiRegister } from '../services/strapi'
 import { USER_ROLES } from '../utils/caseConstants'
 import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
 
@@ -20,9 +21,11 @@ export default function Register() {
   const { t } = useTranslation()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [firm, setFirm] = useState('')
   const [registrationNumber, setRegistrationNumber] = useState('')
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [registeredPendingVerification, setRegisteredPendingVerification] = useState<{
     email: string
@@ -40,7 +43,7 @@ export default function Register() {
 
   const userRole: UserRole = role
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError('')
 
@@ -55,11 +58,34 @@ export default function Register() {
       return
     }
 
+    setIsSubmitting(true)
+
     const isProfessional = userRole === 'Solicitor' || userRole === 'Barrister' || userRole === 'McKenzieFriend'
     const verificationToken = isProfessional ? generateId('verify') : undefined
 
+    let assignedId = generateId('user')
+
+    // Automatically sync registration with Strapi if enabled
+    if (isStrapiEnabled()) {
+      try {
+        const strapiResult = await strapiRegister({
+          username: email.trim(),
+          email: email.trim(),
+          password: password || 'CaseBuddy2026!',
+          userRole,
+          firm: firm.trim() || undefined,
+          registrationNumber: registrationNumber.trim() || undefined,
+        })
+        if (strapiResult.user?.id) {
+          assignedId = String(strapiResult.user.id)
+        }
+      } catch (err: unknown) {
+        console.warn('Strapi auto-registration info:', err)
+      }
+    }
+
     const newUser: User = {
-      id: generateId('user'),
+      id: assignedId,
       name: name.trim(),
       email: email.trim(),
       role: userRole,
@@ -75,6 +101,7 @@ export default function Register() {
     const updatedUsers: User[] = [...existingUsers, newUser]
     saveUsers(updatedUsers)
     useAuthStore.setState({ users: updatedUsers })
+    setIsSubmitting(false)
 
     if (isProfessional && verificationToken) {
       setRegisteredPendingVerification({
@@ -84,7 +111,7 @@ export default function Register() {
       })
     } else {
       login(newUser.id)
-      navigate('/dashboard')
+      navigate(userRole === 'LIP' ? '/cases' : '/professional-dashboard')
     }
   }
 
@@ -102,8 +129,8 @@ export default function Register() {
   }
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-50">
-      <Card className="shadow-lg border-0" style={{ width: '100%', maxWidth: '500px' }}>
+    <Container className="d-flex justify-content-center align-items-center min-vh-50 py-4">
+      <Card className="shadow-lg border-0" style={{ width: '100%', maxWidth: '520px' }}>
         <Card.Header className="text-center py-3 py-sm-4 bg-white border-bottom">
           <h1 className="h4 fw-bold mb-0">
             {t('auth.registerAsTitle', { role: userRole })}
@@ -141,6 +168,18 @@ export default function Register() {
               />
             </Form.Group>
 
+            <Form.Group className="mb-3">
+              <Form.Label className="fw-bold">Password (Optional)</Form.Label>
+              <Form.Control
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                size="lg"
+                placeholder="Set password for Strapi API account"
+              />
+              <Form.Text className="text-muted">Defaults to a secure preset if left blank.</Form.Text>
+            </Form.Group>
+
             {(userRole === 'Solicitor' || userRole === 'Barrister') && (
               <>
                 <Form.Group className="mb-3">
@@ -172,10 +211,10 @@ export default function Register() {
               </>
             )}
 
-            <Row className="g-2">
+            <Row className="g-2 mt-4">
               <Col xs={12} sm={6}>
-                <Button type="submit" className="w-100" size="lg">
-                  {t('auth.registerBtn')}
+                <Button type="submit" className="w-100" size="lg" disabled={isSubmitting}>
+                  {isSubmitting ? 'Registering...' : t('auth.registerBtn')}
                 </Button>
               </Col>
               <Col xs={12} sm={6}>
