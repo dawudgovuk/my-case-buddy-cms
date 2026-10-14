@@ -1,4 +1,7 @@
 import { getNeonConfig } from './neonConfig';
+import { authClient } from '../../auth';
+
+export { authClient };
 
 export interface NeonAuthHealthResult {
   reachable: boolean;

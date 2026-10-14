@@ -1,14 +1,13 @@
-import { Container, Card, Form, Button, Alert, Row, Col } from 'react-bootstrap'
+import { Container, Card, Form, Button, Alert, Row, Col, Spinner } from 'react-bootstrap'
 import { useState } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from '../hooks/useTranslation'
-import type { User, UserRole } from '../types/domain'
-import { saveUsers, listUsers } from '../services/auth'
-import { generateId } from '../services/storage'
-import { isStrapiEnabled, strapiRegister } from '../services/strapi'
+import type { UserRole } from '../types/domain'
 import { USER_ROLES } from '../utils/caseConstants'
+import { isStrapiEnabled, strapiRegister } from '../services/strapi'
 import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
+import { FaEye, FaEyeSlash, FaLock, FaUserPlus } from 'react-icons/fa'
 
 function isValidRole(r: string | undefined): r is UserRole {
   return typeof r === 'string' && (USER_ROLES as readonly string[]).includes(r)
@@ -17,15 +16,16 @@ function isValidRole(r: string | undefined): r is UserRole {
 export default function Register() {
   const navigate = useNavigate()
   const { role } = useParams<{ role: string }>()
-  const { login } = useAuthStore()
+  const { registerWithNeon } = useAuthStore()
   const { t } = useTranslation()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [firm, setFirm] = useState('')
   const [registrationNumber, setRegistrationNumber] = useState('')
   const [error, setError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const [registeredPendingVerification, setRegisteredPendingVerification] = useState<{
     email: string
@@ -52,66 +52,59 @@ export default function Register() {
       return
     }
 
-    const existingUsers = listUsers()
-    if (existingUsers.some((u) => u.email.toLowerCase() === email.toLowerCase())) {
-      setError(t('auth.emailAlreadyExists'))
+    if (!password || password.length < 8) {
+      setError('Password must be at least 8 characters')
       return
     }
 
-    setIsSubmitting(true)
+    setLoading(true)
 
-    const isProfessional = userRole === 'Solicitor' || userRole === 'Barrister' || userRole === 'McKenzieFriend'
-    const verificationToken = isProfessional ? generateId('verify') : undefined
-
-    let assignedId = generateId('user')
-
-    // Automatically sync registration with Strapi if enabled
-    if (isStrapiEnabled()) {
-      try {
-        const strapiResult = await strapiRegister({
-          username: email.trim(),
-          email: email.trim(),
-          password: password || 'CaseBuddy2026!',
-          userRole,
-          firm: firm.trim() || undefined,
-          registrationNumber: registrationNumber.trim() || undefined,
-        })
-        if (strapiResult.user?.id) {
-          assignedId = String(strapiResult.user.id)
-        }
-      } catch (err: unknown) {
-        console.warn('Strapi auto-registration info:', err)
-      }
-    }
-
-    const newUser: User = {
-      id: assignedId,
-      name: name.trim(),
-      email: email.trim(),
-      role: userRole,
-      isVerified: !isProfessional,
-      ...(verificationToken && {
-        verificationToken,
-        verificationSentAt: new Date().toISOString(),
-      }),
-      ...(firm.trim() && { firm: firm.trim() }),
-      ...(registrationNumber.trim() && { registrationNumber: registrationNumber.trim() }),
-    }
-
-    const updatedUsers: User[] = [...existingUsers, newUser]
-    saveUsers(updatedUsers)
-    useAuthStore.setState({ users: updatedUsers })
-    setIsSubmitting(false)
-
-    if (isProfessional && verificationToken) {
-      setRegisteredPendingVerification({
-        email: newUser.email,
-        token: verificationToken,
-        name: newUser.name,
+    try {
+      const result = await registerWithNeon({
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        role: userRole,
+        firm: firm.trim() || undefined,
+        registrationNumber: registrationNumber.trim() || undefined,
       })
-    } else {
-      login(newUser.id)
-      navigate(userRole === 'LIP' ? '/cases' : '/professional-dashboard')
+
+      // Automatically sync registration with Strapi if enabled
+      if (isStrapiEnabled()) {
+        try {
+          await strapiRegister({
+            username: email.trim(),
+            email: email.trim(),
+            password: password || 'CaseBuddy2026!',
+            userRole,
+            firm: firm.trim() || undefined,
+            registrationNumber: registrationNumber.trim() || undefined,
+          })
+        } catch (strapiErr: unknown) {
+          console.warn('Strapi auto-registration sync info:', strapiErr)
+        }
+      }
+
+      if (!result.success || !result.user) {
+        setError(result.error || 'Registration failed. Please try again.')
+        setLoading(false)
+        return
+      }
+
+      const isProfessional = userRole === 'Solicitor' || userRole === 'Barrister' || userRole === 'McKenzieFriend'
+      if (isProfessional && result.user.verificationToken) {
+        setRegisteredPendingVerification({
+          email: result.user.email,
+          token: result.user.verificationToken,
+          name: result.user.name,
+        })
+      } else {
+        navigate(userRole === 'LIP' ? '/cases' : '/professional-dashboard')
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -129,23 +122,24 @@ export default function Register() {
   }
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-50 py-4">
-      <Card className="shadow-lg border-0" style={{ width: '100%', maxWidth: '520px' }}>
-        <Card.Header className="text-center py-3 py-sm-4 bg-white border-bottom">
-          <h1 className="h4 fw-bold mb-0">
+    <Container className="d-flex justify-content-center align-items-center min-vh-50 py-4 py-md-5">
+      <Card className="shadow-lg border-0" style={{ width: '100%', maxWidth: '520px', borderRadius: '16px' }}>
+        <Card.Header className="text-center py-4 bg-white border-bottom">
+          <h1 className="h4 fw-bold mb-1">
             {t('auth.registerAsTitle', { role: userRole })}
           </h1>
+          <p className="text-muted small mb-0">Create an account to manage your cases and peer support</p>
         </Card.Header>
-        <Card.Body className="p-3 p-sm-4">
+        <Card.Body className="p-4">
           <Form onSubmit={handleSubmit}>
             {error && (
-              <Alert variant="danger" className="mb-3">
+              <Alert variant="danger" dismissible onClose={() => setError('')} className="mb-3 py-2 px-3 small rounded-3">
                 {error}
               </Alert>
             )}
 
             <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">{t('auth.fullNameLabel')}</Form.Label>
+              <Form.Label className="fw-semibold small text-secondary">{t('auth.fullNameLabel')}</Form.Label>
               <Form.Control
                 type="text"
                 value={name}
@@ -153,11 +147,12 @@ export default function Register() {
                 required
                 size="lg"
                 placeholder={t('auth.fullNamePlaceholder')}
+                disabled={loading}
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">{t('auth.emailLabel')}</Form.Label>
+              <Form.Label className="fw-semibold small text-secondary">{t('auth.emailLabel')}</Form.Label>
               <Form.Control
                 type="email"
                 value={email}
@@ -165,25 +160,45 @@ export default function Register() {
                 required
                 size="lg"
                 placeholder={t('auth.emailPlaceholder')}
+                disabled={loading}
+                autoComplete="email"
               />
             </Form.Group>
 
             <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">Password (Optional)</Form.Label>
-              <Form.Control
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                size="lg"
-                placeholder="Set password for Strapi API account"
-              />
-              <Form.Text className="text-muted">Defaults to a secure preset if left blank.</Form.Text>
+              <div className="d-flex justify-content-between align-items-center">
+                <Form.Label className="fw-semibold small text-secondary">Password</Form.Label>
+                <small className="text-muted" style={{ fontSize: '0.75rem' }}>Min 8 characters</small>
+              </div>
+              <div className="input-group">
+                <span className="input-group-text bg-white text-muted">
+                  <FaLock size={14} />
+                </span>
+                <Form.Control
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  size="lg"
+                  disabled={loading}
+                  autoComplete="new-password"
+                />
+                <Button
+                  variant="outline-secondary"
+                  className="border-start-0 bg-white text-muted"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
+                </Button>
+              </div>
             </Form.Group>
 
             {(userRole === 'Solicitor' || userRole === 'Barrister') && (
               <>
                 <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold">
+                  <Form.Label className="fw-semibold small text-secondary">
                     {userRole === 'Solicitor' ? t('auth.firmLabel') : t('auth.chambersLabel')}
                   </Form.Label>
                   <Form.Control
@@ -192,11 +207,12 @@ export default function Register() {
                     onChange={(e) => setFirm(e.target.value)}
                     size="lg"
                     placeholder={userRole === 'Solicitor' ? t('auth.firmPlaceholder') : t('auth.chambersPlaceholder')}
+                    disabled={loading}
                   />
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                  <Form.Label className="fw-bold">
+                  <Form.Label className="fw-semibold small text-secondary">
                     {t('auth.registrationNumberLabel')}
                   </Form.Label>
                   <Form.Control
@@ -205,20 +221,42 @@ export default function Register() {
                     onChange={(e) => setRegistrationNumber(e.target.value)}
                     size="lg"
                     placeholder={t('auth.registrationNumberPlaceholder')}
+                    disabled={loading}
                   />
-                  <Form.Text className="text-muted">{t('auth.registrationNumberPlaceholder')}</Form.Text>
                 </Form.Group>
               </>
             )}
 
             <Row className="g-2 mt-4">
-              <Col xs={12} sm={6}>
-                <Button type="submit" className="w-100" size="lg" disabled={isSubmitting}>
-                  {isSubmitting ? 'Registering...' : t('auth.registerBtn')}
+              <Col xs={12} sm={7}>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-100 d-flex align-items-center justify-content-center gap-2 fw-semibold"
+                  size="lg"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Spinner size="sm" animation="border" />
+                      <span>Creating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaUserPlus />
+                      <span>{t('auth.registerBtn')}</span>
+                    </>
+                  )}
                 </Button>
               </Col>
-              <Col xs={12} sm={6}>
-                <Button variant="outline-secondary" size="lg" className="w-100" onClick={() => navigate('/login')}>
+              <Col xs={12} sm={5}>
+                <Button
+                  variant="outline-secondary"
+                  size="lg"
+                  className="w-100"
+                  onClick={() => navigate('/login')}
+                  disabled={loading}
+                >
                   {t('auth.backToLogin')}
                 </Button>
               </Col>
