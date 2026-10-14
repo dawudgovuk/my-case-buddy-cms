@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
-import { Card, Badge, ProgressBar, Button, Collapse } from 'react-bootstrap'
+import { Badge, ProgressBar, Button, Collapse } from 'react-bootstrap'
 import type { CaseStageInfo } from '../../utils/caseStages'
 import {
   FaCheck,
@@ -67,27 +67,37 @@ export default function CaseTimeline({
   const activeStage = stages[currentStageIndex]
 
   return (
-    <Card className={`border shadow-sm bg-white case-timeline-card ${className}`}>
-      <Card.Header className="bg-white border-bottom-0 pt-3 pb-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div
+      className={`case-timeline-card rounded-3 border overflow-hidden ${
+        compact ? 'bg-light bg-opacity-75' : 'bg-white shadow-sm'
+      } ${className}`}
+      style={{ borderColor: '#e2e8f0' }}
+    >
+      <div className={`pt-2.5 pb-2 px-3 d-flex flex-wrap align-items-center justify-content-between gap-2 ${compact ? 'bg-transparent' : 'bg-white'}`}>
         <div className="d-flex align-items-center gap-2">
-          <span className="fw-bold text-dark fs-6">Court Procedural Timeline</span>
+          <span className="fw-semibold text-dark" style={{ fontSize: '0.82rem' }}>
+            Court Procedural Timeline
+          </span>
           {activeStage && (
-            <Badge bg="primary" className="fw-semibold px-2 py-1">
+            <span
+              className="badge badge-soft-emerald px-2 py-0.5 rounded-pill fw-semibold"
+              style={{ fontSize: '0.72rem' }}
+            >
               Active: {activeStage.name}
-            </Badge>
+            </span>
           )}
         </div>
 
-        <div className="d-flex align-items-center gap-3">
+        <div className="d-flex align-items-center gap-2">
           {showProgressBar && (
-            <div className="d-none d-sm-flex align-items-center gap-2" style={{ minWidth: 160 }}>
+            <div className="d-none d-sm-flex align-items-center gap-2" style={{ minWidth: 120 }}>
               <ProgressBar
                 now={progressPercent}
-                variant="primary"
-                style={{ height: 6, width: 100 }}
+                variant="success"
+                style={{ height: 5, width: 70 }}
                 className="rounded-pill"
               />
-              <span className="small text-muted fw-semibold" style={{ fontSize: '0.75rem' }}>
+              <span className="small text-muted fw-semibold" style={{ fontSize: '0.72rem' }}>
                 {progressPercent}%
               </span>
             </div>
@@ -95,19 +105,19 @@ export default function CaseTimeline({
 
           {collapsible && (
             <Button
-              variant="outline-secondary"
+              variant="light"
               size="sm"
               onClick={() => setExpanded(!expanded)}
               aria-expanded={expanded}
-              className="py-0 px-2 d-flex align-items-center gap-1"
-              style={{ fontSize: '0.8rem', height: 26 }}
+              className="btn-soft py-0 px-2 d-flex align-items-center gap-1 border"
+              style={{ fontSize: '0.74rem', height: 24 }}
             >
               <span>{expanded ? 'Collapse' : 'Expand'}</span>
-              {expanded ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
+              {expanded ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
             </Button>
           )}
         </div>
-      </Card.Header>
+      </div>
 
       {/* Progress percentage on mobile when visible */}
       {showProgressBar && (
@@ -116,13 +126,13 @@ export default function CaseTimeline({
             <span className="small text-muted" style={{ fontSize: '0.75rem' }}>Progress</span>
             <span className="small text-muted fw-semibold" style={{ fontSize: '0.75rem' }}>{progressPercent}%</span>
           </div>
-          <ProgressBar now={progressPercent} variant="primary" style={{ height: 4 }} className="rounded-pill" />
+          <ProgressBar now={progressPercent} variant="success" style={{ height: 4 }} className="rounded-pill" />
         </div>
       )}
 
       <Collapse in={!collapsible || expanded}>
         <div>
-          <Card.Body className={`pt-2 ${compact ? 'p-2' : 'p-3'}`}>
+          <div className={`pt-2 ${compact ? 'px-3 pb-3 border-top' : 'p-3 border-top'}`} style={{ borderColor: '#f1f5f9' }}>
             <div className="position-relative ps-2">
               {stages.map((stage, idx) => {
                 const isCompleted = idx < currentStageIndex
@@ -140,11 +150,12 @@ export default function CaseTimeline({
                   textColor = 'text-dark'
                   stageBadgeVariant = 'success'
                 } else if (isCurrent) {
-                  nodeBg = 'bg-primary text-white shadow-sm ring-4 ring-primary-subtle'
-                  nodeBorder = 'border-primary'
-                  textColor = 'text-primary fw-bold'
-                  stageBadgeVariant = 'primary'
+                  nodeBg = 'bg-dark text-white shadow-sm'
+                  nodeBorder = 'border-dark'
+                  textColor = 'text-dark fw-bold'
+                  stageBadgeVariant = 'dark'
                 }
+
 
                 return (
                   <div
@@ -214,9 +225,9 @@ export default function CaseTimeline({
                 )
               })}
             </div>
-          </Card.Body>
+          </div>
         </div>
       </Collapse>
-    </Card>
+    </div>
   )
 }

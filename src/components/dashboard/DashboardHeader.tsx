@@ -1,4 +1,4 @@
-import { Button, Badge } from 'react-bootstrap'
+import { Button } from 'react-bootstrap'
 import { FaUserShield, FaPlus, FaBriefcase, FaCalendarCheck, FaHandsHelping } from 'react-icons/fa'
 
 export interface DashboardMetric {
@@ -33,21 +33,37 @@ export default function DashboardHeader({
   onNewCase,
   className = '',
 }: DashboardHeaderProps) {
-  const defaultDesc = `Welcome, ${userName}. Track your court case progression, manage deadlines, and connect with peer legal support.`
+  const defaultDesc = `Welcome back, ${userName}. Track your family court case progression, upcoming hearings, and connect with peer legal supporters.`
 
   return (
-    <div className={`dashboard-header-card p-4 rounded-4 bg-white border shadow-sm mb-4 ${className}`}>
+    <div
+      className={`dashboard-header-card p-4 p-md-4 rounded-4 bg-white border mb-4 ${className}`}
+      style={{
+        boxShadow: '0 1px 3px rgba(15, 23, 42, 0.03), 0 12px 32px -8px rgba(15, 23, 42, 0.05)',
+        borderColor: '#e2e8f0',
+        background: 'linear-gradient(180deg, #ffffff 0%, #fafbfc 100%)',
+      }}
+    >
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
         <div>
-          <div className="d-flex align-items-center gap-2 mb-1">
-            <h1 className="h3 fw-bold mb-0 text-dark" style={{ letterSpacing: '-0.3px' }}>
+          <div className="d-flex align-items-center gap-2 mb-1.5 flex-wrap">
+            <h1
+              className="h3 fw-bold mb-0 text-dark"
+              style={{ letterSpacing: '-0.4px', fontWeight: 700 }}
+            >
               {title}
             </h1>
-            <Badge bg="primary-subtle" className="text-primary border border-primary-subtle px-2 py-1 small">
-              {userRole}
-            </Badge>
+            <span
+              className="badge badge-soft-slate px-2.5 py-1 rounded-pill fw-semibold small"
+              style={{ fontSize: '0.74rem' }}
+            >
+              ● {userRole}
+            </span>
           </div>
-          <p className="text-muted mb-0 small" style={{ maxWidth: '640px', lineHeight: 1.5 }}>
+          <p
+            className="text-muted mb-0 small"
+            style={{ maxWidth: '640px', lineHeight: 1.55, fontSize: '0.875rem' }}
+          >
             {description || defaultDesc}
           </p>
         </div>
@@ -56,60 +72,71 @@ export default function DashboardHeader({
         <div className="d-flex align-items-center gap-2 flex-wrap w-100 w-md-auto">
           {onFindSupporters && (
             <Button
-              variant="outline-primary"
-              className="d-flex align-items-center justify-content-center gap-2 fw-semibold px-3 py-2 rounded-3 shadow-none flex-fill flex-md-grow-0"
+              variant="light"
+              className="btn-soft d-flex align-items-center justify-content-center gap-2 px-3 py-2 rounded-3 border shadow-none flex-fill flex-md-grow-0"
+              style={{ fontSize: '0.85rem' }}
               onClick={onFindSupporters}
             >
-              <FaUserShield size={14} />
-              <span>Find Legal Supporters</span>
+              <FaUserShield size={14} className="text-secondary opacity-75" />
+              <span>Find Supporters</span>
             </Button>
           )}
 
           {onNewCase && (
             <Button
-              variant="primary"
-              className="d-flex align-items-center justify-content-center gap-2 fw-semibold px-3 py-2 rounded-3 shadow-sm flex-fill flex-md-grow-0"
+              className="btn-obsidian d-flex align-items-center justify-content-center gap-2 px-3.5 py-2 rounded-3 shadow-sm flex-fill flex-md-grow-0"
+              style={{ fontSize: '0.85rem' }}
               onClick={onNewCase}
             >
-              <FaPlus size={13} />
+              <FaPlus size={11} />
               <span>New Case</span>
             </Button>
           )}
         </div>
       </div>
 
-      {/* Quick Overview Metric Pills */}
+      {/* Quick Overview Metric Chips */}
       <div className="d-flex align-items-center gap-2 gap-sm-3 pt-3 border-top flex-wrap">
-        <div className="stat-pill d-flex align-items-center gap-2 flex-fill flex-md-grow-0">
-          <div className="d-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary flex-shrink-0" style={{ width: 28, height: 28 }}>
-            <FaBriefcase size={13} />
+        <div className="stat-pill d-flex align-items-center gap-2.5 flex-fill flex-md-grow-0">
+          <div
+            className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+            style={{ width: 28, height: 28, backgroundColor: '#f1f5f9', color: '#334155' }}
+          >
+            <FaBriefcase size={12} />
           </div>
           <div className="text-truncate">
-            <span className="small text-muted me-1">Total Cases:</span>
-            <span className="fw-bold text-dark">{totalCases}</span>
+            <span className="small text-muted me-1.5" style={{ fontSize: '0.78rem' }}>Total Cases:</span>
+            <span className="fw-bold text-dark fs-6" style={{ fontSize: '0.9rem' }}>{totalCases}</span>
           </div>
         </div>
 
-        <div className="stat-pill d-flex align-items-center gap-2 flex-fill flex-md-grow-0">
-          <div className="d-flex align-items-center justify-content-center rounded-circle bg-info-subtle text-info flex-shrink-0" style={{ width: 28, height: 28 }}>
-            <FaCalendarCheck size={13} />
+        <div className="stat-pill d-flex align-items-center gap-2.5 flex-fill flex-md-grow-0">
+          <div
+            className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+            style={{ width: 28, height: 28, backgroundColor: '#fef3c7', color: '#b45309' }}
+          >
+            <FaCalendarCheck size={12} />
           </div>
           <div className="text-truncate">
-            <span className="small text-muted me-1">Hearings:</span>
-            <span className="fw-bold text-dark">{upcomingHearingsCount}</span>
+            <span className="small text-muted me-1.5" style={{ fontSize: '0.78rem' }}>Hearings:</span>
+            <span className="fw-bold text-dark fs-6" style={{ fontSize: '0.9rem' }}>{upcomingHearingsCount}</span>
           </div>
         </div>
 
-        <div className="stat-pill d-flex align-items-center gap-2 flex-fill flex-md-grow-0">
-          <div className="d-flex align-items-center justify-content-center rounded-circle bg-success-subtle text-success flex-shrink-0" style={{ width: 28, height: 28 }}>
-            <FaHandsHelping size={13} />
+        <div className="stat-pill d-flex align-items-center gap-2.5 flex-fill flex-md-grow-0">
+          <div
+            className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
+            style={{ width: 28, height: 28, backgroundColor: '#ecfdf5', color: '#047857' }}
+          >
+            <FaHandsHelping size={12} />
           </div>
           <div className="text-truncate">
-            <span className="small text-muted me-1">Peer Support:</span>
-            <span className="fw-bold text-dark">{peerSupportCount}</span>
+            <span className="small text-muted me-1.5" style={{ fontSize: '0.78rem' }}>Peer Support:</span>
+            <span className="fw-bold text-dark fs-6" style={{ fontSize: '0.9rem' }}>{peerSupportCount}</span>
           </div>
         </div>
       </div>
     </div>
   )
 }
+
