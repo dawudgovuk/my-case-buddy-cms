@@ -80,8 +80,8 @@ export async function createStrapiInvite(
 export async function fetchStrapiInviteByToken(token: string): Promise<CaseInvite | null> {
   const query = {
     'filters[token][$eq]': token,
-    'populate[case]': '*',
-    'populate[createdBy]': '*',
+    'populate[case]': 'true',
+    'populate[createdBy]': 'true',
   };
 
   const response = await strapiGet<StrapiListResponse<StrapiInviteRaw>>('/api/case-invites', query);

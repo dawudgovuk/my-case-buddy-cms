@@ -19,8 +19,8 @@ export async function fetchStrapiDeadlines(filters?: {
   assignedTo?: string;
 }): Promise<DocumentDeadline[]> {
   const query: Record<string, string> = {
-    'populate[case]': '*',
-    'populate[assignedTo]': '*',
+    'populate[case]': 'true',
+    'populate[assignedTo]': 'true',
     'sort': 'deadlineDate:asc',
   };
 

@@ -3,6 +3,7 @@ import { Card, Badge, Button, Alert, Row, Col, Form } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import type { FamilyCase, User } from '../../types/domain'
 import { useCasesStore } from '../../store/casesStore'
+import { useAuthStore } from '../../store/authStore'
 import { FaEye, FaUserPlus, FaBalanceScale, FaHandshake } from 'react-icons/fa'
 import VerificationGateCard from '../verification/VerificationGateCard'
 
@@ -21,6 +22,7 @@ export default function PeerSupportCasesTab({
 }: PeerSupportCasesTabProps) {
   const navigate = useNavigate()
   const { addOrUpdate } = useCasesStore()
+  const { resendRegistrationEmails } = useAuthStore()
   const [filterType, setFilterType] = useState('all')
   const [joinedSuccess, setJoinedSuccess] = useState<string | null>(null)
 
@@ -82,6 +84,7 @@ export default function PeerSupportCasesTab({
         onVerifyClick={(token) => navigate(`/verify-email/${token}`)}
         onSwitchToAssigned={onSwitchToAssigned}
         assignedCasesCount={assignedCasesCount}
+        onResendEmail={() => resendRegistrationEmails(user.email)}
       />
     )
   }

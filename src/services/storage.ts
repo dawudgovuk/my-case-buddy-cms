@@ -65,7 +65,9 @@ export function saveSnapshot(update: (prev: AppStateSnapshot) => AppStateSnapsho
 
 export function upsertCase(fc: FamilyCase): AppStateSnapshot {
   return saveSnapshot((prev) => {
-    const existsIndex = prev.cases.findIndex((c) => c.id === fc.id);
+    const existsIndex = prev.cases.findIndex(
+      (c) => c.id === fc.id || (Boolean(fc.documentId) && c.documentId === fc.documentId)
+    );
     const cases = [...prev.cases];
     if (existsIndex >= 0) {
       cases[existsIndex] = { ...fc, lastUpdatedAt: nowIso() };
@@ -79,12 +81,12 @@ export function upsertCase(fc: FamilyCase): AppStateSnapshot {
 export function deleteCase(caseId: string): AppStateSnapshot {
   return saveSnapshot((prev) => ({
     ...prev,
-    cases: prev.cases.filter((c) => c.id !== caseId),
+    cases: prev.cases.filter((c) => c.id !== caseId && c.documentId !== caseId),
   }));
 }
 
 export function getCase(caseId: string): FamilyCase | undefined {
-  return loadSnapshot().cases.find((c) => c.id === caseId);
+  return loadSnapshot().cases.find((c) => c.id === caseId || c.documentId === caseId);
 }
 
 export function generateId(prefix: string): string {

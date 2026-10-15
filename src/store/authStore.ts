@@ -12,6 +12,7 @@ import {
 import { strapiLogout } from '../services/strapi'
 import { generateId } from '../services/storage'
 import { authClient } from '../auth'
+import { dispatchMcKenzieRegistrationEmails, resendMcKenzieRegistrationEmails } from '../services/emailService'
 
 export interface NeonSessionData {
   id: string
@@ -55,6 +56,7 @@ interface AuthState {
   verifyUserById: (userId: string) => void
   verifyAllProfessionals: () => void
   refreshUsers: () => void
+  resendRegistrationEmails: (email: string) => Promise<{ success: boolean; error?: string }>
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -206,10 +208,50 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         neonSession: nSession,
       })
 
+      // Dispatch Registration Confirmation and Verification Emails for McKenzie Friends & professionals
+      if (verificationToken) {
+        try {
+          await dispatchMcKenzieRegistrationEmails({
+            name: appUser.name,
+            email: appUser.email,
+            role: appUser.role,
+            token: verificationToken,
+          })
+        } catch (emailErr) {
+          console.warn('[authStore] Error dispatching registration emails:', emailErr)
+        }
+      }
+
       return { success: true, user: appUser }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
       return { success: false, error: message }
+    }
+  },
+
+  resendRegistrationEmails: async (email: string) => {
+    try {
+      const user = get().users.find((u) => u.email.toLowerCase() === email.toLowerCase())
+      if (!user) {
+        return { success: false, error: 'User account not found' }
+      }
+      const token = user.verificationToken || generateId('verify')
+      if (!user.verificationToken) {
+        const updated = get().users.map((u) =>
+          u.id === user.id ? { ...u, verificationToken: token, verificationSentAt: new Date().toISOString() } : u
+        )
+        saveUsers(updated)
+        set({ users: updated })
+      }
+      await resendMcKenzieRegistrationEmails({
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        token,
+      })
+      return { success: true }
+    } catch (err: unknown) {
+      return { success: false, error: err instanceof Error ? err.message : String(err) }
     }
   },
 

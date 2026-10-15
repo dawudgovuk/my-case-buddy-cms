@@ -15,7 +15,7 @@ function isValidRole(r: string | undefined): r is UserRole {
 export default function Register() {
   const navigate = useNavigate()
   const { role } = useParams<{ role: string }>()
-  const { registerWithNeon } = useAuthStore()
+  const { registerWithNeon, resendRegistrationEmails } = useAuthStore()
   const { t } = useTranslation()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -100,6 +100,9 @@ export default function Register() {
         role={userRole}
         onVerifyNow={(token) => navigate(`/verify-email/${token}`)}
         onReturnToLogin={() => navigate('/login')}
+        onResendEmails={async () => {
+          await resendRegistrationEmails(registeredPendingVerification.email)
+        }}
       />
     )
   }

@@ -95,6 +95,7 @@ export interface CaseNote {
 
 export interface FamilyCase {
   id: string; // e.g., case number
+  documentId?: string; // Strapi v5 internal document identifier
   title: string; // short description
   court: CourtType;
   caseType: CaseType;

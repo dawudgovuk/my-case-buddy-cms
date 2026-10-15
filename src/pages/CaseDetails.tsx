@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useCasesStore } from '../store/casesStore'
 import { useTranslation } from '../hooks/useTranslation'
-import { Card, Tabs, Tab, Badge } from 'react-bootstrap'
+import { Card, Tabs, Tab, Badge, Spinner } from 'react-bootstrap'
 import CaseSummaryCard from '../components/case/CaseSummaryCard'
 import CaseOverviewTab from '../components/case/tabs/CaseOverviewTab'
 import PartiesTab from '../components/case/tabs/PartiesTab'
@@ -25,12 +25,23 @@ import {
 export default function CaseDetails() {
   const { caseId } = useParams()
   const navigate = useNavigate()
-  const { getById } = useCasesStore()
+  const { getById, isLoadingStrapi } = useCasesStore()
   const { t } = useTranslation()
   const fc = useMemo(() => (caseId ? getById(caseId) : undefined), [caseId, getById])
   const [tab, setTab] = useState<number>(CASE_DETAILS_TABS.OVERVIEW)
 
-  if (!caseId || !fc) return <div className="text-danger p-4">{t('caseDetails.notFound')}</div>
+  if (!caseId) return <div className="text-danger p-4">{t('caseDetails.notFound')}</div>
+
+  if (isLoadingStrapi && !fc) {
+    return (
+      <div className="d-flex justify-content-center align-items-center py-5">
+        <Spinner animation="border" variant="primary" className="me-2" />
+        <span className="text-muted">Loading case details...</span>
+      </div>
+    )
+  }
+
+  if (!fc) return <div className="text-danger p-4">{t('caseDetails.notFound')}</div>
 
   const partiesCount = fc.parties?.length || 0
   const hearingsCount = fc.hearings?.length || 0

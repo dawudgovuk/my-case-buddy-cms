@@ -140,12 +140,14 @@ export function PeerSupportRequestModalPreview({ onFeedback }: { onFeedback: (ms
 export function RegistrationPendingCardPreview({ onFeedback }: { onFeedback: (msg: string) => void }) {
   return (
     <RegistrationPendingCard
-      name="Advocate James Sterling"
-      email="james.sterling@barristers-chambers.org"
-      token="simulated-token-123"
-      role="Barrister"
+      name="Arthur Pendelton"
+      email="arthur.pendelton@support.co.uk"
+      token="simulated-token-mckenzie-456"
+      role="McKenzieFriend"
+      referenceId="MF-REG-PREVIEW"
       onVerifyNow={(token) => onFeedback(`Simulated email verification link click with token: ${token}`)}
       onReturnToLogin={() => onFeedback('Return to login clicked')}
+      onResendEmails={async () => onFeedback('Resend both emails simulated successfully')}
     />
   )
 }

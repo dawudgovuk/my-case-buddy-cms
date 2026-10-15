@@ -23,13 +23,14 @@ interface StrapiSingleResponse<T> {
 }
 
 const COMMON_POPULATE_PARAMS = {
-  'populate[parties]': '*',
-  'populate[hearings]': '*',
-  'populate[orders]': '*',
-  'populate[documents]': '*',
-  'populate[notes]': '*',
-  'populate[members]': '*',
-  'populate[deadlines]': '*',
+  'populate[parties]': 'true',
+  'populate[hearings]': 'true',
+  'populate[orders]': 'true',
+  'populate[documents]': 'true',
+  'populate[notes]': 'true',
+  'populate[members]': 'true',
+  'populate[deadlines]': 'true',
+  'populate[owner]': 'true',
 };
 
 /**
@@ -95,7 +96,7 @@ export async function createStrapiCase(fc: FamilyCase): Promise<FamilyCase> {
 export async function updateStrapiCase(fc: FamilyCase): Promise<FamilyCase> {
   // First locate the Strapi record to obtain its internal documentId
   const existing = await fetchStrapiCaseById(fc.id);
-  const targetId = existing?.id || fc.id;
+  const targetId = existing?.documentId || existing?.id || fc.documentId || fc.id;
 
   const payload = toStrapiCasePayload(fc);
   const response = await strapiPut<StrapiSingleResponse<StrapiCaseRaw>>(
@@ -111,7 +112,7 @@ export async function updateStrapiCase(fc: FamilyCase): Promise<FamilyCase> {
 export async function deleteStrapiCase(caseIdOrNumber: string): Promise<boolean> {
   // If numeric or alphanumeric, try delete by ID / documentId
   const existing = await fetchStrapiCaseById(caseIdOrNumber);
-  const targetId = existing?.id || caseIdOrNumber;
+  const targetId = existing?.documentId || existing?.id || caseIdOrNumber;
   await strapiDelete(`/api/cases/${encodeURIComponent(targetId)}`);
   return true;
 }
@@ -138,4 +139,56 @@ export async function toggleStrapiPeerSupport(
   };
 
   return updateStrapiCase(updatedCase);
+}
+
+/**
+ * Sends a targeted peer support request to a legal professional for a case via Strapi.
+ */
+export async function requestStrapiPeerSupport(
+  caseId: string,
+  targetUserId: string,
+  note?: string
+): Promise<{ success: boolean; case: FamilyCase }> {
+  const existing = await fetchStrapiCaseById(caseId);
+  const targetId = existing?.documentId || existing?.id || caseId;
+
+  try {
+    const response = await strapiPost<{ success: boolean; data: StrapiCaseRaw }>(
+      `/api/cases/${encodeURIComponent(targetId)}/request-peer-support`,
+      {
+        targetUserId,
+        note,
+      }
+    );
+
+    if (response?.data) {
+      return {
+        success: true,
+        case: toDomainCase(response.data),
+      };
+    }
+  } catch {
+    // Graceful fallback to toggleStrapiPeerSupport
+  }
+
+  const updatedCase = await toggleStrapiPeerSupport(caseId, true, note);
+  return {
+    success: true,
+    case: updatedCase || existing || {
+      id: caseId,
+      title: 'Updated Case',
+      court: 'Family Court',
+      caseType: 'Private Law (Child Arrangements)',
+      status: 'Open',
+      startedAt: new Date().toISOString().slice(0, 10),
+      parties: [],
+      hearings: [],
+      orders: [],
+      documents: [],
+      notes: [],
+      lastUpdatedAt: new Date().toISOString(),
+      seekingPeerSupport: true,
+      peerSupportNote: note,
+    },
+  };
 }

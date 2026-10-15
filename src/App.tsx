@@ -14,17 +14,23 @@ import VerifyEmail from './pages/VerifyEmail'
 import PeerDirectory from './pages/PeerDirectory'
 import ComponentShowcase from './pages/ComponentShowcase'
 import AppHeader from './components/common/AppHeader'
+import { useCasesStore } from './store/casesStore'
 import { useTranslation } from './hooks/useTranslation'
 import { FaLifeRing, FaExternalLinkAlt } from 'react-icons/fa'
 
 function Shell() {
   const { user, initNeonAuth, ensureDemoUsers, isLoadingSession } = useAuthStore()
+  const { isStrapiMode, syncWithStrapi } = useCasesStore()
   const { t } = useTranslation()
 
   useEffect(() => {
     ensureDemoUsers()
-    initNeonAuth()
-  }, [ensureDemoUsers, initNeonAuth])
+    void initNeonAuth()
+    if (isStrapiMode) {
+      void syncWithStrapi()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (isLoadingSession) {
     return (

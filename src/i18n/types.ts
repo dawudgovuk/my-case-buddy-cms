@@ -200,6 +200,20 @@ export interface TranslationSchema {
     invalidRegistrationType: string
     nameAndEmailRequired: string
     emailAlreadyExists: string
+    twoEmailsDispatchedTitle: string
+    twoEmailsDispatchedNotice: string
+    confirmationTab: string
+    verificationTab: string
+    resendBothEmailsBtn: string
+    resendingEmails: string
+    bothEmailsResentSuccess: string
+    mckenzieRemitTitle: string
+    whatYouCanDo: string
+    whatYouCannotDo: string
+    copyVerificationLink: string
+    linkCopied: string
+    viewVerificationEmailBtn: string
+    referenceIdLabel: string
   }
   verifyEmail: {
     header: string

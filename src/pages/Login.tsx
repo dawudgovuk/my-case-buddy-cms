@@ -29,6 +29,7 @@ export default function Login() {
     login,
     loginWithNeon,
     registerWithNeon,
+    resendRegistrationEmails,
     ensureDemoUsers,
     verifyUserById,
   } = useAuthStore()
@@ -172,6 +173,9 @@ export default function Login() {
         onReturnToLogin={() => {
           setRegisteredPendingVerification(null)
           setAuthMode('signin')
+        }}
+        onResendEmails={async () => {
+          await resendRegistrationEmails(registeredPendingVerification.email)
         }}
       />
     )

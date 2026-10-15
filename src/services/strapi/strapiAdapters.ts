@@ -133,7 +133,7 @@ function unwrap<T extends { attributes?: Record<string, unknown> }>(item: T): Re
 export function toDomainParty(raw: StrapiPartyRaw): Party {
   const data = unwrap(raw);
   return {
-    id: String(data.id ?? raw.id ?? raw.documentId ?? ''),
+    id: String(raw.documentId ?? data.documentId ?? data.id ?? raw.id ?? ''),
     role: (data.role as Party['role']) || 'Applicant',
     firstName: String(data.firstName || ''),
     lastName: String(data.lastName || ''),
@@ -149,7 +149,7 @@ export function toDomainParty(raw: StrapiPartyRaw): Party {
 export function toDomainHearing(raw: StrapiHearingRaw): Hearing {
   const data = unwrap(raw);
   return {
-    id: String(data.id ?? raw.id ?? raw.documentId ?? ''),
+    id: String(raw.documentId ?? data.documentId ?? data.id ?? raw.id ?? ''),
     type: (data.type as HearingType) || 'Case Management',
     date: String(data.date || new Date().toISOString().slice(0, 10)),
     time: data.time ? String(data.time) : undefined,
@@ -163,7 +163,7 @@ export function toDomainHearing(raw: StrapiHearingRaw): Hearing {
 export function toDomainOrder(raw: StrapiOrderRaw): OrderRecord {
   const data = unwrap(raw);
   return {
-    id: String(data.id ?? raw.id ?? raw.documentId ?? ''),
+    id: String(raw.documentId ?? data.documentId ?? data.id ?? raw.id ?? ''),
     type: (data.type as OrderType) || 'Other',
     dateMade: String(data.dateMade || new Date().toISOString().slice(0, 10)),
     summary: String(data.summary || ''),
@@ -175,7 +175,7 @@ export function toDomainOrder(raw: StrapiOrderRaw): OrderRecord {
 export function toDomainDocument(raw: StrapiDocumentRaw): DocumentRecord {
   const data = unwrap(raw);
   return {
-    id: String(data.id ?? raw.id ?? raw.documentId ?? ''),
+    id: String(raw.documentId ?? data.documentId ?? data.id ?? raw.id ?? ''),
     title: String(data.title || 'Untitled Document'),
     type: (data.type as DocumentRecord['type']) || 'Other',
     uploadedAt: String(data.uploadedAt || data.createdAt || new Date().toISOString()),
@@ -187,7 +187,7 @@ export function toDomainDocument(raw: StrapiDocumentRaw): DocumentRecord {
 export function toDomainNote(raw: StrapiNoteRaw): CaseNote {
   const data = unwrap(raw);
   return {
-    id: String(data.id ?? raw.id ?? raw.documentId ?? ''),
+    id: String(raw.documentId ?? data.documentId ?? data.id ?? raw.id ?? ''),
     createdAt: String(data.createdAt || new Date().toISOString()),
     author: String(data.author || 'Author'),
     text: String(data.text || ''),
@@ -197,7 +197,7 @@ export function toDomainNote(raw: StrapiNoteRaw): CaseNote {
 export function toDomainMember(raw: StrapiMemberRaw): CaseMember {
   const data = unwrap(raw);
   return {
-    userId: String(data.id ?? raw.id ?? raw.documentId ?? ''),
+    userId: String(raw.documentId ?? data.documentId ?? data.id ?? raw.id ?? ''),
     role: (data.userRole as CaseMember['role']) || 'Collaborator',
   };
 }
@@ -206,7 +206,7 @@ export function toDomainDeadline(raw: StrapiDeadlineRaw, caseIdFallback?: string
   const data = unwrap(raw);
   const caseRel = data.case as { caseNumber?: string; id?: number; documentId?: string } | undefined;
   return {
-    id: String(data.id ?? raw.id ?? raw.documentId ?? ''),
+    id: String(raw.documentId ?? data.documentId ?? data.id ?? raw.id ?? ''),
     caseId: caseRel?.caseNumber || (caseRel?.documentId ? String(caseRel.documentId) : caseIdFallback || ''),
     title: String(data.title || 'Document Deadline'),
     description: data.description ? String(data.description) : undefined,
@@ -226,9 +226,30 @@ export function toDomainCase(raw: StrapiCaseRaw): FamilyCase {
   const rawDocs = Array.isArray(data.documents) ? (data.documents as StrapiDocumentRaw[]) : [];
   const rawNotes = Array.isArray(data.notes) ? (data.notes as StrapiNoteRaw[]) : [];
   const rawMembers = Array.isArray(data.members) ? (data.members as StrapiMemberRaw[]) : [];
+  const members = rawMembers.map(toDomainMember);
+
+  // Auto-link case owner as an Owner member
+  if (data.owner && typeof data.owner === 'object') {
+    const ownerData = unwrap(data.owner as StrapiMemberRaw);
+    const ownerId = String(ownerData.id ?? (data.owner as { id?: unknown }).id ?? '');
+    const ownerDocId = String((data.owner as { documentId?: string }).documentId ?? ownerData.documentId ?? '');
+    if (ownerId && !members.some((m) => m.userId === ownerId || (ownerDocId && m.userId === ownerDocId))) {
+      members.unshift({
+        userId: ownerId,
+        role: 'Owner',
+      });
+      if (ownerDocId && ownerDocId !== ownerId) {
+        members.push({
+          userId: ownerDocId,
+          role: 'Owner',
+        });
+      }
+    }
+  }
 
   return {
-    id: String(data.caseNumber || data.id || raw.documentId || ''),
+    id: String(data.caseNumber || raw.documentId || data.documentId || data.id || ''),
+    documentId: raw.documentId || (data.documentId as string | undefined),
     title: String(data.title || 'Untitled Case'),
     court: (data.court as CourtType) || 'Family Court',
     caseType: (data.caseType as CaseType) || 'Private Law (Child Arrangements)',
@@ -242,7 +263,7 @@ export function toDomainCase(raw: StrapiCaseRaw): FamilyCase {
     orders: rawOrders.map(toDomainOrder),
     documents: rawDocs.map(toDomainDocument),
     notes: rawNotes.map(toDomainNote),
-    members: rawMembers.map(toDomainMember),
+    members,
     seekingPeerSupport: Boolean(data.seekingPeerSupport),
     peerSupportNote: data.peerSupportNote ? String(data.peerSupportNote) : undefined,
     peerSupportRequestedAt: data.peerSupportRequestedAt ? String(data.peerSupportRequestedAt) : undefined,
@@ -266,7 +287,7 @@ export function toStrapiCasePayload(fc: FamilyCase): { data: Record<string, unkn
       peerSupportNote: fc.peerSupportNote,
       peerSupportRequestedAt: fc.peerSupportRequestedAt,
       parties: (fc.parties || []).map((p) => ({
-        documentId: p.id.startsWith('PTY_') ? undefined : p.id,
+        documentId: p.id && !p.id.startsWith('PTY_') ? p.id : undefined,
         role: p.role,
         firstName: p.firstName,
         lastName: p.lastName,
@@ -278,7 +299,7 @@ export function toStrapiCasePayload(fc: FamilyCase): { data: Record<string, unkn
         contactPhone: p.contactPhone,
       })),
       hearings: (fc.hearings || []).map((h) => ({
-        documentId: h.id.startsWith('HRG_') ? undefined : h.id,
+        documentId: h.id && !h.id.startsWith('HRG_') ? h.id : undefined,
         type: h.type,
         date: h.date,
         time: h.time,
@@ -288,7 +309,7 @@ export function toStrapiCasePayload(fc: FamilyCase): { data: Record<string, unkn
         outcome: h.outcome,
       })),
       orders: (fc.orders || []).map((o) => ({
-        documentId: o.id.startsWith('ORD_') ? undefined : o.id,
+        documentId: o.id && !o.id.startsWith('ORD_') ? o.id : undefined,
         type: o.type,
         dateMade: o.dateMade,
         summary: o.summary,
@@ -296,7 +317,7 @@ export function toStrapiCasePayload(fc: FamilyCase): { data: Record<string, unkn
         documentUrl: o.documentUrl,
       })),
       documents: (fc.documents || []).map((d) => ({
-        documentId: d.id.startsWith('DOC_') ? undefined : d.id,
+        documentId: d.id && !d.id.startsWith('DOC_') ? d.id : undefined,
         title: d.title,
         type: d.type,
         uploadedAt: d.uploadedAt,
@@ -304,7 +325,7 @@ export function toStrapiCasePayload(fc: FamilyCase): { data: Record<string, unkn
         notes: d.notes,
       })),
       notes: (fc.notes || []).map((n) => ({
-        documentId: n.id.startsWith('NOTE_') ? undefined : n.id,
+        documentId: n.id && !n.id.startsWith('NOTE_') ? n.id : undefined,
         author: n.author,
         text: n.text,
       })),

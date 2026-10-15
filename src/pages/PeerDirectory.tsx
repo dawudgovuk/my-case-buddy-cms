@@ -14,13 +14,14 @@ import {
   FaUserCheck,
   FaUsers,
   FaGavel,
+  FaSync,
 } from 'react-icons/fa'
 import PeerSupporterCard from '../components/directory/PeerSupporterCard'
 import PeerSupportRequestModal from '../components/directory/PeerSupportRequestModal'
 
 export default function PeerDirectory() {
   const { user } = useAuthStore()
-  const { cases, togglePeerSupport, isStrapiMode } = useCasesStore()
+  const { cases, requestPeerSupport, isStrapiMode, syncWithStrapi } = useCasesStore()
   const { t } = useTranslation()
 
   const [roleFilter, setRoleFilter] = useState<string>('all')
@@ -28,30 +29,45 @@ export default function PeerDirectory() {
   const [requestTargetUser, setRequestTargetUser] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [strapiPros, setStrapiPros] = useState<User[]>([])
+  const [isLoadingPros, setIsLoadingPros] = useState<boolean>(false)
 
-  useEffect(() => {
-    if (isStrapiMode) {
-      fetchStrapiProfessionals().then((pros) => {
+  function loadProfessionals() {
+    setIsLoadingPros(true)
+    fetchStrapiProfessionals()
+      .then((pros) => {
         if (pros && pros.length > 0) {
           setStrapiPros(pros)
         }
-      }).catch(() => {})
+      })
+      .catch((err) => {
+        console.warn('Could not fetch Strapi professionals:', err)
+      })
+      .finally(() => {
+        setIsLoadingPros(false)
+      })
+  }
+
+  useEffect(() => {
+    loadProfessionals()
+  }, [])
+
+  useEffect(() => {
+    if (isStrapiMode && cases.length === 0) {
+      void syncWithStrapi()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isStrapiMode])
 
   // Legal professionals (Solicitor, Barrister, McKenzieFriend) from Strapi or local store
   const professionals = useMemo(() => {
-    const local = listUsers().filter(
+    if (strapiPros.length > 0) {
+      return strapiPros
+    }
+    return listUsers().filter(
       (u) =>
         (u.role === 'Solicitor' || u.role === 'Barrister' || u.role === 'McKenzieFriend') &&
         Boolean(u.isVerified)
     )
-    if (strapiPros.length === 0) return local
-
-    // Merge Strapi professionals with local, deduplicating by email
-    const emails = new Set(strapiPros.map((p) => p.email.toLowerCase()))
-    const uniqueLocal = local.filter((l) => !emails.has(l.email.toLowerCase()))
-    return [...strapiPros, ...uniqueLocal]
   }, [strapiPros])
 
   // Dynamic counts for filter chips
@@ -78,9 +94,22 @@ export default function PeerDirectory() {
     })
   }, [professionals, roleFilter, searchTerm])
 
+  const targetProfessional = useMemo(() => {
+    if (!requestTargetUser) return null
+    return professionals.find((p) => p.id === requestTargetUser) || null
+  }, [requestTargetUser, professionals])
+
   const myCases = useMemo(() => {
     if (!user) return []
-    return cases.filter((c) => c.members?.some((m) => m.userId === user.id && m.role === 'Owner'))
+    const owned = cases.filter((c) => {
+      const members = c.members || []
+      return members.some(
+        (m) =>
+          (m.userId === user.id || m.userId === user.email) &&
+          (m.role === 'Owner' || m.role === 'Collaborator')
+      )
+    })
+    return owned.length > 0 ? owned : cases
   }, [cases, user])
 
   function handleOpenRequestModal(professionalId: string) {
@@ -88,10 +117,18 @@ export default function PeerDirectory() {
     setSuccessMessage(null)
   }
 
-  function handleSendRequest(caseId: string, note: string) {
-    togglePeerSupport(caseId, true, note || 'Peer support requested from legal directory')
-    setSuccessMessage(t('peerDirectory.requestSentSuccess'))
-    setRequestTargetUser(null)
+  async function handleSendRequest(caseId: string, note: string) {
+    if (!targetProfessional) return
+    try {
+      await requestPeerSupport(caseId, targetProfessional, note)
+      setSuccessMessage(
+        `Support request sent to ${targetProfessional.name} (${targetProfessional.role}). We've added an audit entry to your case timeline.`
+      )
+      setRequestTargetUser(null)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to send peer support request'
+      throw new Error(msg)
+    }
   }
 
   function handleClearFilters() {
@@ -115,6 +152,22 @@ export default function PeerDirectory() {
             />
             <span>{counts.all} Active Supporters</span>
           </span>
+          {isLoadingPros && (
+            <span className="badge bg-light text-muted border px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 small">
+              <span className="spinner-border spinner-border-sm" role="status" style={{ width: 10, height: 10 }} />
+              <span>Syncing...</span>
+            </span>
+          )}
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-secondary py-0.5 px-2.5 rounded-pill d-inline-flex align-items-center gap-1.5 small shadow-none"
+            onClick={loadProfessionals}
+            disabled={isLoadingPros}
+            style={{ fontSize: '0.8rem' }}
+          >
+            <FaSync size={10} className={isLoadingPros ? 'fa-spin' : ''} />
+            <span>Refresh</span>
+          </button>
         </div>
 
         <h2 className="fw-bold text-dark mb-1" style={{ letterSpacing: '-0.02em', fontSize: '1.75rem' }}>
@@ -283,8 +336,8 @@ export default function PeerDirectory() {
             <Col key={pro.id} xs={12} md={6} lg={4} className="d-flex">
               <PeerSupporterCard
                 professional={pro}
-                onRequestSupport={user?.role === 'LIP' ? handleOpenRequestModal : undefined}
-                showRequestButton={user?.role === 'LIP'}
+                onRequestSupport={user ? handleOpenRequestModal : undefined}
+                showRequestButton={Boolean(user && user.id !== pro.id)}
               />
             </Col>
           ))}
@@ -295,6 +348,7 @@ export default function PeerDirectory() {
       <PeerSupportRequestModal
         show={Boolean(requestTargetUser)}
         targetUserId={requestTargetUser}
+        targetProfessional={targetProfessional}
         cases={myCases}
         onSendRequest={handleSendRequest}
         onCancel={() => setRequestTargetUser(null)}
