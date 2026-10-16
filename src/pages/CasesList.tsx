@@ -11,12 +11,11 @@ import CaseListItemCard from '../components/case/CaseListItemCard'
 import CaseCard from '../components/case/CaseCard'
 import EmptyCasesState from '../components/case/EmptyCasesState'
 import DeleteCaseModal from '../components/case/DeleteCaseModal'
-import { StrapiSyncModal } from '../components/strapi/StrapiSyncModal'
 import { CASE_TYPE_OPTIONS } from '../utils/caseConstants'
 import { countChildren } from '../utils/partyUtils'
 
 export default function CasesList() {
-  const { cases, remove, togglePeerSupport, isStrapiMode, refresh } = useCasesStore()
+  const { cases, remove, togglePeerSupport, refresh } = useCasesStore()
   const { user } = useAuthStore()
   const navigate = useNavigate()
 
@@ -31,7 +30,6 @@ export default function CasesList() {
   const [sortBy, setSortBy] = useState<'recent' | 'started' | 'title' | 'hearings'>('recent')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [caseToDelete, setCaseToDelete] = useState<FamilyCase | null>(null)
-  const [showStrapiModal, setShowStrapiModal] = useState<boolean>(false)
 
   // Visible user cases based on unified RBAC membership
   const userCases = useMemo(() => {
@@ -124,8 +122,6 @@ export default function CasesList() {
         upcomingHearingsCount={upcomingHearingsCount}
         childrenCount={childrenCount}
         onNewCase={() => navigate('/cases/new')}
-        onOpenStrapiSync={() => setShowStrapiModal(true)}
-        isStrapiMode={isStrapiMode}
       />
 
       {/* Filter, Search & View Controls */}
@@ -207,12 +203,6 @@ export default function CasesList() {
           onCancel={() => setCaseToDelete(null)}
         />
       )}
-
-      {/* Strapi Backend & Neon PostgreSQL Sync Modal */}
-      <StrapiSyncModal
-        show={showStrapiModal}
-        onHide={() => setShowStrapiModal(false)}
-      />
     </div>
   )
 }
