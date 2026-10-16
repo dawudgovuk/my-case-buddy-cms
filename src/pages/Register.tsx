@@ -74,8 +74,7 @@ export default function Register() {
         return
       }
 
-      const isProfessional = userRole === 'Solicitor' || userRole === 'Barrister' || userRole === 'McKenzieFriend'
-      if (isProfessional && result.user.verificationToken) {
+      if (result.user.verificationToken) {
         setRegisteredPendingVerification({
           email: result.user.email,
           token: result.user.verificationToken,

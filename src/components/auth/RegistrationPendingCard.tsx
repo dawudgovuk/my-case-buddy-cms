@@ -19,6 +19,7 @@ import {
   buildRegistrationConfirmationEmail,
   buildVerificationEmail,
   MCKENZIE_PRACTICE_GUIDANCE,
+  LIP_COURT_GUIDANCE,
 } from '../../services/emailService'
 import { useTranslation } from '../../hooks/useTranslation'
 
@@ -34,7 +35,7 @@ export interface RegistrationPendingCardProps {
 }
 
 /**
- * Notice card displayed when a McKenzie Friend or legal professional registers.
+ * Notice card displayed when any user registers.
  * Elegantly presents both the Registration Confirmation Email and the Verification Email.
  */
 export default function RegistrationPendingCard({
@@ -42,13 +43,15 @@ export default function RegistrationPendingCard({
   email,
   token,
   role,
-  referenceId = 'MF-REG-001',
+  referenceId = 'REG-001',
   onVerifyNow,
   onReturnToLogin,
   onResendEmails,
 }: RegistrationPendingCardProps) {
   const { t } = useTranslation()
-  const roleDisplay = role === 'McKenzieFriend' ? 'McKenzie Friend' : role
+  const isLIP = role === 'LIP'
+  const roleDisplay = role === 'McKenzieFriend' ? 'McKenzie Friend' : isLIP ? 'Litigant in Person' : role
+  const guidance = isLIP ? LIP_COURT_GUIDANCE : MCKENZIE_PRACTICE_GUIDANCE
   const [activeTab, setActiveTab] = useState<'confirmation' | 'verification'>('confirmation')
   const [copied, setCopied] = useState(false)
   const [resending, setResending] = useState(false)
@@ -197,19 +200,19 @@ export default function RegistrationPendingCard({
                   Welcome to My Case Buddy, <strong>{name}</strong>! Your registration as a <strong>{roleDisplay}</strong> has been officially received.
                 </p>
 
-                {/* McKenzie Practice Guidance Box */}
+                {/* Guidance Box */}
                 <div className="p-2.5 rounded-2 bg-light border mb-3">
                   <div className="fw-bold text-dark small mb-2 d-flex align-items-center gap-1.5">
                     <FaShieldAlt className="text-primary" size={12} />
-                    <span>{t('auth.mckenzieRemitTitle')}</span>
+                    <span>{isLIP ? 'Litigant in Person Court Guidance & Rights' : t('auth.mckenzieRemitTitle')}</span>
                   </div>
 
                   <div className="mb-2">
                     <div className="fw-semibold text-success small mb-1" style={{ fontSize: '0.75rem' }}>
-                      {t('auth.whatYouCanDo')}
+                      {isLIP ? 'Your Rights & Capabilities' : t('auth.whatYouCanDo')}
                     </div>
                     <ul className="mb-2 ps-3 text-secondary small" style={{ fontSize: '0.75rem' }}>
-                      {MCKENZIE_PRACTICE_GUIDANCE.allowed.map((item, idx) => (
+                      {guidance.allowed.map((item, idx) => (
                         <li key={idx} className="mb-0.5">{item}</li>
                       ))}
                     </ul>
@@ -217,10 +220,10 @@ export default function RegistrationPendingCard({
 
                   <div>
                     <div className="fw-semibold text-danger small mb-1" style={{ fontSize: '0.75rem' }}>
-                      {t('auth.whatYouCannotDo')}
+                      {isLIP ? 'Safeguarding Rules & Restrictions' : t('auth.whatYouCannotDo')}
                     </div>
                     <ul className="mb-0 ps-3 text-secondary small" style={{ fontSize: '0.75rem' }}>
-                      {MCKENZIE_PRACTICE_GUIDANCE.prohibited.map((item, idx) => (
+                      {guidance.prohibited.map((item, idx) => (
                         <li key={idx} className="mb-0.5">{item}</li>
                       ))}
                     </ul>
@@ -306,8 +309,17 @@ export default function RegistrationPendingCard({
                 <div className="fw-bold small text-dark mb-1">What happens after verification?</div>
                 <ol className="small text-muted ps-3 mb-0" style={{ fontSize: '0.8rem' }}>
                   <li className="mb-0.5">Your profile upgrades to <strong>Verified {roleDisplay}</strong>.</li>
-                  <li className="mb-0.5">You unlock access to browse peer support requests from Litigants in Person.</li>
-                  <li>You can view court directions, hearing milestones, and document bundles.</li>
+                  {isLIP ? (
+                    <>
+                      <li className="mb-0.5">You unlock access to create and manage Family Court cases and hearings.</li>
+                      <li>You can request peer assistance and bundle support from verified McKenzie Friends.</li>
+                    </>
+                  ) : (
+                    <>
+                      <li className="mb-0.5">You unlock access to browse peer support requests from Litigants in Person.</li>
+                      <li>You can view court directions, hearing milestones, and document bundles.</li>
+                    </>
+                  )}
                 </ol>
               </div>
             </div>

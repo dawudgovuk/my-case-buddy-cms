@@ -20,6 +20,21 @@ export const MCKENZIE_PRACTICE_GUIDANCE = {
   ],
 }
 
+export const LIP_COURT_GUIDANCE = {
+  allowed: [
+    'Direct access to create and manage Family Court proceedings, child arrangements, and hearings',
+    'Right to seek moral support and quiet procedural guidance from a McKenzie Friend',
+    'Compiling digital court bundles, chronological timelines, and position statements',
+    'Self-representing in court and directly presenting submissions to the presiding judge',
+  ],
+  prohibited: [
+    'Disclosing private family proceedings or child details to unauthorized third parties (FPR Rule 12.73)',
+    'Recording hearings or taking photographs in court without express judicial leave',
+    'Failing to adhere to court-ordered deadlines, filing dates, and procedural directions',
+    'Sharing sensitive court documents on social media or external public channels',
+  ],
+}
+
 /**
  * Loads all dispatched emails from localStorage.
  */
@@ -50,9 +65,11 @@ export function buildRegistrationConfirmationEmail(params: {
   role?: UserRole
   referenceId: string
 }): DispatchedEmail {
-  const { name, email, role = 'McKenzieFriend', referenceId } = params
-  const roleDisplay = role === 'McKenzieFriend' ? 'McKenzie Friend' : role
+  const { name, email, role = 'LIP', referenceId } = params
+  const isLIP = role === 'LIP'
+  const roleDisplay = role === 'McKenzieFriend' ? 'McKenzie Friend' : isLIP ? 'Litigant in Person' : role
   const now = new Date().toISOString()
+  const guidance = isLIP ? LIP_COURT_GUIDANCE : MCKENZIE_PRACTICE_GUIDANCE
 
   return {
     id: `email_conf_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
@@ -66,8 +83,32 @@ export function buildRegistrationConfirmationEmail(params: {
     status: 'delivered',
     referenceId,
     previewText: `Welcome to My Case Buddy! Your registration as a ${roleDisplay} has been confirmed. Ref: ${referenceId}`,
-    guidelinesSummary: MCKENZIE_PRACTICE_GUIDANCE,
-    bodyText: `Dear ${name},
+    guidelinesSummary: guidance,
+    bodyText: isLIP
+      ? `Dear ${name},
+
+Thank you for registering as a Litigant in Person with My Case Buddy (Registration Reference: ${referenceId}).
+
+Your account has been registered to help you organize and manage your Family Court proceedings, child arrangements, hearing dates, and position statements under England and Wales Family Procedure Rules (FPR).
+
+YOUR RIGHTS & CAPABILITIES:
+- Direct access to create and manage Family Court cases and hearing timelines.
+- Right to seek moral support and quiet assistance from a McKenzie Friend.
+- Assist with compiling digital bundles and evidence for the court.
+- Present your case and explain your circumstances directly to the judge.
+
+KEY SAFEGUARDING RULES:
+- Maintain strict confidentiality of all private family proceedings under FPR Rule 12.73.
+- Do not disclose child details or court documents to unauthorized third parties.
+- Comply with all court-ordered filing dates and directions.
+
+NEXT STEPS:
+To activate your profile, you must verify your email address. A separate Verification Email containing your secure activation link has been sent to this inbox.
+
+Warm regards,
+My Case Buddy Support Team
+HMCTS Family Justice Support`
+      : `Dear ${name},
 
 Thank you for registering as a ${roleDisplay} with My Case Buddy (Registration Reference: ${referenceId}).
 
@@ -104,8 +145,9 @@ export function buildVerificationEmail(params: {
   referenceId: string
   verificationUrl?: string
 }): DispatchedEmail {
-  const { name, email, role = 'McKenzieFriend', token, referenceId, verificationUrl } = params
-  const roleDisplay = role === 'McKenzieFriend' ? 'McKenzie Friend' : role
+  const { name, email, role = 'LIP', token, referenceId, verificationUrl } = params
+  const isLIP = role === 'LIP'
+  const roleDisplay = role === 'McKenzieFriend' ? 'McKenzie Friend' : isLIP ? 'Litigant in Person' : role
   const resolvedUrl =
     verificationUrl ||
     (typeof window !== 'undefined'
@@ -126,18 +168,18 @@ export function buildVerificationEmail(params: {
     referenceId,
     verificationToken: token,
     verificationUrl: resolvedUrl,
-    previewText: `Action Required: Confirm your email address to activate your ${roleDisplay} credentials under UK Family Court safeguarding rules.`,
+    previewText: `Action Required: Confirm your email address to activate your ${roleDisplay} account under UK Family Court safeguarding rules.`,
     bodyText: `Dear ${name},
 
-Action Required: Email Verification for ${roleDisplay} Accreditation
+Action Required: Email Verification for ${roleDisplay} Account
 
-Under UK Family Procedure Rules (FPR Part 12) and UK GDPR safeguarding regulations, all McKenzie Friends and legal supporters must confirm their email address before accessing peer cases or court materials.
+Under UK Family Procedure Rules (FPR Part 12) and UK GDPR safeguarding regulations, all account holders must confirm their email address before accessing case materials or offering assistance.
 
 Click the link below to verify your email address and activate your account:
 ${resolvedUrl}
 
 Verification Token: ${token}
-Security Notice: This link is valid for 24 hours. Once verified, your status will update to "Verified ${roleDisplay}" and you will have full access to peer assistance requests.
+Security Notice: This link is valid for 24 hours. Once verified, your status will update to "Verified ${roleDisplay}".
 
 If you did not request this registration, please disregard this email or report to safeguarding@mycasebuddy.justice.gov.uk.
 
@@ -161,9 +203,9 @@ export async function dispatchMcKenzieRegistrationEmails(params: {
   const {
     name,
     email,
-    role = 'McKenzieFriend',
+    role = 'LIP',
     token,
-    referenceId = `MF-REG-${Date.now().toString(36).toUpperCase()}`,
+    referenceId = `${role === 'LIP' ? 'LIP-REG' : 'MF-REG'}-${Date.now().toString(36).toUpperCase()}`,
     verificationUrl,
   } = params
 
@@ -214,6 +256,11 @@ export async function dispatchMcKenzieRegistrationEmails(params: {
 }
 
 /**
+ * Dispatches registration confirmation & verification emails (alias for any user role).
+ */
+export const dispatchRegistrationEmails = dispatchMcKenzieRegistrationEmails
+
+/**
  * Re-dispatches fresh copies of BOTH Confirmation and Verification emails.
  */
 export async function resendMcKenzieRegistrationEmails(params: {
@@ -226,6 +273,11 @@ export async function resendMcKenzieRegistrationEmails(params: {
 }): Promise<DispatchRegistrationResult> {
   return dispatchMcKenzieRegistrationEmails(params)
 }
+
+/**
+ * Re-dispatches registration confirmation & verification emails (alias for any user role).
+ */
+export const resendRegistrationEmails = resendMcKenzieRegistrationEmails;
 
 /**
  * Retrieves all dispatched emails for a specific recipient email address.

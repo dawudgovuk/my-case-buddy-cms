@@ -39,7 +39,8 @@ export default function VerifyEmail() {
   }, [token, verifyUser, t])
 
   const isMcKenzie = verifiedUser?.role === 'McKenzieFriend'
-  const roleDisplay = isMcKenzie ? 'McKenzie Friend' : verifiedUser?.role || 'Professional'
+  const isLIP = verifiedUser?.role === 'LIP'
+  const roleDisplay = isMcKenzie ? 'McKenzie Friend' : isLIP ? 'Litigant in Person' : verifiedUser?.role || 'Professional'
 
   return (
     <Container className="d-flex justify-content-center align-items-center min-vh-50 py-4 py-md-5">
@@ -69,47 +70,85 @@ export default function VerifyEmail() {
                 <div className="d-flex align-items-center gap-2">
                   <FaShieldAlt className="text-success flex-shrink-0" />
                   <div>
-                    <strong>Access Cleared:</strong> You now have full permission to review peer support cases and assist litigants under UK Family Procedure Rules (FPR).
+                    <strong>Access Cleared:</strong> {isLIP
+                      ? 'You now have full permission to create and manage family court cases, upload documents, and seek support under UK Family Procedure Rules (FPR).'
+                      : 'You now have full permission to review peer support cases and assist litigants under UK Family Procedure Rules (FPR).'}
                   </div>
                 </div>
               </Alert>
 
-              {/* Detailed Further Process for McKenzie Friends */}
+              {/* Detailed Further Process */}
               <div className="p-3 bg-light rounded-3 border text-start mb-4">
                 <div className="fw-bold small text-dark mb-2 d-flex align-items-center gap-1.5">
                   <FaShieldAlt className="text-primary" />
                   <span>Further Process for {roleDisplay}s:</span>
                 </div>
                 <div className="d-flex flex-column gap-2 small text-secondary" style={{ fontSize: '0.825rem' }}>
-                  <div className="d-flex align-items-start gap-2">
-                    <span className="badge bg-primary text-white rounded-circle p-1 mt-0.5" style={{ width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
-                      1
-                    </span>
-                    <div>
-                      <strong>Browse Peer Support Cases:</strong>
-                      <div className="text-muted">Explore open requests from Litigants in Person (LIP) who need assistance with Child Arrangements, Section 7 reports, or position statements.</div>
-                    </div>
-                  </div>
+                  {isLIP ? (
+                    <>
+                      <div className="d-flex align-items-start gap-2">
+                        <span className="badge bg-primary text-white rounded-circle p-1 mt-0.5" style={{ width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
+                          1
+                        </span>
+                        <div>
+                          <strong>Create Your Family Court Case:</strong>
+                          <div className="text-muted">Add your child arrangements or financial proceedings, court reference, and upcoming hearing dates.</div>
+                        </div>
+                      </div>
 
-                  <div className="d-flex align-items-start gap-2">
-                    <span className="badge bg-primary text-white rounded-circle p-1 mt-0.5" style={{ width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
-                      2
-                    </span>
-                    <div>
-                      <strong>Offer Peer Assistance &amp; Join:</strong>
-                      <div className="text-muted">Click &ldquo;Join Case&rdquo; on eligible proceedings to be added to the case team as an active supporter.</div>
-                    </div>
-                  </div>
+                      <div className="d-flex align-items-start gap-2">
+                        <span className="badge bg-primary text-white rounded-circle p-1 mt-0.5" style={{ width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
+                          2
+                        </span>
+                        <div>
+                          <strong>Compile Court Bundles &amp; Statements:</strong>
+                          <div className="text-muted">Organize evidence, timeline milestones, and position statements in a compliant digital format.</div>
+                        </div>
+                      </div>
 
-                  <div className="d-flex align-items-start gap-2">
-                    <span className="badge bg-primary text-white rounded-circle p-1 mt-0.5" style={{ width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
-                      3
-                    </span>
-                    <div>
-                      <strong>Track Hearings &amp; Court Filings:</strong>
-                      <div className="text-muted">Access the court calendar, upcoming FHDRA/DRA directions, and digital court bundle documents.</div>
-                    </div>
-                  </div>
+                      <div className="d-flex align-items-start gap-2">
+                        <span className="badge bg-primary text-white rounded-circle p-1 mt-0.5" style={{ width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
+                          3
+                        </span>
+                        <div>
+                          <strong>Request McKenzie Friend Assistance:</strong>
+                          <div className="text-muted">Browse accredited peer supporters who can provide moral support and note-taking during your hearings.</div>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="d-flex align-items-start gap-2">
+                        <span className="badge bg-primary text-white rounded-circle p-1 mt-0.5" style={{ width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
+                          1
+                        </span>
+                        <div>
+                          <strong>Browse Peer Support Cases:</strong>
+                          <div className="text-muted">Explore open requests from Litigants in Person (LIP) who need assistance with Child Arrangements, Section 7 reports, or position statements.</div>
+                        </div>
+                      </div>
+
+                      <div className="d-flex align-items-start gap-2">
+                        <span className="badge bg-primary text-white rounded-circle p-1 mt-0.5" style={{ width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
+                          2
+                        </span>
+                        <div>
+                          <strong>Offer Peer Assistance &amp; Join:</strong>
+                          <div className="text-muted">Click &ldquo;Join Case&rdquo; on eligible proceedings to be added to the case team as an active supporter.</div>
+                        </div>
+                      </div>
+
+                      <div className="d-flex align-items-start gap-2">
+                        <span className="badge bg-primary text-white rounded-circle p-1 mt-0.5" style={{ width: 18, height: 18, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem' }}>
+                          3
+                        </span>
+                        <div>
+                          <strong>Track Hearings &amp; Court Filings:</strong>
+                          <div className="text-muted">Access the court calendar, upcoming FHDRA/DRA directions, and digital court bundle documents.</div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -118,9 +157,9 @@ export default function VerifyEmail() {
                   variant="primary"
                   size="lg"
                   className="d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-xs"
-                  onClick={() => navigate('/professional-dashboard')}
+                  onClick={() => navigate(isLIP ? '/cases' : '/professional-dashboard')}
                 >
-                  <span>Go to {roleDisplay} Dashboard</span>
+                  <span>{isLIP ? 'Go to My Cases' : `Go to ${roleDisplay} Dashboard`}</span>
                   <FaArrowRight />
                 </Button>
               </div>

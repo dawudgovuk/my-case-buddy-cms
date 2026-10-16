@@ -170,9 +170,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const nUser = (sessionRes.data?.user || res.data?.user) as NeonUserData | undefined
       const nSession = (sessionRes.data?.session || null) as NeonSessionData | null
 
-      const isProfessional = role !== 'LIP'
-      const isVerified = !isProfessional
-      const verificationToken = isProfessional ? generateId('verify') : undefined
+      const verificationToken = generateId('verify')
+      const isVerified = false
 
       const users = get().users
       const existingIndex = users.findIndex((u) => u.email.toLowerCase() === email.toLowerCase())
@@ -185,10 +184,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         firm: firm?.trim(),
         registrationNumber: registrationNumber?.trim(),
         isVerified,
-        ...(verificationToken && {
-          verificationToken,
-          verificationSentAt: new Date().toISOString(),
-        }),
+        verificationToken,
+        verificationSentAt: new Date().toISOString(),
       }
 
       let updatedUsers: User[]
@@ -208,18 +205,16 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         neonSession: nSession,
       })
 
-      // Dispatch Registration Confirmation and Verification Emails for McKenzie Friends & professionals
-      if (verificationToken) {
-        try {
-          await dispatchMcKenzieRegistrationEmails({
-            name: appUser.name,
-            email: appUser.email,
-            role: appUser.role,
-            token: verificationToken,
-          })
-        } catch (emailErr) {
-          console.warn('[authStore] Error dispatching registration emails:', emailErr)
-        }
+      // Dispatch Registration Confirmation and Verification Emails for all roles
+      try {
+        await dispatchMcKenzieRegistrationEmails({
+          name: appUser.name,
+          email: appUser.email,
+          role: appUser.role,
+          token: verificationToken,
+        })
+      } catch (emailErr) {
+        console.warn('[authStore] Error dispatching registration emails:', emailErr)
       }
 
       return { success: true, user: appUser }
@@ -231,22 +226,45 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   resendRegistrationEmails: async (email: string) => {
     try {
-      const user = get().users.find((u) => u.email.toLowerCase() === email.toLowerCase())
+      const allUsers = get().users
+      let user = allUsers.find((u) => u.email.toLowerCase() === email.toLowerCase())
       if (!user) {
-        return { success: false, error: 'User account not found' }
+        const current = get().user
+        if (current && current.email.toLowerCase() === email.toLowerCase()) {
+          user = current
+        } else {
+          user = {
+            id: generateId('user'),
+            name: email.split('@')[0],
+            email,
+            role: 'LIP',
+            isVerified: false,
+          }
+        }
       }
+
       const token = user.verificationToken || generateId('verify')
-      if (!user.verificationToken) {
-        const updated = get().users.map((u) =>
-          u.id === user.id ? { ...u, verificationToken: token, verificationSentAt: new Date().toISOString() } : u
-        )
-        saveUsers(updated)
-        set({ users: updated })
+      const updatedUser: User = {
+        ...user,
+        verificationToken: token,
+        verificationSentAt: new Date().toISOString(),
       }
+
+      const existingIdx = allUsers.findIndex((u) => u.email.toLowerCase() === email.toLowerCase())
+      const updatedUsers = existingIdx >= 0
+        ? allUsers.map((u, i) => (i === existingIdx ? updatedUser : u))
+        : [...allUsers, updatedUser]
+
+      saveUsers(updatedUsers)
+      set({
+        users: updatedUsers,
+        ...(get().user?.email.toLowerCase() === email.toLowerCase() ? { user: updatedUser } : {}),
+      })
+
       await resendMcKenzieRegistrationEmails({
-        name: user.name,
-        email: user.email,
-        role: user.role,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
         token,
       })
       return { success: true }

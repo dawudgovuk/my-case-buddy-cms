@@ -130,8 +130,7 @@ export default function Login() {
           return
         }
 
-        const isProfessional = selectedRole !== 'LIP'
-        if (isProfessional && result.user.verificationToken) {
+        if (result.user.verificationToken) {
           setRegisteredPendingVerification({
             email: result.user.email,
             token: result.user.verificationToken,
