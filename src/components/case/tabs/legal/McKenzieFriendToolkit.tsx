@@ -7,8 +7,6 @@ import {
   FaStickyNote,
   FaCopy,
   FaCheck,
-  FaPrint,
-  FaInfoCircle,
   FaCheckCircle,
 } from 'react-icons/fa'
 import type { FamilyCase } from '../../../../types/domain'
@@ -27,7 +25,7 @@ export default function McKenzieFriendToolkit({ caseData }: McKenzieFriendToolki
 
   // State for PD 27A Notice
   const [mckenzieName, setMckenzieName] = useState(user?.name || 'McKenzie Friend')
-  const [mckenzieEmail, setMckenzieEmail] = useState(user?.email || 'mckenzie@layhelp.uk')
+  const [mckenzieEmail] = useState(user?.email || 'mckenzie@layhelp.uk')
   const [copiedNotice, setCopiedNotice] = useState(false)
   const [noticeSaved, setNoticeSaved] = useState(false)
 

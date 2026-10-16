@@ -15,7 +15,7 @@ import ProfessionalHeader from '../components/dashboard/ProfessionalHeader'
 import SystemQuickGuide from '../components/dashboard/SystemQuickGuide'
 import ProfessionalFaqModal from '../components/dashboard/ProfessionalFaqModal'
 import TabNav, { type TabItem } from '../components/common/TabNav'
-import { FaHandshake, FaGavel, FaCalendarAlt, FaLock, FaDatabase, FaSync } from 'react-icons/fa'
+import { FaHandshake, FaGavel, FaCalendarAlt, FaLock } from 'react-icons/fa'
 import { useTranslation } from '../hooks/useTranslation'
 
 type DashboardTab = 'peer' | 'assigned' | 'schedule'
@@ -24,7 +24,7 @@ export default function ProfessionalDashboard() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { user } = useAuthStore()
-  const { cases, isStrapiMode, syncWithStrapi, isLoadingStrapi, strapiError, setStrapiMode } = useCasesStore()
+  const { cases, isStrapiMode, syncWithStrapi } = useCasesStore()
   const { t } = useTranslation()
   const [deadlines, setDeadlines] = useState<DocumentDeadline[]>([])
   const [activeTab, setActiveTab] = useState<DashboardTab>('peer')
@@ -179,68 +179,6 @@ export default function ProfessionalDashboard() {
         onOpenFaq={() => setShowFaqModal(true)}
         assignedCasesCount={userCases.length}
       />
-
-      {/* Strapi API Sync & Mode Status Banner */}
-      <div className="d-flex flex-wrap align-items-center justify-content-between p-2.5 px-3 rounded-3 bg-white border shadow-xs mb-3 gap-2">
-        <div className="d-flex align-items-center gap-2">
-          <Badge
-            bg={isStrapiMode ? 'primary' : 'secondary'}
-            className="d-inline-flex align-items-center gap-1.5 py-1.5 px-2.5 rounded-pill"
-          >
-            <FaDatabase size={10} />
-            <span>{isStrapiMode ? 'Strapi API Connected' : 'Local Offline Mode'}</span>
-          </Badge>
-          {isLoadingStrapi ? (
-            <div className="d-flex align-items-center gap-1.5 text-primary small">
-              <Spinner animation="border" size="sm" />
-              <span>Fetching live cases from Strapi API...</span>
-            </div>
-          ) : (
-            <span className="text-secondary small">
-              {isStrapiMode
-                ? 'Displaying live family court cases synchronized with Strapi.'
-                : 'Using browser local demo data.'}
-            </span>
-          )}
-        </div>
-
-        <div className="d-flex align-items-center gap-2">
-          {!isStrapiMode ? (
-            <Button
-              variant="outline-primary"
-              size="sm"
-              className="py-1 px-3 rounded-pill fw-semibold shadow-none d-inline-flex align-items-center gap-1.5"
-              onClick={() => setStrapiMode(true)}
-            >
-              <FaDatabase size={11} />
-              <span>Connect to Strapi API</span>
-            </Button>
-          ) : (
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              className="py-1 px-3 rounded-pill fw-semibold shadow-none d-inline-flex align-items-center gap-1.5"
-              onClick={() => void syncWithStrapi()}
-              disabled={isLoadingStrapi}
-            >
-              <FaSync size={11} className={isLoadingStrapi ? 'fa-spin' : ''} />
-              <span>Refresh API</span>
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {/* Strapi Error Notification (if any) */}
-      {strapiError && (
-        <Alert variant="warning" dismissible onClose={() => {}} className="py-2 px-3 mb-3 small d-flex align-items-center justify-content-between">
-          <div>
-            <strong>Strapi API Notice:</strong> {strapiError}
-          </div>
-          <Button variant="outline-dark" size="sm" className="py-0 px-2" onClick={() => void syncWithStrapi()}>
-            Retry Sync
-          </Button>
-        </Alert>
-      )}
 
       {/* Main Tab Navigation */}
       <TabNav items={dashboardTabs} activeKey={activeTab} onSelect={setActiveTab} />

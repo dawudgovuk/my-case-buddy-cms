@@ -1,4 +1,5 @@
 import type { AppStateSnapshot, FamilyCase, CaseInvite, DocumentDeadline } from '../types/domain';
+import { isDemoUser } from './auth';
 
 const STORAGE_KEY = 'uk-family-court-cms:v1';
 const VERSION = 2;
@@ -23,20 +24,32 @@ export function loadSnapshot(): AppStateSnapshot {
   }
   try {
     const parsed = JSON.parse(raw) as Partial<AppStateSnapshot>;
+    const rawCases = parsed.cases ?? [];
+    const cleanCases = rawCases.filter((c) => {
+      const hasDemoMember = Boolean(c.members?.some((m) => isDemoUser({ id: m.userId, email: m.email })));
+      const isDemoSeeded = typeof c.caseNumber === 'string' && c.caseNumber.startsWith('FC-') && c.id.startsWith('case_');
+      return !hasDemoMember && !isDemoSeeded;
+    });
+
+    if (cleanCases.length !== rawCases.length) {
+      parsed.cases = cleanCases;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+    }
+
     if (parsed.version !== VERSION) {
       // Migration: add invites and deadlines if missing
       const migrated: AppStateSnapshot = {
         version: VERSION,
         createdAt: parsed.createdAt ?? nowIso(),
         updatedAt: nowIso(),
-        cases: parsed.cases ?? [],
+        cases: cleanCases,
         invites: parsed.invites ?? [],
         deadlines: parsed.deadlines ?? [],
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
       return migrated;
     }
-    return parsed as AppStateSnapshot;
+    return { ...parsed, cases: cleanCases } as AppStateSnapshot;
   } catch {
     const reset: AppStateSnapshot = {
       version: VERSION,

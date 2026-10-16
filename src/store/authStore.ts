@@ -51,7 +51,6 @@ interface AuthState {
   }) => Promise<{ success: boolean; error?: string; user?: User }>
   initNeonAuth: () => Promise<void>
   logout: () => Promise<void> | void
-  ensureDemoUsers: () => void
   verifyUser: (token: string) => { success: boolean; user?: User; error?: string }
   verifyUserById: (userId: string) => void
   verifyAllProfessionals: () => void
@@ -367,79 +366,5 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const allUsers = listUsers()
     const current = getCurrentUser()
     set({ users: allUsers, user: current })
-  },
-
-  ensureDemoUsers: () => {
-    let users = listUsers()
-    if (users.length === 0) {
-      users = [
-        { id: 'u_lip_alice', name: 'Alice Brown', email: 'alice@example.com', role: 'LIP', isVerified: true },
-        { id: 'u_lip_bob', name: 'Bob Green', email: 'bob@example.com', role: 'LIP', isVerified: true },
-        {
-          id: 'u_mf_jordan',
-          name: 'Jordan Clerk',
-          email: 'jordan@example.com',
-          role: 'McKenzieFriend',
-          isVerified: true,
-          bio: 'Experienced McKenzie Friend with 8+ years supporting family court litigants in private child disputes.',
-          yearsExperience: 8,
-        },
-        {
-          id: 'u_sol_sarah',
-          name: 'Sarah Jenkins',
-          email: 'sarah.jenkins@law.co.uk',
-          role: 'Solicitor',
-          firm: 'Jenkins & Co Solicitors',
-          registrationNumber: 'SRA-481902',
-          isVerified: true,
-          bio: 'Specialist children and domestic abuse solicitor offering peer mentoring and review.',
-          yearsExperience: 12,
-        },
-        {
-          id: 'u_bar_david',
-          name: 'David Vance',
-          email: 'david.vance@chambers.org',
-          role: 'Barrister',
-          firm: 'Doughty Street Chambers',
-          registrationNumber: 'BSB-98314',
-          isVerified: true,
-          bio: 'Family Law Barrister passionate about access to justice and peer support in complex proceedings.',
-          yearsExperience: 10,
-        },
-        {
-          id: 'u_mf_unverified',
-          name: 'Arthur Pendelton (Unverified)',
-          email: 'arthur.pendelton@unverified.co.uk',
-          role: 'McKenzieFriend',
-          isVerified: false,
-          verificationToken: 'verify_demo_token_arthur',
-          bio: 'Newly registered McKenzie Friend awaiting email verification.',
-        },
-        {
-          id: 'u_sol_unverified',
-          name: 'Marcus Bell (Unverified)',
-          email: 'marcus.bell@unverified.co.uk',
-          role: 'Solicitor',
-          firm: 'Bell Legal',
-          registrationNumber: 'SRA-999111',
-          isVerified: false,
-          verificationToken: 'verify_demo_token_marcus',
-          bio: 'Newly registered solicitor awaiting email verification.',
-        },
-        {
-          id: 'u_bar_unverified',
-          name: 'Helena Vance (Unverified)',
-          email: 'helena.vance@unverified.chambers.org',
-          role: 'Barrister',
-          firm: 'Matrix Chambers',
-          registrationNumber: 'BSB-112233',
-          isVerified: false,
-          verificationToken: 'verify_demo_token_helena',
-          bio: 'Pupil barrister awaiting email verification clearance.',
-        },
-      ]
-      saveUsers(users)
-    }
-    set({ users })
   },
 }))

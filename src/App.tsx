@@ -4,6 +4,7 @@ import { Container, Spinner } from 'react-bootstrap'
 import CasesList from './pages/CasesList'
 import CaseForm from './pages/CaseForm'
 import { useAuthStore } from './store/authStore'
+import { purgeLegacyDemoData } from './services/auth'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import InviteAccept from './pages/InviteAccept'
@@ -18,13 +19,15 @@ import { useCasesStore } from './store/casesStore'
 import { useTranslation } from './hooks/useTranslation'
 import { FaLifeRing, FaExternalLinkAlt } from 'react-icons/fa'
 
+// Purge all legacy hardcoded demo personas and cases on module initialization
+purgeLegacyDemoData()
+
 function Shell() {
-  const { user, initNeonAuth, ensureDemoUsers, isLoadingSession } = useAuthStore()
+  const { user, initNeonAuth, isLoadingSession } = useAuthStore()
   const { isStrapiMode, syncWithStrapi } = useCasesStore()
   const { t } = useTranslation()
 
   useEffect(() => {
-    ensureDemoUsers()
     void initNeonAuth()
     if (isStrapiMode) {
       void syncWithStrapi()
