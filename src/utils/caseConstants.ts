@@ -50,6 +50,7 @@ export const CASE_DETAILS_TABS = {
   ORDERS: 4,
   NOTES: 5,
   TEAM: 6,
+  LEGAL_HUB: 7,
 } as const
 
 export type CaseDetailsTabKey = (typeof CASE_DETAILS_TABS)[keyof typeof CASE_DETAILS_TABS]
@@ -68,4 +69,5 @@ export const CASE_DETAILS_TAB_LIST: readonly TabDefinition[] = [
   { key: CASE_DETAILS_TABS.ORDERS, id: 'orders', label: 'Orders' },
   { key: CASE_DETAILS_TABS.NOTES, id: 'notes', label: 'Notes' },
   { key: CASE_DETAILS_TABS.TEAM, id: 'team', label: 'Team & Invites' },
+  { key: CASE_DETAILS_TABS.LEGAL_HUB, id: 'legal-hub', label: 'Legal Supporter Hub' },
 ] as const

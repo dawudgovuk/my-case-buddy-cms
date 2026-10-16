@@ -68,6 +68,7 @@ export interface TranslationSchema {
     ordersTab: string
     notesTab: string
     teamTab: string
+    legalHubTab: string
     metadataTitle: string
     caseNumber: string
     courtVenue: string

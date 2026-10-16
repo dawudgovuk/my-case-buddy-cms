@@ -61,6 +61,7 @@ export const en: TranslationSchema = {
     ordersTab: 'Orders',
     notesTab: 'Notes',
     teamTab: 'Team & Invites',
+    legalHubTab: 'Legal Supporter Hub',
     metadataTitle: 'Case Metadata',
     caseNumber: 'Case Number',
     courtVenue: 'Court Venue',

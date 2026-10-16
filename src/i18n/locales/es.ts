@@ -61,6 +61,7 @@ export const es: TranslationSchema = {
     ordersTab: 'Órdenes Judiciales',
     notesTab: 'Notas',
     teamTab: 'Equipo e Invitaciones',
+    legalHubTab: 'Centro de Apoyo Legal',
     metadataTitle: 'Metadatos del Caso',
     caseNumber: 'Número de Caso',
     courtVenue: 'Tribunal',

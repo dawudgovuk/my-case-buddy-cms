@@ -61,6 +61,7 @@ export const cy: TranslationSchema = {
     ordersTab: 'Gorchmynion',
     notesTab: 'Nodiadau',
     teamTab: 'Tîm a Gwahoddiadau',
+    legalHubTab: 'Canolfan Gymorth Gyfreithiol',
     metadataTitle: 'Metadata’r Achos',
     caseNumber: 'Rhif yr Achos',
     courtVenue: 'Lleoliad y Llys',

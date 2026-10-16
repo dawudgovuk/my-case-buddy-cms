@@ -61,6 +61,7 @@ export const pl: TranslationSchema = {
     ordersTab: 'Postanowienia Sądu',
     notesTab: 'Notatki',
     teamTab: 'Zespół i Zaproszenia',
+    legalHubTab: 'Centrum Wsparcia Prawnego',
     metadataTitle: 'Metadane Sprawy',
     caseNumber: 'Numer Sprawy',
     courtVenue: 'Wydział Sądu',
