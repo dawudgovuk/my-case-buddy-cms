@@ -84,8 +84,11 @@ export async function fetchStrapiCaseById(caseIdOrNumber: string): Promise<Famil
 /**
  * Creates a new case in Strapi including initial relational children.
  */
-export async function createStrapiCase(fc: FamilyCase): Promise<FamilyCase> {
-  const payload = toStrapiCasePayload(fc);
+export async function createStrapiCase(
+  fc: FamilyCase,
+  currentUser?: { id?: string; email?: string }
+): Promise<FamilyCase> {
+  const payload = toStrapiCasePayload(fc, currentUser);
   const response = await strapiPost<StrapiSingleResponse<StrapiCaseRaw>>('/api/cases', payload);
   return toDomainCase(response.data);
 }
@@ -93,12 +96,15 @@ export async function createStrapiCase(fc: FamilyCase): Promise<FamilyCase> {
 /**
  * Updates an existing case in Strapi including relational children.
  */
-export async function updateStrapiCase(fc: FamilyCase): Promise<FamilyCase> {
+export async function updateStrapiCase(
+  fc: FamilyCase,
+  currentUser?: { id?: string; email?: string }
+): Promise<FamilyCase> {
   // First locate the Strapi record to obtain its internal documentId
   const existing = await fetchStrapiCaseById(fc.id);
   const targetId = existing?.documentId || existing?.id || fc.documentId || fc.id;
 
-  const payload = toStrapiCasePayload(fc);
+  const payload = toStrapiCasePayload(fc, currentUser);
   const response = await strapiPut<StrapiSingleResponse<StrapiCaseRaw>>(
     `/api/cases/${encodeURIComponent(targetId)}`,
     payload
@@ -192,3 +198,20 @@ export async function requestStrapiPeerSupport(
     },
   };
 }
+
+/**
+ * Directly accepts a peer support request via Strapi endpoint POST /api/cases/:id/accept-peer-support
+ */
+export async function acceptStrapiPeerSupport(
+  caseIdOrNumber: string
+): Promise<{ success: boolean; case?: FamilyCase }> {
+  const response = await strapiPost<{ success: boolean; case?: StrapiCaseRaw }>(
+    `/api/cases/${encodeURIComponent(caseIdOrNumber)}/accept-peer-support`,
+    {}
+  );
+  return {
+    success: response.success,
+    case: response.case ? toDomainCase(response.case) : undefined,
+  };
+}
+

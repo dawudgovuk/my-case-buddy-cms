@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { FamilyCase, User } from '../types/domain';
 import {
   loadSnapshot,
+  saveSnapshot,
   upsertCase,
   deleteCase,
   getCase,
@@ -19,6 +20,8 @@ import {
   toggleStrapiPeerSupport,
   requestStrapiPeerSupport,
 } from '../services/strapi';
+
+import { getCurrentUser } from '../services/auth';
 
 interface CasesState {
   cases: FamilyCase[];
@@ -64,12 +67,12 @@ export const useCasesStore = create<CasesState>((set, get) => ({
     set({ isLoadingStrapi: true, strapiError: null });
     try {
       const strapiCases = await fetchStrapiCases();
-      // Mirror fetched cases into local snapshot for resilient offline availability
-      strapiCases.forEach((c) => upsertCase(c));
+      // Keep local snapshot strictly aligned with the live API state
+      saveSnapshot((prev) => ({ ...prev, cases: strapiCases }));
       set({ cases: strapiCases, isLoadingStrapi: false });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to fetch from Strapi';
-      // Graceful fallback to local snapshot on error
+      // Graceful fallback to local snapshot on network failure
       set({
         cases: loadSnapshot().cases,
         isLoadingStrapi: false,
@@ -100,26 +103,42 @@ export const useCasesStore = create<CasesState>((set, get) => ({
     if (get().isStrapiMode) {
       set({ isLoadingStrapi: true });
       try {
-        const savedCase = isExisting ? await updateStrapiCase(fc) : await createStrapiCase(fc);
+        const currentUser = getCurrentUser() || undefined;
+        const savedCase = isExisting
+          ? await updateStrapiCase(fc, currentUser)
+          : await createStrapiCase(fc, currentUser);
+
         if (savedCase) {
-          upsertCase(savedCase);
+          // Merge incoming savedCase members with original fc members so client-side user ownership is never lost
+          const mergedMembers = [...(savedCase.members || [])];
+          (fc.members || []).forEach((origM) => {
+            if (!mergedMembers.some((m) => m.userId === origM.userId || (origM.email && m.email === origM.email))) {
+              mergedMembers.push(origM);
+            }
+          });
+          const hydratedCase: FamilyCase = {
+            ...savedCase,
+            members: mergedMembers.length > 0 ? mergedMembers : fc.members,
+          };
+
+          upsertCase(hydratedCase);
           set((state) => {
             const exists = state.cases.some(
-              (c) => c.id === savedCase.id || (Boolean(savedCase.documentId) && c.documentId === savedCase.documentId)
+              (c) => c.id === hydratedCase.id || (Boolean(hydratedCase.documentId) && c.documentId === hydratedCase.documentId)
             );
             return {
               cases: exists
                 ? state.cases.map((c) =>
-                    c.id === savedCase.id || (Boolean(savedCase.documentId) && c.documentId === savedCase.documentId)
-                      ? savedCase
+                    c.id === hydratedCase.id || (Boolean(hydratedCase.documentId) && c.documentId === hydratedCase.documentId)
+                      ? hydratedCase
                       : c
                   )
-                : [savedCase, ...state.cases],
+                : [hydratedCase, ...state.cases],
               isLoadingStrapi: false,
               strapiError: null,
             };
           });
-          return savedCase;
+          return hydratedCase;
         }
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Strapi sync failed';
@@ -239,5 +258,13 @@ export const useCasesStore = create<CasesState>((set, get) => ({
     return get().getById(caseId) || existing || ({} as FamilyCase);
   },
 }));
+
+// Auto-trigger background hydration with Strapi on initial app startup
+if (isStrapiEnabled()) {
+  setTimeout(() => {
+    void useCasesStore.getState().syncWithStrapi();
+  }, 0);
+}
+
 
 

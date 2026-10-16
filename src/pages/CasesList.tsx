@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Row, Col } from 'react-bootstrap'
 import { useCasesStore } from '../store/casesStore'
 import { useAuthStore } from '../store/authStore'
 import type { CaseStatus, FamilyCase } from '../types/domain'
+import { isUserCaseMember } from '../utils/caseMembership'
 import CasesHeader from '../components/case/CasesHeader'
 import CasesFilterBar from '../components/case/CasesFilterBar'
 import CaseListItemCard from '../components/case/CaseListItemCard'
@@ -15,9 +16,13 @@ import { CASE_TYPE_OPTIONS } from '../utils/caseConstants'
 import { countChildren } from '../utils/partyUtils'
 
 export default function CasesList() {
-  const { cases, remove, togglePeerSupport, isStrapiMode } = useCasesStore()
+  const { cases, remove, togglePeerSupport, isStrapiMode, refresh } = useCasesStore()
   const { user } = useAuthStore()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
   // Filter & View State
   const [q, setQ] = useState('')
@@ -28,13 +33,10 @@ export default function CasesList() {
   const [caseToDelete, setCaseToDelete] = useState<FamilyCase | null>(null)
   const [showStrapiModal, setShowStrapiModal] = useState<boolean>(false)
 
-  // Visible user cases based on RBAC membership
+  // Visible user cases based on unified RBAC membership
   const userCases = useMemo(() => {
     if (!user) return []
-    return cases.filter((c) => {
-      const members = c.members || []
-      return members.some((m) => m.userId === user.id)
-    })
+    return cases.filter((c) => isUserCaseMember(c, user))
   }, [cases, user])
 
   // Summary Metrics

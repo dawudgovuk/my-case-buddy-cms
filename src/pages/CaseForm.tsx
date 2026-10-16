@@ -105,7 +105,10 @@ export default function CaseForm() {
       allocatedJudge: trimmedJudge,
       startedAt: form.startedAt,
       childrenInvolved: calculatedChildren,
-      members: existing?.members ?? (user ? [{ userId: user.id, role: 'Owner' }] : []),
+      members: existing?.members ?? (user ? [
+        { userId: user.id, role: 'Owner', email: user.email },
+        ...(user.email && user.email !== user.id ? [{ userId: user.email, role: 'Owner' as const, email: user.email }] : [])
+      ] : []),
       currentStage: existing?.currentStage || 'application',
     }
 

@@ -15,9 +15,7 @@ export function getNeonConfig(): NeonConfig {
   const env = import.meta.env;
 
   return {
-    databaseUrl:
-      env.VITE_NEON_DATABASE_URL ||
-      'postgresql://neondb_owner:npg_KER8cVz0nNsw@ep-dawn-boat-b58fw9yw-pooler.c-7.us-east-2.aws.neon.tech/neondb?channel_binding=require&sslmode=require',
+    databaseUrl: env.VITE_NEON_DATABASE_URL || '',
     authBaseUrl:
       env.VITE_NEON_AUTH_URL ||
       env.VITE_NEON_AUTH_BASE_URL ||

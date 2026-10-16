@@ -18,6 +18,7 @@ import {
 } from 'react-icons/fa'
 import PeerSupporterCard from '../components/directory/PeerSupporterCard'
 import PeerSupportRequestModal from '../components/directory/PeerSupportRequestModal'
+import { isUserCaseMember } from '../utils/caseMembership'
 
 export default function PeerDirectory() {
   const { user } = useAuthStore()
@@ -35,12 +36,11 @@ export default function PeerDirectory() {
     setIsLoadingPros(true)
     fetchStrapiProfessionals()
       .then((pros) => {
-        if (pros && pros.length > 0) {
-          setStrapiPros(pros)
-        }
+        setStrapiPros(pros || [])
       })
       .catch((err) => {
         console.warn('Could not fetch Strapi professionals:', err)
+        setStrapiPros([])
       })
       .finally(() => {
         setIsLoadingPros(false)
@@ -60,7 +60,7 @@ export default function PeerDirectory() {
 
   // Legal professionals (Solicitor, Barrister, McKenzieFriend) from Strapi or local store
   const professionals = useMemo(() => {
-    if (strapiPros.length > 0) {
+    if (isStrapiMode) {
       return strapiPros
     }
     return listUsers().filter(
@@ -68,7 +68,7 @@ export default function PeerDirectory() {
         (u.role === 'Solicitor' || u.role === 'Barrister' || u.role === 'McKenzieFriend') &&
         Boolean(u.isVerified)
     )
-  }, [strapiPros])
+  }, [isStrapiMode, strapiPros])
 
   // Dynamic counts for filter chips
   const counts = useMemo(() => {
@@ -101,14 +101,7 @@ export default function PeerDirectory() {
 
   const myCases = useMemo(() => {
     if (!user) return []
-    const owned = cases.filter((c) => {
-      const members = c.members || []
-      return members.some(
-        (m) =>
-          (m.userId === user.id || m.userId === user.email) &&
-          (m.role === 'Owner' || m.role === 'Collaborator')
-      )
-    })
+    const owned = cases.filter((c) => isUserCaseMember(c, user))
     return owned.length > 0 ? owned : cases
   }, [cases, user])
 

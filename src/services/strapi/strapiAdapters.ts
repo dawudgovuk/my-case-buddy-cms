@@ -196,9 +196,11 @@ export function toDomainNote(raw: StrapiNoteRaw): CaseNote {
 
 export function toDomainMember(raw: StrapiMemberRaw): CaseMember {
   const data = unwrap(raw);
+  const email = (data.email as string | undefined)?.toLowerCase();
   return {
     userId: String(raw.documentId ?? data.documentId ?? data.id ?? raw.id ?? ''),
     role: (data.userRole as CaseMember['role']) || 'Collaborator',
+    email,
   };
 }
 
@@ -228,28 +230,62 @@ export function toDomainCase(raw: StrapiCaseRaw): FamilyCase {
   const rawMembers = Array.isArray(data.members) ? (data.members as StrapiMemberRaw[]) : [];
   const members = rawMembers.map(toDomainMember);
 
-  // Auto-link case owner as an Owner member
+  // Auto-link case owner as an Owner member across numeric ID, documentId, email, and clerkId
   if (data.owner && typeof data.owner === 'object') {
     const ownerData = unwrap(data.owner as StrapiMemberRaw);
     const ownerId = String(ownerData.id ?? (data.owner as { id?: unknown }).id ?? '');
     const ownerDocId = String((data.owner as { documentId?: string }).documentId ?? ownerData.documentId ?? '');
-    if (ownerId && !members.some((m) => m.userId === ownerId || (ownerDocId && m.userId === ownerDocId))) {
+    const ownerEmail = ((ownerData.email || (data.owner as { email?: string }).email) as string | undefined)?.toLowerCase();
+    const ownerClerkId = (ownerData.clerkId || (data.owner as { clerkId?: string }).clerkId) as string | undefined;
+
+    if (ownerId && !members.some((m) => m.userId === ownerId)) {
       members.unshift({
         userId: ownerId,
         role: 'Owner',
+        email: ownerEmail,
       });
-      if (ownerDocId && ownerDocId !== ownerId) {
-        members.push({
-          userId: ownerDocId,
-          role: 'Owner',
-        });
-      }
+    }
+    if (ownerDocId && ownerDocId !== ownerId && !members.some((m) => m.userId === ownerDocId)) {
+      members.push({
+        userId: ownerDocId,
+        role: 'Owner',
+        email: ownerEmail,
+      });
+    }
+    if (ownerEmail && !members.some((m) => m.userId.toLowerCase() === ownerEmail)) {
+      members.push({
+        userId: ownerEmail,
+        role: 'Owner',
+        email: ownerEmail,
+      });
+    }
+    if (ownerClerkId && !members.some((m) => m.userId === ownerClerkId)) {
+      members.push({
+        userId: ownerClerkId,
+        role: 'Owner',
+        email: ownerEmail,
+      });
     }
   }
+
+  // Also include email & clerkId aliases for relational members
+  rawMembers.forEach((rm) => {
+    const d = unwrap(rm);
+    const email = (d.email as string | undefined)?.toLowerCase();
+    const clerkId = d.clerkId as string | undefined;
+    const role = (d.userRole as CaseMember['role']) || 'Collaborator';
+    if (email && !members.some((m) => m.userId.toLowerCase() === email)) {
+      members.push({ userId: email, role, email });
+    }
+    if (clerkId && !members.some((m) => m.userId === clerkId)) {
+      members.push({ userId: clerkId, role, email });
+    }
+  });
 
   return {
     id: String(data.caseNumber || raw.documentId || data.documentId || data.id || ''),
     documentId: raw.documentId || (data.documentId as string | undefined),
+    caseNumber: data.caseNumber ? String(data.caseNumber) : undefined,
     title: String(data.title || 'Untitled Case'),
     court: (data.court as CourtType) || 'Family Court',
     caseType: (data.caseType as CaseType) || 'Private Law (Child Arrangements)',
@@ -271,7 +307,11 @@ export function toDomainCase(raw: StrapiCaseRaw): FamilyCase {
   };
 }
 
-export function toStrapiCasePayload(fc: FamilyCase): { data: Record<string, unknown> } {
+export function toStrapiCasePayload(
+  fc: FamilyCase,
+  currentUser?: { id?: string; email?: string }
+): { data: Record<string, unknown> } {
+  const ownerEmail = currentUser?.email || fc.members?.find((m) => m.email || m.userId?.includes('@'))?.email;
   return {
     data: {
       caseNumber: fc.id,
@@ -286,6 +326,7 @@ export function toStrapiCasePayload(fc: FamilyCase): { data: Record<string, unkn
       seekingPeerSupport: Boolean(fc.seekingPeerSupport),
       peerSupportNote: fc.peerSupportNote,
       peerSupportRequestedAt: fc.peerSupportRequestedAt,
+      ownerEmail: ownerEmail || undefined,
       parties: (fc.parties || []).map((p) => ({
         documentId: p.id && !p.id.startsWith('PTY_') ? p.id : undefined,
         role: p.role,

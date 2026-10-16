@@ -1,23 +1,32 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Container, Row, Col, Card, Button, Alert } from 'react-bootstrap'
+import { Container, Row, Col, Card, Button, Alert, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
 import { useTranslation } from '../hooks/useTranslation'
 import type { CaseStatus } from '../types/domain'
+import { isUserCaseOwner } from '../utils/caseMembership'
 import CaseCard from '../components/case/CaseCard'
 import DashboardHeader from '../components/dashboard/DashboardHeader'
 import DashboardTableView from '../components/dashboard/DashboardTableView'
 import DashboardFilterBar from '../components/dashboard/DashboardFilterBar'
-import { FaFolderPlus } from 'react-icons/fa'
+import { FaFolderPlus, FaEnvelope, FaCheckCircle } from 'react-icons/fa'
 
 type DashboardViewMode = 'grid' | 'table'
 
 export default function LIPDashboard() {
   const navigate = useNavigate()
-  const { user } = useAuthStore()
-  const { cases, togglePeerSupport } = useCasesStore()
+  const { user, resendRegistrationEmails } = useAuthStore()
+  const { cases, togglePeerSupport, refresh } = useCasesStore()
   const { t } = useTranslation()
+
+  const [resendingEmail, setResendingEmail] = useState(false)
+  const [emailNotice, setEmailNotice] = useState<string | null>(null)
+
+  // Auto-sync cases on dashboard mount
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
   // View mode state with local storage persistence
   const [viewMode, setViewMode] = useState<DashboardViewMode>(() => {
@@ -33,12 +42,10 @@ export default function LIPDashboard() {
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<CaseStatus | 'All'>('All')
 
-  // User-owned cases
+  // User-owned cases using unified RBAC ownership helper
   const userCases = useMemo(() => {
     if (!user) return []
-    return cases.filter((c) =>
-      c.members?.some((m) => m.userId === user.id && m.role === 'Owner')
-    )
+    return cases.filter((c) => isUserCaseOwner(c, user))
   }, [cases, user])
 
   // Filtered cases based on search and status
@@ -103,6 +110,57 @@ export default function LIPDashboard() {
         onFindSupporters={() => navigate('/peer-directory')}
         onNewCase={() => navigate('/cases/new')}
       />
+
+      {/* Verification Notice Banner if account not verified */}
+      {!user.isVerified && (
+        <Alert variant="warning" className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3 shadow-xs border-warning-subtle">
+          <div className="d-flex align-items-center gap-2">
+            <FaEnvelope className="text-warning flex-shrink-0" />
+            <div>
+              <strong>Account Pending Email Verification:</strong> Welcome emails and your verification link were dispatched to <code>{user.email}</code>.
+              {emailNotice && <div className="text-success small fw-semibold mt-1"><FaCheckCircle className="me-1" />{emailNotice}</div>}
+            </div>
+          </div>
+          <div className="d-flex gap-2 align-items-center">
+            {user.verificationToken && (
+              <Button
+                variant="outline-dark"
+                size="sm"
+                onClick={() => navigate(`/verify-email/${user.verificationToken}`)}
+              >
+                Verify Now
+              </Button>
+            )}
+            <Button
+              variant="warning"
+              size="sm"
+              disabled={resendingEmail}
+              onClick={async () => {
+                setResendingEmail(true)
+                try {
+                  const res = await resendRegistrationEmails(user.email)
+                  if (res.success) {
+                    setEmailNotice('Verification and welcome emails re-dispatched to ' + user.email)
+                  } else {
+                    setEmailNotice('Notice: ' + (res.error || 'Failed to dispatch'))
+                  }
+                } finally {
+                  setResendingEmail(false)
+                }
+              }}
+            >
+              {resendingEmail ? (
+                <>
+                  <Spinner size="sm" animation="border" className="me-1" />
+                  Sending...
+                </>
+              ) : (
+                'Resend Verification Email'
+              )}
+            </Button>
+          </div>
+        </Alert>
+      )}
 
       {userCases.length === 0 ? (
         <Card className="premium-card text-center p-5 border-0">

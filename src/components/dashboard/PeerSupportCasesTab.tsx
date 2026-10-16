@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
-import { Card, Badge, Button, Alert, Row, Col, Form } from 'react-bootstrap'
+import { Card, Badge, Button, Alert, Row, Col, Form, Spinner } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import type { FamilyCase, User } from '../../types/domain'
 import { useCasesStore } from '../../store/casesStore'
 import { useAuthStore } from '../../store/authStore'
-import { FaEye, FaUserPlus, FaBalanceScale, FaHandshake } from 'react-icons/fa'
+import { isUserCaseOwner, isUserCaseMember } from '../../utils/caseMembership'
+import { FaEye, FaUserPlus, FaBalanceScale, FaHandshake, FaArrowRight } from 'react-icons/fa'
+import { acceptStrapiPeerSupport } from '../../services/strapi'
 import VerificationGateCard from '../verification/VerificationGateCard'
 
 interface PeerSupportCasesTabProps {
@@ -21,56 +23,79 @@ export default function PeerSupportCasesTab({
   assignedCasesCount = 0,
 }: PeerSupportCasesTabProps) {
   const navigate = useNavigate()
-  const { addOrUpdate } = useCasesStore()
+  const { addOrUpdate, isStrapiMode, syncWithStrapi } = useCasesStore()
   const { resendRegistrationEmails } = useAuthStore()
   const [filterType, setFilterType] = useState('all')
   const [joinedSuccess, setJoinedSuccess] = useState<string | null>(null)
+  const [joiningId, setJoiningId] = useState<string | null>(null)
+  const [joinError, setJoinError] = useState<string | null>(null)
 
-  // Cases seeking peer support where current user is NOT the owner
+  // Cases seeking peer support where current user is NOT the owner and NOT already a member
   const peerCases = useMemo(() => {
     return cases.filter((c) => {
-      const isOwner = c.members?.some((m) => m.userId === user.id && m.role === 'Owner')
+      const isOwner = isUserCaseOwner(c, user)
+      const isMember = isUserCaseMember(c, user)
       const seeking = Boolean(c.seekingPeerSupport)
-      return seeking && !isOwner
+      return seeking && !isOwner && !isMember
     })
-  }, [cases, user.id])
+  }, [cases, user])
 
   const filtered = useMemo(() => {
     if (filterType === 'all') return peerCases
     return peerCases.filter((c) => c.caseType === filterType)
   }, [peerCases, filterType])
 
-  function handleJoinAsSupporter(caseData: FamilyCase) {
-    const isAlreadyMember = caseData.members?.some((m) => m.userId === user.id)
+  async function handleJoinAsSupporter(caseData: FamilyCase) {
+    const isAlreadyMember = isUserCaseMember(caseData, user)
     if (isAlreadyMember) {
-      navigate(`/cases/${caseData.id}`)
+      if (onSwitchToAssigned) {
+        onSwitchToAssigned()
+      } else {
+        navigate(`/cases/${caseData.documentId || caseData.id}`)
+      }
       return
     }
 
-    const updatedMembers = [
-      ...(caseData.members || []),
-      {
-        userId: user.id,
-        role: user.role === 'Barrister' ? ('Barrister' as const) : user.role === 'Solicitor' ? ('Solicitor' as const) : ('McKenzieFriend' as const),
-        invitedAt: new Date().toISOString(),
-      },
-    ]
+    setJoiningId(caseData.id)
+    setJoinError(null)
 
-    addOrUpdate({
-      ...caseData,
-      members: updatedMembers,
-      notes: [
-        ...caseData.notes,
-        {
-          id: `note_${Date.now()}`,
-          createdAt: new Date().toISOString(),
-          author: `${user.name} (${user.role})`,
-          text: `Joined case as verified ${user.role} to provide peer-to-peer support.`,
-        },
-      ],
-    })
+    try {
+      if (isStrapiMode) {
+        await acceptStrapiPeerSupport(caseData.documentId || caseData.id)
+        await syncWithStrapi()
+      } else {
+        const updatedMembers = [
+          ...(caseData.members || []),
+          {
+            userId: user.id,
+            role: user.role === 'Barrister' ? ('Barrister' as const) : user.role === 'Solicitor' ? ('Solicitor' as const) : ('McKenzieFriend' as const),
+            invitedAt: new Date().toISOString(),
+          },
+        ]
 
-    setJoinedSuccess(`You have joined ${caseData.id} as a peer supporter!`)
+        addOrUpdate({
+          ...caseData,
+          members: updatedMembers,
+          seekingPeerSupport: false,
+          notes: [
+            ...caseData.notes,
+            {
+              id: `note_${Date.now()}`,
+              createdAt: new Date().toISOString(),
+              author: `${user.name} (${user.role})`,
+              text: `Joined case as verified ${user.role} to provide peer-to-peer support.`,
+            },
+          ],
+        })
+      }
+
+      setJoinedSuccess(`You have joined "${caseData.title}" (${caseData.caseNumber || caseData.id}) as an assigned peer supporter!`)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to join case as supporter'
+      setJoinError(msg)
+    } finally {
+      setJoiningId(null)
+    }
   }
 
   // Verification Gate: Unverified professionals cannot see other people's cases
@@ -120,9 +145,23 @@ export default function PeerSupportCasesTab({
       </div>
 
       {joinedSuccess && (
-        <Alert variant="success" dismissible onClose={() => setJoinedSuccess(null)} className="mb-3">
-          <FaHandshake className="me-2" />
-          {joinedSuccess}
+        <Alert variant="success" dismissible onClose={() => setJoinedSuccess(null)} className="mb-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div className="d-flex align-items-center gap-2">
+            <FaHandshake className="fs-5 flex-shrink-0" />
+            <span>{joinedSuccess}</span>
+          </div>
+          {onSwitchToAssigned && (
+            <Button size="sm" variant="success" onClick={onSwitchToAssigned} className="d-flex align-items-center gap-1">
+              <span>View in My Assigned Cases</span>
+              <FaArrowRight />
+            </Button>
+          )}
+        </Alert>
+      )}
+
+      {joinError && (
+        <Alert variant="danger" dismissible onClose={() => setJoinError(null)} className="mb-3">
+          {joinError}
         </Alert>
       )}
 
@@ -137,7 +176,7 @@ export default function PeerSupportCasesTab({
       ) : (
         <Row className="g-3">
           {filtered.map((caseData) => {
-            const isAlreadyMember = caseData.members?.some((m) => m.userId === user.id)
+            const isAlreadyMember = isUserCaseMember(caseData, user)
 
             return (
               <Col key={caseData.id} xs={12} lg={6}>
@@ -192,10 +231,14 @@ export default function PeerSupportCasesTab({
                         variant={isAlreadyMember ? 'secondary' : 'success'}
                         size="sm"
                         className="flex-grow-1 d-flex align-items-center justify-content-center gap-1"
-                        onClick={() => handleJoinAsSupporter(caseData)}
-                        disabled={isAlreadyMember}
+                        onClick={() => void handleJoinAsSupporter(caseData)}
+                        disabled={isAlreadyMember || joiningId === caseData.id}
                       >
-                        <FaUserPlus />
+                        {joiningId === caseData.id ? (
+                          <Spinner size="sm" animation="border" />
+                        ) : (
+                          <FaUserPlus />
+                        )}
                         <span>{isAlreadyMember ? 'Joined Supporter' : 'Offer Peer Support'}</span>
                       </Button>
                     </div>

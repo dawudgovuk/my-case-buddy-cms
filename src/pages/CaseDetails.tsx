@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useCasesStore } from '../store/casesStore'
 import { useTranslation } from '../hooks/useTranslation'
@@ -25,10 +25,16 @@ import {
 export default function CaseDetails() {
   const { caseId } = useParams()
   const navigate = useNavigate()
-  const { getById, isLoadingStrapi } = useCasesStore()
+  const { getById, isLoadingStrapi, refresh } = useCasesStore()
   const { t } = useTranslation()
   const fc = useMemo(() => (caseId ? getById(caseId) : undefined), [caseId, getById])
   const [tab, setTab] = useState<number>(CASE_DETAILS_TABS.OVERVIEW)
+
+  useEffect(() => {
+    if (!fc) {
+      refresh()
+    }
+  }, [fc, refresh])
 
   if (!caseId) return <div className="text-danger p-4">{t('caseDetails.notFound')}</div>
 

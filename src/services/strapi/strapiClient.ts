@@ -1,4 +1,5 @@
 import { getStrapiApiUrl, getStrapiToken } from './strapiConfig';
+import { getCurrentUser } from '../auth';
 
 export interface StrapiErrorDetail {
   message?: string;
@@ -39,6 +40,10 @@ function buildHeaders(customHeaders?: HeadersInit): Headers {
   const token = getStrapiToken();
   if (token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`);
+  }
+  const currentUser = getCurrentUser();
+  if (currentUser?.email && !headers.has('X-User-Email')) {
+    headers.set('X-User-Email', currentUser.email);
   }
   return headers;
 }

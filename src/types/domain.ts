@@ -96,6 +96,7 @@ export interface CaseNote {
 export interface FamilyCase {
   id: string; // e.g., case number
   documentId?: string; // Strapi v5 internal document identifier
+  caseNumber?: string; // HMCTS Court Case Number (e.g. FC-2026-10492)
   title: string; // short description
   court: CourtType;
   caseType: CaseType;
@@ -155,6 +156,7 @@ export type CaseMemberRole = 'Owner' | 'Collaborator' | 'McKenzieFriend' | 'Soli
 export interface CaseMember {
   userId: string;
   role: CaseMemberRole;
+  email?: string;
   invitedAt?: string; // ISO date
   invitedBy?: string; // userId
 }

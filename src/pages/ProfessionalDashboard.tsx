@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Container, Row, Col, Alert, Badge, Button, Spinner } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
 import { getDeadlinesForUser, updateDeadline } from '../services/storage'
 import { fetchStrapiDeadlines, updateStrapiDeadlineStatus } from '../services/strapi'
 import type { DocumentDeadline } from '../types/domain'
+import { isUserCaseMember, isUserCaseOwner } from '../utils/caseMembership'
 import UpcomingHearingsCard, { type HearingItem } from '../components/dashboard/UpcomingHearingsCard'
 import DeadlinesCard from '../components/dashboard/DeadlinesCard'
 import AssignedCasesTab from '../components/dashboard/AssignedCasesTab'
@@ -21,6 +22,7 @@ type DashboardTab = 'peer' | 'assigned' | 'schedule'
 
 export default function ProfessionalDashboard() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { user } = useAuthStore()
   const { cases, isStrapiMode, syncWithStrapi, isLoadingStrapi, strapiError, setStrapiMode } = useCasesStore()
   const { t } = useTranslation()
@@ -28,6 +30,13 @@ export default function ProfessionalDashboard() {
   const [activeTab, setActiveTab] = useState<DashboardTab>('peer')
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(!user?.isVerified)
   const [showFaqModal, setShowFaqModal] = useState(false)
+
+  useEffect(() => {
+    const tabParam = searchParams.get('tab') as DashboardTab | null
+    if (tabParam && ['peer', 'assigned', 'schedule'].includes(tabParam)) {
+      setActiveTab(tabParam)
+    }
+  }, [searchParams])
 
   useEffect(() => {
     if (!user) return
@@ -49,13 +58,13 @@ export default function ProfessionalDashboard() {
 
   const userCases = useMemo(() => {
     if (!user) return []
-    return cases.filter((c) => c.members?.some((m) => m.userId === user.id))
+    return cases.filter((c) => isUserCaseMember(c, user))
   }, [user, cases])
 
   const peerSupportCasesCount = useMemo(() => {
     if (!user) return 0
     return cases.filter(
-      (c) => Boolean(c.seekingPeerSupport) && !c.members?.some((m) => m.userId === user.id && m.role === 'Owner')
+      (c) => Boolean(c.seekingPeerSupport) && !isUserCaseOwner(c, user) && !isUserCaseMember(c, user)
     ).length
   }, [cases, user])
 

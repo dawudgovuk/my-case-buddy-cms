@@ -9,7 +9,7 @@ import {
   verifyUserById as verifyUserByIdService,
   verifyAllProfessionals as verifyAllProfessionalsService,
 } from '../services/auth'
-import { strapiLogout } from '../services/strapi'
+import { strapiLogout, strapiRegister, strapiLogin, isStrapiEnabled } from '../services/strapi'
 import { generateId } from '../services/storage'
 import { authClient } from '../auth'
 import { dispatchMcKenzieRegistrationEmails, resendMcKenzieRegistrationEmails } from '../services/emailService'
@@ -148,6 +148,28 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         neonSession: nSession,
       })
 
+      // Synchronize session token with Strapi if available
+      if (isStrapiEnabled()) {
+        try {
+          await strapiLogin(email.trim(), password)
+        } catch {
+          // If login fails (user registered in Neon Auth but missing in Strapi), auto-register into Strapi
+          try {
+            const sanitizedUsername = (matched.name || email.split('@')[0]).trim().replace(/\s+/g, '_').toLowerCase() + '_' + Math.random().toString(36).substring(2, 6)
+            await strapiRegister({
+              username: sanitizedUsername,
+              email: email.trim(),
+              password,
+              userRole: matched.role || 'LIP',
+              firm: matched.firm,
+              registrationNumber: matched.registrationNumber,
+            })
+          } catch {
+            // Continue gracefully with active Neon session
+          }
+        }
+      }
+
       return { success: true, user: matched }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err)
@@ -204,6 +226,23 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         neonUser: nUser || null,
         neonSession: nSession,
       })
+
+      // Synchronize newly registered account into Strapi API so it appears in live directory
+      if (isStrapiEnabled()) {
+        try {
+          const sanitizedUsername = name.trim().replace(/\s+/g, '_').toLowerCase() + '_' + Math.random().toString(36).substring(2, 6)
+          await strapiRegister({
+            username: sanitizedUsername,
+            email: email.trim(),
+            password,
+            userRole: role,
+            firm: firm?.trim(),
+            registrationNumber: registrationNumber?.trim(),
+          })
+        } catch (strapiErr) {
+          console.warn('[authStore] Strapi registration sync note:', strapiErr)
+        }
+      }
 
       // Dispatch Registration Confirmation and Verification Emails for all roles
       try {
