@@ -973,29 +973,32 @@ export const COMPONENT_CATALOG: ComponentItem[] = [
     renderPreview: (onFeedback) => createElement(PeerSupportRequestModalPreview, { onFeedback }),
   },
   {
-    id: 'registration-pending-card',
-    name: 'Registration Pending Card',
+    id: 'welcome-verify-card',
+    name: 'Welcome & Verify Email Card',
     category: 'Legal Directory & Safeguarding',
-    filePath: 'src/components/auth/RegistrationPendingCard.tsx',
-    importStatement: "import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'",
+    filePath: 'src/components/auth/WelcomeVerifyCard.tsx',
+    importStatement: "import WelcomeVerifyCard from '../components/auth/WelcomeVerifyCard'",
     description:
-      'Notice card presented when a legal professional finishes registration and awaits email verification, with demo link simulator.',
-    badges: ['Verification Notice', 'Security & Compliance', 'Demo Simulator'],
-    codeSnippet: `<RegistrationPendingCard
-  name="James Sterling"
-  email="james@example.com"
-  token="tok_123"
-  role="Barrister"
-  onVerifyNow={(tok) => handleVerify(tok)}
-  onReturnToLogin={() => handleLogin()}
+      'Onboarding screen shown after registration: progress steps, where the verification link was sent, continue / resend / switch-account actions and an in-app copy of the emails.',
+    badges: ['Onboarding', 'Email Verification', 'i18n'],
+    codeSnippet: `<WelcomeVerifyCard
+  name={user.name}
+  email={user.email}
+  role={user.role}
+  token={user.verificationToken}
+  onCheckVerified={checkVerified}
+  onSendEmail={sendVerificationEmail}
+  onUseDifferentAccount={switchAccount}
+  onOpenVerificationLink={(token) => navigate('/verify-email/' + token)}
 />`,
     propsDoc: [
-      { name: 'name', type: 'string', required: true, description: 'User full name' },
-      { name: 'email', type: 'string', required: true, description: 'User email address' },
-      { name: 'token', type: 'string', required: true, description: 'Verification token string' },
-      { name: 'role', type: 'UserRole', required: true, description: 'Registered professional role' },
-      { name: 'onVerifyNow', type: '(token: string) => void', required: true, description: 'Action for immediate simulation' },
-      { name: 'onReturnToLogin', type: '() => void', required: true, description: 'Action to go back to login' },
+      { name: 'name / email / role', type: 'string / string / UserRole', required: true, description: 'The new account' },
+      { name: 'token', type: 'string', description: 'Verification token already sent; omit to offer "Send verification email"' },
+      { name: 'notice', type: 'WelcomeNotice | null', description: 'Status message after checking or resending' },
+      { name: 'onCheckVerified', type: '() => void', required: true, description: '"I\'ve verified my email" action' },
+      { name: 'onSendEmail', type: '() => void', required: true, description: 'Send or resend the verification email' },
+      { name: 'onUseDifferentAccount', type: '() => void', required: true, description: 'Sign out and return to sign in' },
+      { name: 'onOpenVerificationLink', type: '(token: string) => void', required: true, description: 'Opens the link from the in-app email copy' },
     ],
     renderPreview: (onFeedback) => createElement(RegistrationPendingCardPreview, { onFeedback }),
   },

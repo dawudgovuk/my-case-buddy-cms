@@ -5,8 +5,7 @@ import { useAuthStore } from '../store/authStore'
 import { toast } from '../store/toastStore'
 import type { UserRole } from '../types/domain'
 import { useTranslation } from './useTranslation'
-import { MIN_PASSWORD_LENGTH, getPostAuthRoute } from '../utils/authConstants'
-import type { PendingVerification } from '../utils/authConstants'
+import { MIN_PASSWORD_LENGTH, WELCOME_ROUTE, getLandingRoute } from '../utils/authConstants'
 
 /** Editable values of the role-specific registration form. */
 export interface RegisterFormValues {
@@ -30,15 +29,13 @@ const INITIAL_VALUES: RegisterFormValues = {
  */
 export function useRegisterForm() {
   const navigate = useNavigate()
-  const { registerWithNeon, resendRegistrationEmails } = useAuthStore()
+  const { registerWithNeon } = useAuthStore()
   const { t } = useTranslation()
 
   const [values, setValues] = useState<RegisterFormValues>(INITIAL_VALUES)
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const [registeredPendingVerification, setRegisteredPendingVerification] =
-    useState<PendingVerification | null>(null)
 
   function setField<K extends keyof RegisterFormValues>(key: K, value: RegisterFormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }))
@@ -87,20 +84,8 @@ export function useRegisterForm() {
         return
       }
 
-      if (result.user.verificationToken) {
-        toast.success(
-          `Registration submitted! Verification link dispatched to ${result.user.email}.`,
-          'Check Your Inbox'
-        )
-        setRegisteredPendingVerification({
-          email: result.user.email,
-          token: result.user.verificationToken,
-          name: result.user.name,
-        })
-      } else {
-        toast.success(`Welcome to My Case Buddy, ${result.user.name}!`, 'Account Created')
-        navigate(getPostAuthRoute(userRole))
-      }
+      toast.success(`Account created! We sent a verification link to ${result.user.email}.`, 'Account Created')
+      navigate(result.user.isVerified ? getLandingRoute(result.user) : WELCOME_ROUTE, { replace: true })
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'An unexpected error occurred'
       setError(msg)
@@ -118,8 +103,6 @@ export function useRegisterForm() {
     error,
     setError,
     loading,
-    registeredPendingVerification,
-    resendRegistrationEmails,
     handleSubmit,
     navigate,
   }

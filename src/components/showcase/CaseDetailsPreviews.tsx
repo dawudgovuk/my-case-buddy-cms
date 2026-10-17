@@ -3,7 +3,7 @@ import { Button } from 'react-bootstrap'
 import CaseOverviewTab from '../case/tabs/CaseOverviewTab'
 import CaseMetadataOverview from '../case/CaseMetadataOverview'
 import PeerSupportRequestModal from '../directory/PeerSupportRequestModal'
-import RegistrationPendingCard from '../auth/RegistrationPendingCard'
+import WelcomeVerifyCard from '../auth/WelcomeVerifyCard'
 import RoleRegistrationLinks from '../auth/RoleRegistrationLinks'
 import LanguageSwitcher from '../common/LanguageSwitcher'
 import { StrapiSyncModal } from '../strapi/StrapiSyncModal'
@@ -139,15 +139,15 @@ export function PeerSupportRequestModalPreview({ onFeedback }: { onFeedback: (ms
 
 export function RegistrationPendingCardPreview({ onFeedback }: { onFeedback: (msg: string) => void }) {
   return (
-    <RegistrationPendingCard
+    <WelcomeVerifyCard
       name="Arthur Pendelton"
       email="arthur.pendelton@support.co.uk"
       token="simulated-token-mckenzie-456"
       role="McKenzieFriend"
-      referenceId="MF-REG-PREVIEW"
-      onVerifyNow={(token) => onFeedback(`Simulated email verification link click with token: ${token}`)}
-      onReturnToLogin={() => onFeedback('Return to login clicked')}
-      onResendEmails={async () => onFeedback('Resend both emails simulated successfully')}
+      onCheckVerified={() => onFeedback('Checked verification status')}
+      onSendEmail={() => onFeedback('Verification email resent')}
+      onUseDifferentAccount={() => onFeedback('Signed out to use a different account')}
+      onOpenVerificationLink={(token) => onFeedback(`Opened verification link with token: ${token}`)}
     />
   )
 }

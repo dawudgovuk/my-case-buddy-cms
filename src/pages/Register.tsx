@@ -4,7 +4,6 @@ import { useTranslation } from '../hooks/useTranslation'
 import { useRegisterForm } from '../hooks/useRegisterForm'
 import type { UserRole } from '../types/domain'
 import { ROLE_INTROS, ROLE_TITLES, isValidRole } from '../utils/authConstants'
-import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
 import AuthHero from '../components/auth/AuthHero'
 import RegisterForm from '../components/auth/RegisterForm'
 
@@ -19,8 +18,6 @@ export default function Register() {
     error,
     setError,
     loading,
-    registeredPendingVerification,
-    resendRegistrationEmails,
     handleSubmit,
     navigate,
   } = useRegisterForm()
@@ -37,22 +34,6 @@ export default function Register() {
   }
 
   const userRole: UserRole = role
-
-  if (registeredPendingVerification) {
-    return (
-      <RegistrationPendingCard
-        name={registeredPendingVerification.name}
-        email={registeredPendingVerification.email}
-        token={registeredPendingVerification.token}
-        role={userRole}
-        onVerifyNow={(token) => navigate(`/verify-email/${token}`)}
-        onReturnToLogin={() => navigate('/login')}
-        onResendEmails={async () => {
-          await resendRegistrationEmails(registeredPendingVerification.email)
-        }}
-      />
-    )
-  }
 
   return (
     <Container className="auth-shell">

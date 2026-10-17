@@ -656,6 +656,82 @@ textarea.form-control { min-height: 5.5rem; }
   margin-bottom: 0.75rem;
 }
 .auth-hero-icon img { width: 32px; height: 32px; }
+
+/* Welcome / verify-email onboarding */
+.welcome-steps {
+  list-style: none;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0;
+  margin: 0 0 1.25rem;
+}
+.welcome-step {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  color: var(--mcb-muted);
+  position: relative;
+}
+.welcome-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  top: 1rem;
+  left: calc(50% + 1.25rem);
+  right: calc(-50% + 1.25rem);
+  height: 2px;
+  background: var(--mcb-border);
+}
+.welcome-step.is-done:not(:last-child)::after { background: var(--mcb-success-border); }
+.welcome-step-dot {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.8125rem;
+  border: 2px solid var(--mcb-border-strong);
+  background: var(--mcb-surface);
+  color: var(--mcb-muted);
+}
+.welcome-step.is-done .welcome-step-dot {
+  background: var(--mcb-success);
+  border-color: var(--mcb-success);
+  color: #fff;
+}
+.welcome-step.is-current { color: var(--mcb-ink); font-weight: 600; }
+.welcome-step.is-current .welcome-step-dot {
+  border-color: var(--mcb-primary);
+  color: var(--mcb-primary);
+  box-shadow: 0 0 0 4px var(--mcb-primary-soft);
+}
+.welcome-inbox {
+  display: flex;
+  gap: 0.875rem;
+  padding: 1rem;
+  border-radius: var(--mcb-radius);
+  background: var(--mcb-primary-soft);
+  border: 1px solid var(--mcb-primary-border);
+  margin-bottom: 1.25rem;
+}
+.welcome-inbox-icon {
+  flex: 0 0 auto;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: var(--mcb-surface);
+  color: var(--mcb-primary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--mcb-shadow-xs);
+}
+.welcome-inbox p { margin: 0; overflow-wrap: anywhere; }
 .auth-divider {
   display: flex;
   align-items: center;

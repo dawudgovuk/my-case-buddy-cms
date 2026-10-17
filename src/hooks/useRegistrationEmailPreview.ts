@@ -6,60 +6,40 @@ import {
   buildVerificationEmail,
 } from '../services/emailService'
 import { toast } from '../store/toastStore'
-import { useTranslation } from './useTranslation'
 import { COPY_FEEDBACK_MS } from '../utils/authConstants'
 
-/** Which simulated registration email is being previewed. */
+/** Which registration email is being previewed. */
 export type RegistrationEmailTab = 'confirmation' | 'verification'
 
-export interface UseRegistrationPendingParams {
+export interface UseRegistrationEmailPreviewParams {
   name: string
   email: string
   token: string
   role: UserRole
   referenceId: string
-  onResendEmails?: () => Promise<void> | void
+  initialTab?: RegistrationEmailTab
 }
 
 /**
- * Resolves the registration confirmation / verification emails for a newly registered user
- * and manages the pending card's tab, copy-link and resend state.
+ * Resolves the registration confirmation / verification emails sent to a user (stored copies first,
+ * rebuilt otherwise) and manages the preview's tab and copy-link state.
  */
-export function useRegistrationPending({
+export function useRegistrationEmailPreview({
   name,
   email,
   token,
   role,
   referenceId,
-  onResendEmails,
-}: UseRegistrationPendingParams) {
-  const { t } = useTranslation()
-  const [activeTab, setActiveTab] = useState<RegistrationEmailTab>('confirmation')
+  initialTab = 'confirmation',
+}: UseRegistrationEmailPreviewParams) {
+  const [activeTab, setActiveTab] = useState<RegistrationEmailTab>(initialTab)
   const [copied, setCopied] = useState(false)
-  const [resending, setResending] = useState(false)
-  const [resendSuccessMessage, setResendSuccessMessage] = useState<string | null>(null)
 
-  // Retrieve stored emails or construct fallback models
   const existingEmails = getLatestRegistrationEmails(email)
   const confirmationEmail =
-    existingEmails.confirmation ||
-    buildRegistrationConfirmationEmail({
-      name,
-      email,
-      role,
-      referenceId,
-    })
-
+    existingEmails.confirmation || buildRegistrationConfirmationEmail({ name, email, role, referenceId })
   const verificationEmail =
-    existingEmails.verification ||
-    buildVerificationEmail({
-      name,
-      email,
-      role,
-      token,
-      referenceId,
-    })
-
+    existingEmails.verification || buildVerificationEmail({ name, email, role, token, referenceId })
   const verificationUrl = verificationEmail.verificationUrl || `${window.location.origin}/verify-email/${token}`
 
   async function handleCopy() {
@@ -69,30 +49,7 @@ export function useRegistrationPending({
       toast.success('Verification URL copied to clipboard.', 'Link Copied')
       setTimeout(() => setCopied(false), COPY_FEEDBACK_MS)
     } catch {
-      // Fallback
-      setCopied(true)
-      toast.success('Verification URL copied to clipboard.', 'Link Copied')
-      setTimeout(() => setCopied(false), COPY_FEEDBACK_MS)
-    }
-  }
-
-  async function handleResend() {
-    setResending(true)
-    setResendSuccessMessage(null)
-    try {
-      if (onResendEmails) {
-        await onResendEmails()
-      }
-      const msg = t('auth.bothEmailsResentSuccess', { email })
-      setResendSuccessMessage(msg)
-      toast.success(msg, 'Emails Sent')
-    } catch (err: unknown) {
-      console.warn('Resend failed:', err)
-      const fallbackMsg = `Emails re-dispatched to ${email}`
-      setResendSuccessMessage(fallbackMsg)
-      toast.success(fallbackMsg, 'Emails Sent')
-    } finally {
-      setResending(false)
+      toast.error('Could not copy the link. Select it and copy it manually.', 'Copy Failed')
     }
   }
 
@@ -100,13 +57,9 @@ export function useRegistrationPending({
     activeTab,
     setActiveTab,
     copied,
-    resending,
-    resendSuccessMessage,
-    setResendSuccessMessage,
     confirmationEmail,
     verificationEmail,
     verificationUrl,
     handleCopy,
-    handleResend,
   }
 }

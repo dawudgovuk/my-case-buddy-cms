@@ -11,7 +11,15 @@ interface StrapiInviteRaw {
   expiresAt?: string;
   usedAt?: string;
   createdAt?: string;
-  case?: { id?: number; documentId?: string; caseNumber?: string };
+  case?: {
+    id?: number;
+    documentId?: string;
+    caseNumber?: string;
+    title?: string;
+    court?: string;
+    caseType?: string;
+    currentStage?: string;
+  };
   createdBy?: { id?: number; documentId?: string };
   usedBy?: { id?: number; documentId?: string };
   attributes?: Record<string, unknown>;
@@ -19,7 +27,7 @@ interface StrapiInviteRaw {
 
 export function toDomainInvite(raw: StrapiInviteRaw, fallbackCaseId?: string): CaseInvite {
   const data = unwrap(raw);
-  const caseRel = data.case as { caseNumber?: string; id?: number; documentId?: string } | undefined;
+  const caseRel = data.case as StrapiInviteRaw['case'] | undefined;
   const createdByRel = data.createdBy as { id?: number; documentId?: string } | undefined;
   const usedByRel = data.usedBy as { id?: number; documentId?: string } | undefined;
 
@@ -33,6 +41,15 @@ export function toDomainInvite(raw: StrapiInviteRaw, fallbackCaseId?: string): C
     expiresAt: data.expiresAt ? String(data.expiresAt) : undefined,
     usedAt: data.usedAt ? String(data.usedAt) : undefined,
     usedBy: usedByRel?.id ? String(usedByRel.id) : undefined,
+    caseSummary: caseRel
+      ? {
+          caseNumber: caseRel.caseNumber,
+          title: caseRel.title,
+          court: caseRel.court,
+          caseType: caseRel.caseType,
+          currentStage: caseRel.currentStage,
+        }
+      : undefined,
   };
 }
 
@@ -66,8 +83,11 @@ export async function createStrapiInvite(
 export async function fetchStrapiInviteByToken(token: string): Promise<CaseInvite | null> {
   const query = {
     'filters[token][$eq]': token,
-    'populate[case]': 'true',
-    'populate[createdBy]': 'true',
+    'populate[case][fields][0]': 'caseNumber',
+    'populate[case][fields][1]': 'title',
+    'populate[case][fields][2]': 'court',
+    'populate[case][fields][3]': 'caseType',
+    'populate[case][fields][4]': 'currentStage',
   };
 
   const response = await strapiGet<StrapiListResponse<StrapiInviteRaw>>('/api/case-invites', query);

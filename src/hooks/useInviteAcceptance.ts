@@ -76,10 +76,27 @@ export function useInviteAcceptance(token: string | undefined): UseInviteAccepta
         if (foundInvite.caseId) {
           let caseObj: FamilyCase | null | undefined = getCase(foundInvite.caseId)
           if (!caseObj && isStrapiMode) {
-            caseObj = await fetchStrapiCaseById(foundInvite.caseId)
+            try {
+              caseObj = await fetchStrapiCaseById(foundInvite.caseId)
+            } catch {
+              // Professional is not yet a member; proceed with summary from invite
+            }
           }
-          if (isMounted && caseObj) {
-            setCaseDetails(caseObj)
+          if (isMounted) {
+            if (caseObj) {
+              setCaseDetails(caseObj)
+            } else if (foundInvite.caseSummary) {
+              setCaseDetails({
+                id: foundInvite.caseId,
+                caseNumber: foundInvite.caseSummary.caseNumber || foundInvite.caseId,
+                title: foundInvite.caseSummary.title || 'Family Court Matter',
+                court: (foundInvite.caseSummary.court as FamilyCase['court']) || 'Family Court',
+                caseType: (foundInvite.caseSummary.caseType as FamilyCase['caseType']) || 'Private Law (Child Arrangements)',
+                currentStage: foundInvite.caseSummary.currentStage || 'Application',
+                status: 'Open',
+                startedAt: new Date().toISOString().split('T')[0],
+              } as FamilyCase)
+            }
           }
         }
       } catch (err: unknown) {

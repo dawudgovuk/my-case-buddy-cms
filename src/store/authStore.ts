@@ -9,7 +9,7 @@ import {
   verifyUserById as verifyUserByIdService,
   verifyAllProfessionals as verifyAllProfessionalsService,
 } from '../services/auth'
-import { strapiLogout, strapiRegister, strapiLogin, isStrapiEnabled } from '../services/strapi'
+import { strapiLogout, strapiRegister, strapiLogin, isStrapiEnabled, setStrapiToken } from '../services/strapi'
 import { generateId } from '../services/storage'
 import { authClient } from '../auth'
 import { dispatchMcKenzieRegistrationEmails, resendMcKenzieRegistrationEmails } from '../services/emailService'
@@ -157,6 +157,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             set({ user: matched, users: updatedUsers })
           }
         } catch {
+          // Clear any stale token from a previous user session
+          setStrapiToken(null)
           // If login fails (user registered in Neon Auth but missing in Strapi), auto-register into Strapi
           try {
             await strapiRegister({
@@ -295,10 +297,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         : [...allUsers, updatedUser]
 
       saveUsers(updatedUsers)
-      set({
-        users: updatedUsers,
-        ...(get().user?.email.toLowerCase() === email.toLowerCase() ? { user: updatedUser } : {}),
-      })
+      const isSignedInUser = Boolean(get().user && sameEmail(get().user!.email, email))
+      if (isSignedInUser) {
+        // Persist the new token on the session so it survives a reload
+        setCurrentUser(updatedUser)
+      }
+      set({ users: updatedUsers, ...(isSignedInUser ? { user: updatedUser } : {}) })
 
       await resendMcKenzieRegistrationEmails({
         name: updatedUser.name,
@@ -349,9 +353,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   verifyUser: (token: string) => {
     const result = verifyUserToken(token)
-    if (result.success && result.user) {
-      const allUsers = listUsers()
-      set({ users: allUsers, user: result.user })
+    if (result.success) {
+      // Only refresh the existing session: a verification link must never sign anyone in.
+      get().refreshUsers()
     }
     return result
   },

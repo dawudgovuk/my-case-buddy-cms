@@ -1,4 +1,4 @@
-import type { UserRole } from '../types/domain'
+import type { User, UserRole } from '../types/domain'
 import { USER_ROLES } from './caseConstants'
 
 /**
@@ -60,6 +60,14 @@ export function getPostAuthRoute(role: UserRole | undefined): '/cases' | '/profe
   return role === 'LIP' ? '/cases' : '/professional-dashboard'
 }
 
+/** i18n key of each role's display name. */
+export const ROLE_LABEL_KEYS: Record<UserRole, string> = {
+  LIP: 'roles.lip',
+  McKenzieFriend: 'roles.mckenzieFriend',
+  Solicitor: 'roles.solicitor',
+  Barrister: 'roles.barrister',
+}
+
 /**
  * Human-readable role label used in registration confirmation copy.
  */
@@ -67,12 +75,18 @@ export function getRoleDisplayName(role: UserRole): string {
   return role === 'McKenzieFriend' ? 'McKenzie Friend' : role === 'LIP' ? 'Litigant in Person' : role
 }
 
+/** Where newly registered (unverified) users wait until they confirm their email. */
+export const WELCOME_ROUTE = '/welcome'
+
+/**
+ * Where a user should land: sign-in when signed out, the welcome / verify-email page
+ * until their email is verified, then their dashboard.
+ */
+export function getLandingRoute(user: Pick<User, 'role' | 'isVerified'> | null | undefined): string {
+  if (!user) return '/login'
+  if (!user.isVerified) return WELCOME_ROUTE
+  return getPostAuthRoute(user.role)
+}
+
 /** Login page mode: existing-user sign in vs. new account sign up. */
 export type AuthMode = 'signin' | 'signup'
-
-/** Details captured when a registration requires email verification. */
-export interface PendingVerification {
-  email: string
-  token: string
-  name: string
-}

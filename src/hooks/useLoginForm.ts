@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { toast } from '../store/toastStore'
 import type { UserRole } from '../types/domain'
-import { MIN_PASSWORD_LENGTH, getPostAuthRoute } from '../utils/authConstants'
-import type { AuthMode, PendingVerification } from '../utils/authConstants'
+import { MIN_PASSWORD_LENGTH, WELCOME_ROUTE, getLandingRoute } from '../utils/authConstants'
+import type { AuthMode } from '../utils/authConstants'
 
 /** Editable values of the combined sign-in / sign-up form. */
 export interface LoginFormValues {
@@ -28,27 +28,24 @@ const INITIAL_VALUES: LoginFormValues = {
 
 /**
  * State and submit logic for the Login page (Neon Managed Better Auth sign-in / sign-up),
- * including redirect of already-authenticated users and the pending-verification state.
+ * including redirect of already-authenticated users. New accounts continue to the welcome page.
  */
 export function useLoginForm() {
   const navigate = useNavigate()
-  const { user, loginWithNeon, registerWithNeon, resendRegistrationEmails } = useAuthStore()
+  const { user, loginWithNeon, registerWithNeon } = useAuthStore()
 
   const [authMode, setAuthMode] = useState<AuthMode>('signin')
   const [values, setValues] = useState<LoginFormValues>(INITIAL_VALUES)
   const [showPassword, setShowPassword] = useState(false)
-  const [registeredPendingVerification, setRegisteredPendingVerification] = useState<
-    (PendingVerification & { role: UserRole }) | null
-  >(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
   useEffect(() => {
-    if (user && !registeredPendingVerification) {
-      navigate(getPostAuthRoute(user.role), { replace: true })
+    if (user) {
+      navigate(getLandingRoute(user), { replace: true })
     }
-  }, [user, navigate, registeredPendingVerification])
+  }, [user, navigate])
 
   function setField<K extends keyof LoginFormValues>(key: K, value: LoginFormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }))
@@ -79,7 +76,7 @@ export function useLoginForm() {
     const welcomeName = authedUser?.name || email.split('@')[0]
     setSuccessMsg('Signed in successfully!')
     toast.success(`Welcome back, ${welcomeName}!`, 'Signed In')
-    navigate(getPostAuthRoute(authedUser?.role), { replace: true })
+    navigate(getLandingRoute(authedUser), { replace: true })
   }
 
   async function handleSignUp() {
@@ -107,24 +104,8 @@ export function useLoginForm() {
       return
     }
 
-    if (result.user.verificationToken) {
-      toast.success(
-        `Account created! Verification instructions sent to ${result.user.email}.`,
-        'Account Created'
-      )
-      setRegisteredPendingVerification({
-        email: result.user.email,
-        token: result.user.verificationToken,
-        name: result.user.name,
-        role: selectedRole,
-      })
-      setLoading(false)
-      return
-    }
-
-    setSuccessMsg('Account created successfully!')
-    toast.success(`Welcome to My Case Buddy, ${result.user.name}!`, 'Account Created')
-    navigate(getPostAuthRoute(result.user.role), { replace: true })
+    toast.success(`Account created! We sent a verification link to ${result.user.email}.`, 'Account Created')
+    navigate(result.user.isVerified ? getLandingRoute(result.user) : WELCOME_ROUTE, { replace: true })
   }
 
   async function handleAuthSubmit(e: FormEvent) {
@@ -148,12 +129,6 @@ export function useLoginForm() {
     }
   }
 
-  /** Leave the pending-verification card and return to the sign-in form. */
-  function returnToSignIn() {
-    setRegisteredPendingVerification(null)
-    setAuthMode('signin')
-  }
-
   function toggleShowPassword() {
     setShowPassword(!showPassword)
   }
@@ -170,9 +145,6 @@ export function useLoginForm() {
     setError,
     successMsg,
     setSuccessMsg,
-    registeredPendingVerification,
-    returnToSignIn,
-    resendRegistrationEmails,
     handleAuthSubmit,
     navigate,
   }

@@ -162,6 +162,14 @@ export interface CaseMember {
   invitedBy?: string; // userId
 }
 
+export interface InviteCaseSummary {
+  caseNumber?: string;
+  title?: string;
+  court?: string;
+  caseType?: string;
+  currentStage?: string;
+}
+
 export interface CaseInvite {
   id: string;
   caseId: string;
@@ -172,6 +180,7 @@ export interface CaseInvite {
   expiresAt?: string; // ISO date
   usedAt?: string; // ISO date
   usedBy?: string; // userId
+  caseSummary?: InviteCaseSummary;
 }
 
 export interface DocumentDeadline {

@@ -2,7 +2,6 @@ import { Container, Card, Alert, Button } from 'react-bootstrap'
 import { useTranslation } from '../hooks/useTranslation'
 import { useLoginForm } from '../hooks/useLoginForm'
 import RoleRegistrationLinks from '../components/auth/RoleRegistrationLinks'
-import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
 import AuthHero from '../components/auth/AuthHero'
 import AuthModeToggle from '../components/auth/AuthModeToggle'
 import LoginForm from '../components/auth/LoginForm'
@@ -21,28 +20,9 @@ export default function Login() {
     setError,
     successMsg,
     setSuccessMsg,
-    registeredPendingVerification,
-    returnToSignIn,
-    resendRegistrationEmails,
     handleAuthSubmit,
     navigate,
   } = useLoginForm()
-
-  if (registeredPendingVerification) {
-    return (
-      <RegistrationPendingCard
-        name={registeredPendingVerification.name}
-        email={registeredPendingVerification.email}
-        token={registeredPendingVerification.token}
-        role={registeredPendingVerification.role}
-        onVerifyNow={(token) => navigate(`/verify-email/${token}`)}
-        onReturnToLogin={returnToSignIn}
-        onResendEmails={async () => {
-          await resendRegistrationEmails(registeredPendingVerification.email)
-        }}
-      />
-    )
-  }
 
   const isSignIn = authMode === 'signin'
 

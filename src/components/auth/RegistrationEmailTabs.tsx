@@ -1,7 +1,7 @@
 import { Nav, Badge } from 'react-bootstrap'
 import type { BadgeProps } from 'react-bootstrap'
 import { useTranslation } from '../../hooks/useTranslation'
-import type { RegistrationEmailTab } from '../../hooks/useRegistrationPending'
+import type { RegistrationEmailTab } from '../../hooks/useRegistrationEmailPreview'
 
 export interface RegistrationEmailTabsProps {
   activeTab: RegistrationEmailTab

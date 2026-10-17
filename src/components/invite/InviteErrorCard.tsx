@@ -3,6 +3,7 @@ import { FaExclamationTriangle } from 'react-icons/fa'
 
 export interface InviteErrorCardProps {
   error: string
+  isLoggedIn?: boolean
   onSignIn: () => void
   onGoToDashboard: () => void
 }
@@ -10,7 +11,7 @@ export interface InviteErrorCardProps {
 /**
  * Auth-shell card explaining why an invitation cannot be opened.
  */
-export default function InviteErrorCard({ error, onSignIn, onGoToDashboard }: InviteErrorCardProps) {
+export default function InviteErrorCard({ error, isLoggedIn = false, onSignIn, onGoToDashboard }: InviteErrorCardProps) {
   return (
     <Container className="auth-shell">
       <div className="auth-panel">
@@ -19,20 +20,34 @@ export default function InviteErrorCard({ error, onSignIn, onGoToDashboard }: In
             <div className="auth-hero-icon">
               <FaExclamationTriangle size={22} />
             </div>
-            <h1 className="h3 fw-bold mb-1">This invitation can’t be opened</h1>
-            <p>Ask the person who invited you to send a new link.</p>
+            <h1 className="h3 fw-bold mb-1">
+              {error.toLowerCase().includes('already') ? 'Invitation Already Processed' : 'This invitation can’t be opened'}
+            </h1>
+            <p>
+              {error.toLowerCase().includes('already')
+                ? 'This support invite has already been accepted.'
+                : 'Ask the person who invited you to send a new link.'}
+            </p>
           </div>
           <Card.Body className="p-4">
-            <Alert variant="danger" className="small mb-4">
+            <Alert variant={error.toLowerCase().includes('already') ? 'info' : 'danger'} className="small mb-4">
               {error}
             </Alert>
             <div className="d-grid d-sm-flex gap-2">
-              <Button variant="primary" className="flex-fill" onClick={onSignIn}>
-                Sign in
-              </Button>
-              <Button variant="outline-secondary" className="flex-fill" onClick={onGoToDashboard}>
-                Go to dashboard
-              </Button>
+              {isLoggedIn ? (
+                <Button variant="primary" className="flex-fill" onClick={onGoToDashboard}>
+                  Go to dashboard
+                </Button>
+              ) : (
+                <>
+                  <Button variant="primary" className="flex-fill" onClick={onSignIn}>
+                    Sign in
+                  </Button>
+                  <Button variant="outline-secondary" className="flex-fill" onClick={onGoToDashboard}>
+                    Go to dashboard
+                  </Button>
+                </>
+              )}
             </div>
           </Card.Body>
         </Card>

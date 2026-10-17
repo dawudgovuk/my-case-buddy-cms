@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Container, Card, Button, Alert, Spinner } from 'react-bootstrap'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
@@ -12,18 +12,23 @@ import {
   FaShieldAlt,
 } from 'react-icons/fa'
 import { toast } from '../store/toastStore'
+import { getLandingRoute } from '../utils/authConstants'
 
 export default function VerifyEmail() {
   const { token } = useParams<{ token: string }>()
   const navigate = useNavigate()
-  const { verifyUser } = useAuthStore()
+  const { verifyUser, user: signedInUser } = useAuthStore()
   const { t } = useTranslation()
 
   const [loading, setLoading] = useState(true)
   const [verifiedUser, setVerifiedUser] = useState<User | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  // Each link is processed once (StrictMode runs effects twice in development)
+  const handledToken = useRef<string | null>(null)
 
   useEffect(() => {
+    if (token && handledToken.current === token) return
+    handledToken.current = token ?? null
     if (!token) {
       const err = t('verifyEmail.missingToken')
       setErrorMessage(err)
@@ -168,9 +173,15 @@ export default function VerifyEmail() {
                   variant="primary"
                   size="lg"
                   className="d-flex align-items-center justify-content-center gap-2 fw-semibold shadow-xs"
-                  onClick={() => navigate(isLIP ? '/cases' : '/professional-dashboard')}
+                  onClick={() => navigate(getLandingRoute(signedInUser), { replace: true })}
                 >
-                  <span>{isLIP ? 'Go to My Cases' : `Go to ${roleDisplay} Dashboard`}</span>
+                  <span>
+                    {!signedInUser
+                      ? t('verifyEmail.returnToSignIn')
+                      : isLIP
+                        ? 'Go to My Cases'
+                        : `Go to ${roleDisplay} Dashboard`}
+                  </span>
                   <FaArrowRight />
                 </Button>
               </div>

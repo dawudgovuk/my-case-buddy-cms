@@ -1,4 +1,4 @@
-import { getStrapiApiUrl, getStrapiToken } from './strapiConfig';
+import { getStrapiApiUrl, getStrapiToken, setStrapiToken } from './strapiConfig';
 import { getCurrentUser } from '../auth';
 
 export interface StrapiErrorDetail {
@@ -31,6 +31,9 @@ async function handleResponse<T>(response: Response): Promise<T> {
   const payload = isJson ? await response.json() : null;
 
   if (!response.ok) {
+    if (response.status === 401) {
+      setStrapiToken(null);
+    }
     const errorInfo = (payload as { error?: StrapiErrorDetail })?.error;
     const message = errorInfo?.message || `HTTP ${response.status}: ${response.statusText}`;
     throw new StrapiApiError(message, response.status, errorInfo);
@@ -65,11 +68,24 @@ function buildUrl(endpoint: string, searchParams?: Record<string, string>): stri
 
 /** Single request pipeline used by every verb helper below. */
 async function strapiRequest<T>(method: HttpMethod, endpoint: string, { body, searchParams }: RequestOptions = {}): Promise<T> {
-  const response = await fetch(buildUrl(endpoint, searchParams), {
+  const token = getStrapiToken();
+  const url = buildUrl(endpoint, searchParams);
+  let response = await fetch(url, {
     method,
     headers: buildHeaders(),
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
+
+  // If unauthorized due to a stale or invalid Strapi JWT, clear it and retry once with session/email headers
+  if (response.status === 401 && token) {
+    setStrapiToken(null);
+    response = await fetch(url, {
+      method,
+      headers: buildHeaders(),
+      body: body !== undefined ? JSON.stringify(body) : undefined,
+    });
+  }
+
   return handleResponse<T>(response);
 }
 

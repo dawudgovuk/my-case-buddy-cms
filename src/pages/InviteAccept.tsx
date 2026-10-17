@@ -21,6 +21,7 @@ export default function InviteAccept() {
     return (
       <InviteErrorCard
         error={error}
+        isLoggedIn={Boolean(user)}
         onSignIn={() => navigate('/login')}
         onGoToDashboard={() => navigate('/professional-dashboard')}
       />

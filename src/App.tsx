@@ -12,6 +12,9 @@ import LIPDashboard from './pages/LIPDashboard'
 import ProfessionalDashboard from './pages/ProfessionalDashboard'
 import CaseDetails from './pages/CaseDetails'
 import VerifyEmail from './pages/VerifyEmail'
+import Welcome from './pages/Welcome'
+import RequireVerified from './components/routing/RequireVerified'
+import { getLandingRoute } from './utils/authConstants'
 import PeerDirectory from './pages/PeerDirectory'
 import ComponentShowcase from './pages/ComponentShowcase'
 import AppHeader from './components/common/AppHeader'
@@ -29,6 +32,7 @@ function Shell() {
   const { user, initNeonAuth, isLoadingSession } = useAuthStore()
   const { isStrapiMode, syncWithStrapi } = useCasesStore()
   const { t } = useTranslation()
+  const isLip = user?.role === 'LIP'
 
   useEffect(() => {
     void initNeonAuth()
@@ -68,67 +72,37 @@ function Shell() {
           <Route path="/login" element={<Login />} />
           <Route path="/register/:role" element={<Register />} />
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
-          <Route path="/peer-directory" element={user ? <PeerDirectory /> : <Navigate to="/login" replace />} />
+          <Route path="/welcome" element={<Welcome />} />
+          <Route path="/peer-directory" element={<RequireVerified><PeerDirectory /></RequireVerified>} />
           <Route path="/invite/:token" element={<InviteAccept />} />
           <Route
             path="/dashboard"
             element={
-              user ? (
-                user.role === 'LIP' ? (
-                  <LIPDashboard />
-                ) : (
-                  <Navigate to="/professional-dashboard" replace />
-                )
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <RequireVerified>
+                {isLip ? <LIPDashboard /> : <Navigate to="/professional-dashboard" replace />}
+              </RequireVerified>
             }
           />
           <Route
             path="/professional-dashboard"
             element={
-              user ? (
-                user.role !== 'LIP' ? (
-                  <ProfessionalDashboard />
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <RequireVerified>
+                {isLip ? <Navigate to="/dashboard" replace /> : <ProfessionalDashboard />}
+              </RequireVerified>
             }
           />
           <Route
             path="/cases"
             element={
-              user ? (
-                user.role === 'LIP' ? (
-                  <CasesList />
-                ) : (
-                  <Navigate to="/professional-dashboard" replace />
-                )
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <RequireVerified>
+                {isLip ? <CasesList /> : <Navigate to="/professional-dashboard" replace />}
+              </RequireVerified>
             }
           />
-          <Route
-            path="/"
-            element={
-              user ? (
-                user.role === 'LIP' ? (
-                  <Navigate to="/cases" replace />
-                ) : (
-                  <Navigate to="/professional-dashboard" replace />
-                )
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route path="/cases/new" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
-          <Route path="/cases/:caseId" element={user ? <CaseDetails /> : <Navigate to="/login" replace />} />
-          <Route path="/cases/:caseId/edit" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
+          <Route path="/" element={<Navigate to={getLandingRoute(user)} replace />} />
+          <Route path="/cases/new" element={<RequireVerified><CaseForm /></RequireVerified>} />
+          <Route path="/cases/:caseId" element={<RequireVerified><CaseDetails /></RequireVerified>} />
+          <Route path="/cases/:caseId/edit" element={<RequireVerified><CaseForm /></RequireVerified>} />
           <Route path="/components" element={<ComponentShowcase />} />
           <Route
             path="*"

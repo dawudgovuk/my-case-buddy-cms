@@ -18,6 +18,7 @@ import {
   FaExternalLinkAlt,
 } from 'react-icons/fa'
 import type { UserRole } from '../../types/domain'
+import { WELCOME_ROUTE } from '../../utils/authConstants'
 
 export interface AppHeaderProps {
   className?: string
@@ -57,6 +58,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
 
   const getHomeRoute = () => {
     if (!user) return '/login'
+    if (!user.isVerified) return WELCOME_ROUTE
     return user.role === 'LIP' ? '/dashboard' : '/professional-dashboard'
   }
 
@@ -96,10 +98,13 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
           <Nav className="ms-auto align-items-stretch align-items-xl-center gap-1 my-2 my-xl-0">
             {user ? (
               <>
+                {/* App navigation is available once the email is verified */}
+                {user.isVerified && (
+                  <>
                 {/* Dashboard Nav Link */}
                 <Nav.Link
                   active={isActive(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}
-                  onClick={() => handleNavigate(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}
+                  onClick={() => handleNavigate(getHomeRoute())}
                   className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
                 >
                   <FaHome size={15} />
@@ -159,7 +164,8 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                   <FaPuzzlePiece size={14} className="text-muted" />
                   <span>{t('common.components')}</span>
                 </Nav.Link>
-
+                  </>
+                )}
 
                 {/* Responsive Mobile / Desktop Controls (Language + User Profile) */}
                 <div className="d-flex align-items-center justify-content-between gap-2 ms-xl-2 pt-2 pt-xl-0 border-top border-top-xl-0">
@@ -213,7 +219,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                       </div>
 
                       <Dropdown.Item
-                        onClick={() => handleNavigate(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}
+                        onClick={() => handleNavigate(getHomeRoute())}
                         className="d-flex align-items-center gap-2 py-2"
                       >
                         <FaHome className="text-muted" />

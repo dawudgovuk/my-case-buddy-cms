@@ -244,4 +244,27 @@ export interface TranslationSchema {
     alreadyMember: string
     roleMismatch: string
   }
+  welcome: {
+    title: string
+    subtitle: string
+    stepCreated: string
+    stepVerify: string
+    stepDashboard: string
+    checkInboxTitle: string
+    checkInboxBody: string
+    noLinkYetBody: string
+    checkInboxHint: string
+    alreadyVerifiedBtn: string
+    checking: string
+    notVerifiedYet: string
+    verifiedNow: string
+    resendBtn: string
+    sendBtn: string
+    sending: string
+    resent: string
+    sendFailed: string
+    useDifferentAccount: string
+    showEmails: string
+    hideEmails: string
+  }
 }
