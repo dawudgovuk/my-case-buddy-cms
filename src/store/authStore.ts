@@ -151,7 +151,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Synchronize session token with Strapi if available
       if (isStrapiEnabled()) {
         try {
-          await strapiLogin(email.trim(), password)
+          const strapiAuth = await strapiLogin(email.trim(), password)
+          if (strapiAuth?.user?.role) {
+            matched = {
+              ...matched,
+              role: strapiAuth.user.role,
+              isVerified: strapiAuth.user.isVerified ?? matched.isVerified,
+            }
+            const currentUsers = get().users
+            const updatedUsers = currentUsers.map((u) =>
+              u.id === matched!.id || u.email.toLowerCase() === matched!.email.toLowerCase() ? matched! : u
+            )
+            saveUsers(updatedUsers)
+            setCurrentUser(matched)
+            set({ user: matched, users: updatedUsers })
+          }
         } catch {
           // If login fails (user registered in Neon Auth but missing in Strapi), auto-register into Strapi
           try {
