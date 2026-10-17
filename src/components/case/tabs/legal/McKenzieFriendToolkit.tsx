@@ -13,6 +13,7 @@ import type { FamilyCase } from '../../../../types/domain'
 import { useCasesStore } from '../../../../store/casesStore'
 import { useAuthStore } from '../../../../store/authStore'
 import { generateId } from '../../../../services/storage'
+import { toast } from '../../../../store/toastStore'
 
 export interface McKenzieFriendToolkitProps {
   caseData: FamilyCase
@@ -79,6 +80,7 @@ Signature: __________________________ (${mckenzieName})`
   const handleCopyDeclaration = () => {
     navigator.clipboard.writeText(generateDeclarationText())
     setCopiedNotice(true)
+    toast.success('PD 27A Lay Supporter declaration copied to clipboard.', 'Declaration Copied')
     setTimeout(() => setCopiedNotice(false), 2500)
   }
 
@@ -98,6 +100,7 @@ Signature: __________________________ (${mckenzieName})`
     }
     store.addOrUpdate(updated)
     setNoticeSaved(true)
+    toast.success('PD 27A Declaration filed into case strategy notes.', 'Declaration Saved')
     setTimeout(() => setNoticeSaved(false), 3000)
   }
 
@@ -106,6 +109,7 @@ Signature: __________________________ (${mckenzieName})`
     const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     const entry = `[${timestamp}] ${speakerRole}: ${liveNoteText.trim()}`
     setHearingNotesLog((prev) => [...prev, entry])
+    toast.info(`Logged remark for ${speakerRole}.`, 'Remark Logged')
     setLiveNoteText('')
   }
 
@@ -130,6 +134,7 @@ Signature: __________________________ (${mckenzieName})`
     store.addOrUpdate(updated)
     setHearingNotesLog([])
     setHearingNoteSavedSuccess(true)
+    toast.success(`Contemporaneous hearing log committed to case notes.`, 'Hearing Notes Saved')
     setTimeout(() => setHearingNoteSavedSuccess(false), 3500)
   }
 
@@ -158,6 +163,7 @@ Signature: __________________________ (${mckenzieName})`
     store.addOrUpdate(updated)
     setReviewPostedSuccess(true)
     setReviewComments('')
+    toast.success('Position statement compliance review saved to case notes.', 'Review Saved')
     setTimeout(() => setReviewPostedSuccess(false), 3500)
   }
 

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Card, Form, Row, Col, Button } from 'react-bootstrap'
 import { useCasesStore } from '../../../store/casesStore'
 import { generateId } from '../../../services/storage'
+import { toast } from '../../../store/toastStore'
 import type { FamilyCase, Hearing } from '../../../types/domain'
 import HearingCard from '../HearingCard'
 
@@ -47,6 +48,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
       ],
     }
     store.addOrUpdate(updated)
+    toast.success(`Scheduled ${type} hearing on ${date}.`, 'Hearing Scheduled')
     setLocation('')
     setJudge('')
     setNotes('')
@@ -143,6 +145,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
               hearings: current.hearings.map((hrg) => (hrg.id === h.id ? updatedHearing : hrg)),
             }
             store.addOrUpdate(updated)
+            toast.success(`Hearing details updated (${updatedHearing.type} on ${updatedHearing.date}).`, 'Hearing Updated')
           }}
           onDelete={() => {
             const updated: FamilyCase = {
@@ -150,6 +153,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
               hearings: current.hearings.filter((hrg) => hrg.id !== h.id),
             }
             store.addOrUpdate(updated)
+            toast.info(`Hearing on ${h.date} removed from schedule.`, 'Hearing Removed')
           }}
         />
       ))}

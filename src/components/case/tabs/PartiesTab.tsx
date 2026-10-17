@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card, Form, Row, Col, Button } from 'react-bootstrap'
 import { useCasesStore } from '../../../store/casesStore'
 import { generateId } from '../../../services/storage'
+import { toast } from '../../../store/toastStore'
 import type { FamilyCase, Party } from '../../../types/domain'
 import PartyCard from '../PartyCard'
 import { partitionParties } from '../../../utils/partyUtils'
@@ -27,6 +28,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
 
   function addParty() {
     if (!firstName.trim() || !lastName.trim()) return
+    const newName = `${firstName.trim()} ${lastName.trim()}`
     const updated: FamilyCase = {
       ...current,
       parties: [
@@ -45,6 +47,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
       ],
     }
     store.addOrUpdate(updated)
+    toast.success(`Added ${newName} (${role}) to proceedings.`, 'Party Added')
     setFirstName('')
     setLastName('')
     setDateOfBirth('')
@@ -182,6 +185,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
                   parties: current.parties.map((part) => (part.id === p.id ? updatedParty : part)),
                 }
                 store.addOrUpdate(updated)
+                toast.success(`Updated party details for ${updatedParty.firstName} ${updatedParty.lastName}.`, 'Party Updated')
               }}
               onDelete={() => {
                 const updated: FamilyCase = {
@@ -189,6 +193,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
                   parties: current.parties.filter((part) => part.id !== p.id),
                 }
                 store.addOrUpdate(updated)
+                toast.info(`Removed ${p.firstName} ${p.lastName} from proceedings.`, 'Party Removed')
               }}
             />
           ))}
@@ -209,6 +214,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
                   parties: current.parties.map((part) => (part.id === p.id ? updatedParty : part)),
                 }
                 store.addOrUpdate(updated)
+                toast.success(`Updated details for child ${updatedParty.firstName} ${updatedParty.lastName}.`, 'Child Record Updated')
               }}
               onDelete={() => {
                 const updated: FamilyCase = {
@@ -216,6 +222,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
                   parties: current.parties.filter((part) => part.id !== p.id),
                 }
                 store.addOrUpdate(updated)
+                toast.info(`Removed child ${p.firstName} ${p.lastName} from proceedings.`, 'Child Record Removed')
               }}
             />
           ))}

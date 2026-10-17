@@ -13,6 +13,7 @@ import { strapiLogout, strapiRegister, strapiLogin, isStrapiEnabled } from '../s
 import { generateId } from '../services/storage'
 import { authClient } from '../auth'
 import { dispatchMcKenzieRegistrationEmails, resendMcKenzieRegistrationEmails } from '../services/emailService'
+import { toast } from './toastStore'
 
 export interface NeonSessionData {
   id: string
@@ -337,6 +338,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
     setCurrentUser(null)
     set({ user: null, neonUser: null, neonSession: null })
+    toast.info('You have been signed out securely.', 'Signed Out')
   },
 
   refreshUsers: () => {

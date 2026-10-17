@@ -16,6 +16,7 @@ import {
   FaMagic,
 } from 'react-icons/fa'
 import { useTranslation } from '../../hooks/useTranslation'
+import { toast } from '../../store/toastStore'
 
 export interface PeerSupportRequestModalProps {
   show: boolean
@@ -80,6 +81,7 @@ export default function PeerSupportRequestModal({
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to send peer support request'
       setModalError(msg)
+      toast.error(msg, 'Request Failed')
     } finally {
       setInternalSubmitting(false)
     }

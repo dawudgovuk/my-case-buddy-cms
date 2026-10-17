@@ -6,6 +6,7 @@ import { useCasesStore } from '../../store/casesStore';
 import { useAuthStore } from '../../store/authStore';
 import { createDeadline, generateId } from '../../services/storage';
 import { createStrapiDeadline } from '../../services/strapi';
+import { toast } from '../../store/toastStore';
 import type { DocumentDeadline } from '../../types/domain';
 
 export interface AddDeadlineModalProps {
@@ -49,7 +50,9 @@ export default function AddDeadlineModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !deadlineDate) {
-      setError('Please provide both a title and a deadline date.');
+      const err = 'Please provide both a title and a deadline date.';
+      setError(err);
+      toast.warning(err, 'Missing Information');
       return;
     }
 
@@ -92,6 +95,7 @@ export default function AddDeadlineModal({
     }
 
     setIsSubmitting(false);
+    toast.success(`Filing deadline "${newDeadline.title}" scheduled for ${newDeadline.deadlineDate}.`, 'Deadline Scheduled');
     onDeadlineAdded?.(newDeadline);
     setTitle('');
     setDescription('');

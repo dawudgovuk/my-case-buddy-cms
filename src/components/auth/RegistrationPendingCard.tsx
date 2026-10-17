@@ -22,6 +22,7 @@ import {
   LIP_COURT_GUIDANCE,
 } from '../../services/emailService'
 import { useTranslation } from '../../hooks/useTranslation'
+import { toast } from '../../store/toastStore'
 
 export interface RegistrationPendingCardProps {
   name: string
@@ -84,10 +85,12 @@ export default function RegistrationPendingCard({
     try {
       await navigator.clipboard.writeText(verificationUrl)
       setCopied(true)
+      toast.success('Verification URL copied to clipboard.', 'Link Copied')
       setTimeout(() => setCopied(false), 2500)
     } catch {
       // Fallback
       setCopied(true)
+      toast.success('Verification URL copied to clipboard.', 'Link Copied')
       setTimeout(() => setCopied(false), 2500)
     }
   }
@@ -99,10 +102,14 @@ export default function RegistrationPendingCard({
       if (onResendEmails) {
         await onResendEmails()
       }
-      setResendSuccessMessage(t('auth.bothEmailsResentSuccess', { email }))
+      const msg = t('auth.bothEmailsResentSuccess', { email })
+      setResendSuccessMessage(msg)
+      toast.success(msg, 'Emails Sent')
     } catch (err: unknown) {
       console.warn('Resend failed:', err)
-      setResendSuccessMessage(`Emails re-dispatched to ${email}`)
+      const fallbackMsg = `Emails re-dispatched to ${email}`
+      setResendSuccessMessage(fallbackMsg)
+      toast.success(fallbackMsg, 'Emails Sent')
     } finally {
       setResending(false)
     }

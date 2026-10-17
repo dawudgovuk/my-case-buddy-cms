@@ -12,6 +12,7 @@ import CaseQuickPresets from '../components/forms/CaseQuickPresets'
 import CaseReviewSummary from '../components/forms/CaseReviewSummary'
 import { FaSave, FaArrowRight, FaArrowLeft, FaTimes, FaExclamationTriangle } from 'react-icons/fa'
 import { useTranslation } from '../hooks/useTranslation'
+import { toast } from '../store/toastStore'
 
 export default function CaseForm() {
   const navigate = useNavigate()
@@ -66,6 +67,7 @@ export default function CaseForm() {
       caseType: preset.caseType,
       court: preset.court,
     }))
+    toast.info(`Applied template: "${preset.title}"`, 'Preset Selected')
   }
 
   function handleAddParty(newParty: Party) {
@@ -73,6 +75,7 @@ export default function CaseForm() {
       ...f,
       parties: [...f.parties, newParty],
     }))
+    toast.success(`Added ${newParty.firstName} ${newParty.lastName} (${newParty.role}) to case.`, 'Party Added')
   }
 
   function handleUpdateParty(updatedParty: Party) {
@@ -80,21 +83,30 @@ export default function CaseForm() {
       ...f,
       parties: f.parties.map((p) => (p.id === updatedParty.id ? updatedParty : p)),
     }))
+    toast.success(`Updated party ${updatedParty.firstName} ${updatedParty.lastName}.`, 'Party Updated')
   }
 
   function handleRemoveParty(partyId: string) {
+    const p = form.parties.find((item) => item.id === partyId)
     setForm((f) => ({
       ...f,
       parties: f.parties.filter((p) => p.id !== partyId),
     }))
+    toast.info(`Removed ${p ? `${p.firstName} ${p.lastName}` : 'party'} from form.`, 'Party Removed')
   }
 
   async function handleSubmit() {
     if (isSubmitting) return
+
+    const trimmedTitle = form.title.trim()
+    if (!trimmedTitle) {
+      toast.warning('Please enter a case title before saving.', 'Title Required')
+      return
+    }
+
     setIsSubmitting(true)
     setErrorMessage(null)
 
-    const trimmedTitle = form.title.trim()
     const trimmedJudge = form.allocatedJudge?.trim() || undefined
     const id = existing?.id || form.id || generateId('CASE')
     const calculatedChildren = form.parties.filter((p) => p.role === 'Child').length
@@ -114,6 +126,11 @@ export default function CaseForm() {
 
     try {
       const savedCase = await addOrUpdate(payload)
+      if (existing) {
+        toast.success(`Changes to "${savedCase.title || trimmedTitle}" saved successfully.`, 'Case Updated')
+      } else {
+        toast.success(`Case "${savedCase.title || trimmedTitle}" created successfully.`, 'Case Created')
+      }
       navigate(`/cases/${savedCase.id || id}`)
     } catch (err: unknown) {
       const message =
@@ -121,6 +138,7 @@ export default function CaseForm() {
           ? err.message
           : 'Failed to save case. Please check your network connection and try again.'
       setErrorMessage(message)
+      toast.error(message, 'Failed to Save Case')
       setIsSubmitting(false)
     }
   }

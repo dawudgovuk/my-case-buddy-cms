@@ -11,6 +11,7 @@ import DashboardHeader from '../components/dashboard/DashboardHeader'
 import DashboardTableView from '../components/dashboard/DashboardTableView'
 import DashboardFilterBar from '../components/dashboard/DashboardFilterBar'
 import { FaFolderPlus, FaEnvelope, FaCheckCircle } from 'react-icons/fa'
+import { toast } from '../store/toastStore'
 
 type DashboardViewMode = 'grid' | 'table'
 
@@ -140,9 +141,13 @@ export default function LIPDashboard() {
                 try {
                   const res = await resendRegistrationEmails(user.email)
                   if (res.success) {
-                    setEmailNotice('Verification and welcome emails re-dispatched to ' + user.email)
+                    const notice = 'Verification and welcome emails re-dispatched to ' + user.email
+                    setEmailNotice(notice)
+                    toast.success(notice, 'Emails Dispatched')
                   } else {
-                    setEmailNotice('Notice: ' + (res.error || 'Failed to dispatch'))
+                    const notice = 'Notice: ' + (res.error || 'Failed to dispatch')
+                    setEmailNotice(notice)
+                    toast.error(notice, 'Dispatch Failed')
                   }
                 } finally {
                   setResendingEmail(false)

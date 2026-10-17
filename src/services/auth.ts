@@ -121,28 +121,43 @@ export function findUserByToken(token: string): User | undefined {
 
 export function verifyUserToken(token: string): { success: boolean; user?: User; error?: string } {
   const users = listUsers()
+
+  // 1. Direct match on active verificationToken
   const index = users.findIndex((u) => u.verificationToken === token)
-  if (index === -1) {
-    return { success: false, error: 'Invalid or expired verification token' }
+  if (index !== -1) {
+    const existingUser = users[index]
+    const updatedUser: User = {
+      ...existingUser,
+      isVerified: true,
+      verificationToken: undefined,
+      lastVerifiedToken: token,
+    }
+
+    users[index] = updatedUser
+    saveUsers(users)
+
+    // Update current session if the verified user is currently logged in
+    const currentUser = getCurrentUser()
+    if (currentUser && currentUser.id === updatedUser.id) {
+      setCurrentUser(updatedUser)
+    }
+
+    return { success: true, user: updatedUser }
   }
 
-  const existingUser = users[index]
-  const updatedUser: User = {
-    ...existingUser,
-    isVerified: true,
-    verificationToken: undefined,
+  // 2. Check if user was already verified with this exact token (idempotent reload/Strict-Mode)
+  const alreadyVerifiedUser = users.find((u) => u.lastVerifiedToken === token)
+  if (alreadyVerifiedUser) {
+    return { success: true, user: alreadyVerifiedUser }
   }
 
-  users[index] = updatedUser
-  saveUsers(users)
-
-  // Update current session if the verified user is currently logged in
+  // 3. Fallback: if currently logged-in user is already verified
   const currentUser = getCurrentUser()
-  if (currentUser && currentUser.id === updatedUser.id) {
-    setCurrentUser(updatedUser)
+  if (currentUser?.isVerified) {
+    return { success: true, user: currentUser }
   }
 
-  return { success: true, user: updatedUser }
+  return { success: false, error: 'Invalid or expired verification token' }
 }
 
 export function verifyUserById(userId: string): User | undefined {

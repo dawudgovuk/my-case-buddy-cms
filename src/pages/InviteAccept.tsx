@@ -9,6 +9,7 @@ import type { CaseInvite, FamilyCase } from '../types/domain'
 import { isUserCaseMember } from '../utils/caseMembership'
 import { Card, Button, Alert, Container, Row, Col, Badge, Spinner } from 'react-bootstrap'
 import { FaHandshake, FaBalanceScale, FaCheckCircle, FaShieldAlt, FaGavel, FaArrowRight, FaExclamationTriangle } from 'react-icons/fa'
+import { toast } from '../store/toastStore'
 
 export default function InviteAccept() {
   const navigate = useNavigate()
@@ -97,15 +98,17 @@ export default function InviteAccept() {
 
     // Role mismatch check
     if (user.role !== invite.role) {
-      setError(
-        `Role mismatch: This invitation requires role ${invite.role}, but your account is registered as ${user.role}.`
-      )
+      const err = `Role mismatch: This invitation requires role ${invite.role}, but your account is registered as ${user.role}.`
+      setError(err)
+      toast.error(err, 'Role Mismatch')
       return
     }
 
     // Already member check
     if (caseDetails && isUserCaseMember(caseDetails, user)) {
-      setError('You are already an authorized collaborator on this case.')
+      const msg = 'You are already an authorized collaborator on this case.'
+      setError(msg)
+      toast.info(msg, 'Already Joined')
       return
     }
 
@@ -137,13 +140,16 @@ export default function InviteAccept() {
         })
       }
 
-      setSuccess('Invitation accepted! You are now connected to this case as an authorized peer supporter.')
+      const successMsg = 'Invitation accepted! You are now connected to this case as an authorized peer supporter.'
+      setSuccess(successMsg)
+      toast.success(successMsg, 'Welcome to the Team')
       setTimeout(() => {
         navigate('/professional-dashboard')
       }, 1500)
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to accept invitation. Please try again.'
       setError(msg)
+      toast.error(msg, 'Invitation Failed')
     } finally {
       setIsSubmitting(false)
     }

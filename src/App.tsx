@@ -15,6 +15,7 @@ import VerifyEmail from './pages/VerifyEmail'
 import PeerDirectory from './pages/PeerDirectory'
 import ComponentShowcase from './pages/ComponentShowcase'
 import AppHeader from './components/common/AppHeader'
+import ToastContainer from './components/common/ToastContainer'
 import { useCasesStore } from './store/casesStore'
 import { useTranslation } from './hooks/useTranslation'
 import { FaLifeRing, FaExternalLinkAlt, FaCompass } from 'react-icons/fa'
@@ -60,6 +61,7 @@ function Shell() {
         Skip to main content
       </a>
       <AppHeader />
+      <ToastContainer />
 
       <Container as="main" id="main-content" fluid="xl" className="py-4 py-md-5 px-3 px-md-4 flex-grow-1">
         <Routes>

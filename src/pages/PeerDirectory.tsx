@@ -19,6 +19,7 @@ import {
 import PeerSupporterCard from '../components/directory/PeerSupporterCard'
 import PeerSupportRequestModal from '../components/directory/PeerSupportRequestModal'
 import { isUserCaseMember } from '../utils/caseMembership'
+import { toast } from '../store/toastStore'
 
 export default function PeerDirectory() {
   const { user } = useAuthStore()
@@ -32,15 +33,24 @@ export default function PeerDirectory() {
   const [strapiPros, setStrapiPros] = useState<User[]>([])
   const [isLoadingPros, setIsLoadingPros] = useState<boolean>(false)
 
-  function loadProfessionals() {
+  function loadProfessionals(isUserInitiated = false) {
     setIsLoadingPros(true)
+    if (isUserInitiated) {
+      toast.info('Reloading verified legal professionals directory...', 'Refreshing Directory')
+    }
     fetchStrapiProfessionals()
       .then((pros) => {
         setStrapiPros(pros || [])
+        if (isUserInitiated) {
+          toast.success(`Found ${pros?.length || 0} active legal professionals.`, 'Directory Updated')
+        }
       })
       .catch((err) => {
         console.warn('Could not fetch Strapi professionals:', err)
         setStrapiPros([])
+        if (isUserInitiated) {
+          toast.error('Could not refresh legal professionals directory.', 'Directory Sync Error')
+        }
       })
       .finally(() => {
         setIsLoadingPros(false)
@@ -127,6 +137,7 @@ export default function PeerDirectory() {
   function handleClearFilters() {
     setSearchTerm('')
     setRoleFilter('all')
+    toast.info('Directory search and role filters reset.', 'Filters Reset')
   }
 
   return (
@@ -154,7 +165,7 @@ export default function PeerDirectory() {
           <button
             type="button"
             className="btn btn-sm btn-outline-secondary py-0.5 px-2.5 rounded-pill d-inline-flex align-items-center gap-1.5 small shadow-none"
-            onClick={loadProfessionals}
+            onClick={() => loadProfessionals(true)}
             disabled={isLoadingPros}
             style={{ fontSize: '0.8rem' }}
           >

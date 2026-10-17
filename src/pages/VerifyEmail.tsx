@@ -11,6 +11,7 @@ import {
   FaSignInAlt,
   FaShieldAlt,
 } from 'react-icons/fa'
+import { toast } from '../store/toastStore'
 
 export default function VerifyEmail() {
   const { token } = useParams<{ token: string }>()
@@ -24,7 +25,9 @@ export default function VerifyEmail() {
 
   useEffect(() => {
     if (!token) {
-      setErrorMessage(t('verifyEmail.missingToken'))
+      const err = t('verifyEmail.missingToken')
+      setErrorMessage(err)
+      toast.error(err, 'Missing Token')
       setLoading(false)
       return
     }
@@ -32,8 +35,16 @@ export default function VerifyEmail() {
     const result = verifyUser(token)
     if (result.success && result.user) {
       setVerifiedUser(result.user)
+      setErrorMessage(null)
+      toast.success(
+        `Account for ${result.user.name} has been verified successfully!`,
+        'Account Verified'
+      )
     } else {
-      setErrorMessage(result.error || t('verifyEmail.errorTitle'))
+      setVerifiedUser(null)
+      const err = result.error || t('verifyEmail.errorTitle')
+      setErrorMessage(err)
+      toast.error(err, 'Verification Failed')
     }
     setLoading(false)
   }, [token, verifyUser, t])
@@ -166,7 +177,7 @@ export default function VerifyEmail() {
             </div>
           )}
 
-          {!loading && errorMessage && (
+          {!loading && !verifiedUser && errorMessage && (
             <div>
               <div className="text-danger mb-3">
                 <FaExclamationTriangle size={56} />

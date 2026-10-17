@@ -8,6 +8,7 @@ import { isUserCaseOwner, isUserCaseMember } from '../../utils/caseMembership'
 import { FaEye, FaUserPlus, FaBalanceScale, FaHandshake, FaArrowRight } from 'react-icons/fa'
 import { acceptStrapiPeerSupport } from '../../services/strapi'
 import VerificationGateCard from '../verification/VerificationGateCard'
+import { toast } from '../../store/toastStore'
 
 interface PeerSupportCasesTabProps {
   user: User
@@ -89,10 +90,13 @@ export default function PeerSupportCasesTab({
         })
       }
 
-      setJoinedSuccess(`You have joined "${caseData.title}" (${caseData.caseNumber || caseData.id}) as an assigned peer supporter!`)
+      const successText = `You have joined "${caseData.title}" as an assigned peer supporter!`
+      setJoinedSuccess(successText)
+      toast.success(successText, 'Case Joined')
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to join case as supporter'
       setJoinError(msg)
+      toast.error(msg, 'Join Failed')
     } finally {
       setJoiningId(null)
     }

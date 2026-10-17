@@ -10,6 +10,7 @@ import {
   FaLock,
   FaGavel,
 } from 'react-icons/fa'
+import { toast } from '../../store/toastStore'
 
 export interface VerificationGateCardProps {
   userEmail: string
@@ -40,7 +41,9 @@ export default function VerificationGateCard({
     if (onResendEmail) {
       onResendEmail()
     }
-    setResendStatus(`A fresh verification link has been sent to ${userEmail}`)
+    const msg = `A fresh verification link has been sent to ${userEmail}`
+    setResendStatus(msg)
+    toast.success(msg, 'Verification Link Dispatched')
     setTimeout(() => {
       setResendStatus(null)
     }, 5000)

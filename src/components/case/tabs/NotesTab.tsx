@@ -3,6 +3,7 @@ import { Card, Form, Button } from 'react-bootstrap'
 import { useCasesStore } from '../../../store/casesStore'
 import { useAuthStore } from '../../../store/authStore'
 import { generateId } from '../../../services/storage'
+import { toast } from '../../../store/toastStore'
 import type { FamilyCase } from '../../../types/domain'
 import CaseNoteCard from '../CaseNoteCard'
 
@@ -35,6 +36,7 @@ export default function NotesTab({ caseId }: NotesTabProps) {
       ],
     }
     store.addOrUpdate(updated)
+    toast.success('Case strategy note recorded.', 'Note Saved')
     setText('')
   }
 

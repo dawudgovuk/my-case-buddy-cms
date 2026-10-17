@@ -17,6 +17,7 @@ import ProfessionalFaqModal from '../components/dashboard/ProfessionalFaqModal'
 import TabNav, { type TabItem } from '../components/common/TabNav'
 import { FaHandshake, FaGavel, FaCalendarAlt, FaLock } from 'react-icons/fa'
 import { useTranslation } from '../hooks/useTranslation'
+import { toast } from '../store/toastStore'
 
 type DashboardTab = 'peer' | 'assigned' | 'schedule'
 
@@ -120,6 +121,7 @@ export default function ProfessionalDashboard() {
 
   function handleDeadlineToggle(deadlineId: string, currentStatus: DocumentDeadline['status']) {
     const newStatus = currentStatus === 'submitted' ? 'pending' : 'submitted'
+    const dl = deadlines.find((d) => d.id === deadlineId)
     updateDeadline(deadlineId, {
       status: newStatus,
       submittedAt: newStatus === 'submitted' ? new Date().toISOString() : undefined,
@@ -131,6 +133,12 @@ export default function ProfessionalDashboard() {
           : d
       )
     )
+
+    if (newStatus === 'submitted') {
+      toast.success(`Marked deadline "${dl?.title || 'item'}" as submitted.`, 'Deadline Completed')
+    } else {
+      toast.info(`Reopened deadline "${dl?.title || 'item'}".`, 'Deadline Pending')
+    }
 
     if (isStrapiMode) {
       updateStrapiDeadlineStatus(deadlineId, newStatus).catch(() => {

@@ -8,6 +8,7 @@ import { USER_ROLES } from '../utils/caseConstants'
 import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
 import heartLogo from '../assets/heart-logo.png'
 import { FaEye, FaEyeSlash, FaLock, FaUserPlus } from 'react-icons/fa'
+import { toast } from '../store/toastStore'
 
 const ROLE_TITLES: Record<UserRole, string> = {
   LIP: 'litigant in person',
@@ -65,12 +66,16 @@ export default function Register() {
     setError('')
 
     if (!name.trim() || !email.trim()) {
-      setError(t('auth.nameAndEmailRequired'))
+      const err = t('auth.nameAndEmailRequired')
+      setError(err)
+      toast.warning(err, 'Required Fields')
       return
     }
 
     if (!password || password.length < 8) {
-      setError('Password must be at least 8 characters')
+      const err = 'Password must be at least 8 characters'
+      setError(err)
+      toast.warning(err, 'Password Length')
       return
     }
 
@@ -87,22 +92,31 @@ export default function Register() {
       })
 
       if (!result.success || !result.user) {
-        setError(result.error || 'Registration failed. Please try again.')
+        const err = result.error || 'Registration failed. Please try again.'
+        setError(err)
+        toast.error(err, 'Registration Failed')
         setLoading(false)
         return
       }
 
       if (result.user.verificationToken) {
+        toast.success(
+          `Registration submitted! Verification link dispatched to ${result.user.email}.`,
+          'Check Your Inbox'
+        )
         setRegisteredPendingVerification({
           email: result.user.email,
           token: result.user.verificationToken,
           name: result.user.name,
         })
       } else {
+        toast.success(`Welcome to My Case Buddy, ${result.user.name}!`, 'Account Created')
         navigate(userRole === 'LIP' ? '/cases' : '/professional-dashboard')
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      const msg = err instanceof Error ? err.message : 'An unexpected error occurred'
+      setError(msg)
+      toast.error(msg, 'Registration Error')
     } finally {
       setLoading(false)
     }

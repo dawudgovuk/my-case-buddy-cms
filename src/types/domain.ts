@@ -145,6 +145,7 @@ export interface User {
   registrationNumber?: string; // Professional registration number
   isVerified?: boolean; // Email verification status
   verificationToken?: string; // Token for email verification link
+  lastVerifiedToken?: string; // Last successfully verified token for idempotent verification page loads
   verificationSentAt?: string; // ISO date when verification email was sent
   bio?: string;
   specialisms?: string[];

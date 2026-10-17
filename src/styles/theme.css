@@ -4,6 +4,8 @@
  * page shares one calm, readable look. Presentation only: no layout logic depends on this file.
  */
 
+@import './toast.css';
+
 :root {
   /* Palette */
   --mcb-primary: #2b4acb;

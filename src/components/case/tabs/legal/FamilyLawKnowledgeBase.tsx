@@ -15,6 +15,7 @@ import type { FamilyCase } from '../../../../types/domain'
 import { useCasesStore } from '../../../../store/casesStore'
 import { useAuthStore } from '../../../../store/authStore'
 import { generateId } from '../../../../services/storage'
+import { toast } from '../../../../store/toastStore'
 
 export interface FamilyLawKnowledgeBaseProps {
   caseData: FamilyCase
@@ -29,6 +30,7 @@ export default function FamilyLawKnowledgeBase({ caseData }: FamilyLawKnowledgeB
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text)
     setCopiedId(id)
+    toast.success('Legal authority citation copied to clipboard.', 'Citation Copied')
     setTimeout(() => setCopiedId(null), 2500)
   }
 
@@ -47,7 +49,9 @@ export default function FamilyLawKnowledgeBase({ caseData }: FamilyLawKnowledgeB
       ],
     }
     store.addOrUpdate(updated)
-    setAddedNoteSuccess(`Citation "${citationTitle}" added directly to case notes!`)
+    const successMsg = `Citation "${citationTitle}" added directly to case notes!`
+    setAddedNoteSuccess(successMsg)
+    toast.success(successMsg, 'Citation Saved')
     setTimeout(() => setAddedNoteSuccess(null), 3500)
   }
 

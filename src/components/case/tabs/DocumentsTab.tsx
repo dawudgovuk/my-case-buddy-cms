@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card, Form, Row, Col, Button } from 'react-bootstrap'
 import { useCasesStore } from '../../../store/casesStore'
 import { generateId } from '../../../services/storage'
+import { toast } from '../../../store/toastStore'
 import type { FamilyCase, DocumentRecord } from '../../../types/domain'
 import DocumentCard from '../DocumentCard'
 
@@ -22,13 +23,14 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
 
   function addDocument() {
     if (!title.trim()) return
+    const newDocTitle = title.trim()
     const updated: FamilyCase = {
       ...current,
       documents: [
         ...current.documents,
         {
           id: generateId('DOC'),
-          title: title.trim(),
+          title: newDocTitle,
           type,
           uploadedAt: new Date().toISOString(),
           url: url.trim() || '#',
@@ -37,6 +39,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
       ],
     }
     store.addOrUpdate(updated)
+    toast.success(`Document "${newDocTitle}" (${type}) added to case.`, 'Document Added')
     setTitle('')
     setUrl('')
     setNotes('')
@@ -114,6 +117,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
               documents: current.documents.map((doc) => (doc.id === d.id ? updatedDoc : doc)),
             }
             store.addOrUpdate(updated)
+            toast.success(`Document "${updatedDoc.title}" details updated.`, 'Document Updated')
           }}
           onDelete={() => {
             const updated: FamilyCase = {
@@ -121,6 +125,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
               documents: current.documents.filter((doc) => doc.id !== d.id),
             }
             store.addOrUpdate(updated)
+            toast.info(`Document "${d.title}" removed from case.`, 'Document Removed')
           }}
         />
       ))}

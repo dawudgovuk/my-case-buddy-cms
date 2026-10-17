@@ -12,6 +12,7 @@ import {
   type MigrationResult,
 } from '../../services/strapi/migrationService';
 import { useCasesStore } from '../../store/casesStore';
+import { toast } from '../../store/toastStore';
 
 export interface StrapiSyncModalProps {
   show: boolean;
@@ -26,32 +27,49 @@ export const StrapiSyncModal: React.FC<StrapiSyncModalProps> = ({ show, onHide }
   const [migrationResult, setMigrationResult] = useState<MigrationResult | null>(null);
   const [isMigrating, setIsMigrating] = useState<boolean>(false);
 
-  const testConnection = async () => {
+  const testConnection = async (userInitiated = false) => {
     setIsChecking(true);
+    if (userInitiated) {
+      toast.info('Testing connection to Strapi backend server...', 'Connecting');
+    }
     const result = await checkStrapiHealth();
     setHealth(result);
     setIsChecking(false);
+    if (userInitiated) {
+      if (result.ok) {
+        toast.success(result.message, 'Strapi Online');
+      } else {
+        toast.error(result.message, 'Strapi Offline');
+      }
+    }
   };
 
   useEffect(() => {
     if (show) {
-      void testConnection();
+      void testConnection(false);
     }
   }, [show]);
 
   const handleStartMigration = async () => {
     setIsMigrating(true);
     setMigrationResult(null);
+    toast.info('Initiating migration of local cases to Strapi CMS...', 'Migration Started');
     try {
       const result = await migrateLocalStorageToStrapi((progress) => {
         setMigrationProgress(progress);
       });
       setMigrationResult(result);
+      if (result.success) {
+        toast.success(`Successfully migrated ${result.totalMigrated} cases to Strapi!`, 'Migration Complete');
+      } else {
+        toast.warning(`Migration finished with ${result.failedCount} warnings.`, 'Migration Warning');
+      }
       if (result.success && isStrapiMode) {
         await syncWithStrapi();
       }
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : String(err);
+      toast.error(`Migration error: ${errMsg}`, 'Migration Failed');
       setMigrationResult({
         success: false,
         totalMigrated: 0,
@@ -116,7 +134,7 @@ export const StrapiSyncModal: React.FC<StrapiSyncModalProps> = ({ show, onHide }
           <Button
             variant="outline-primary"
             size="sm"
-            onClick={testConnection}
+            onClick={() => void testConnection(true)}
             disabled={isChecking}
           >
             <FaSync className={isChecking ? 'fa-spin me-1' : 'me-1'} />

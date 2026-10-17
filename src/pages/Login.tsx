@@ -16,6 +16,7 @@ import type { UserRole } from '../types/domain'
 import RoleRegistrationLinks from '../components/auth/RoleRegistrationLinks'
 import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
 import heartLogo from '../assets/heart-logo.png'
+import { toast } from '../store/toastStore'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -67,22 +68,30 @@ export default function Login() {
       if (authMode === 'signin') {
         const result = await loginWithNeon(email, password)
         if (!result.success) {
-          setError(result.error || 'Authentication failed. Please check your credentials.')
+          const err = result.error || 'Authentication failed. Please check your credentials.'
+          setError(err)
+          toast.error(err, 'Sign In Failed')
           setLoading(false)
           return
         }
 
-        setSuccessMsg('Signed in successfully!')
         const authedUser = result.user
+        const welcomeName = authedUser?.name || email.split('@')[0]
+        setSuccessMsg('Signed in successfully!')
+        toast.success(`Welcome back, ${welcomeName}!`, 'Signed In')
         navigate(authedUser?.role === 'LIP' ? '/cases' : '/professional-dashboard', { replace: true })
       } else {
         if (!name.trim()) {
-          setError('Please enter your full name')
+          const err = 'Please enter your full name'
+          setError(err)
+          toast.warning(err, 'Required Field')
           setLoading(false)
           return
         }
         if (password.length < 8) {
-          setError('Password must be at least 8 characters')
+          const err = 'Password must be at least 8 characters'
+          setError(err)
+          toast.warning(err, 'Password Length')
           setLoading(false)
           return
         }
@@ -97,12 +106,18 @@ export default function Login() {
         })
 
         if (!result.success || !result.user) {
-          setError(result.error || 'Registration failed. Please try a different email.')
+          const err = result.error || 'Registration failed. Please try a different email.'
+          setError(err)
+          toast.error(err, 'Registration Failed')
           setLoading(false)
           return
         }
 
         if (result.user.verificationToken) {
+          toast.success(
+            `Account created! Verification instructions sent to ${result.user.email}.`,
+            'Account Created'
+          )
           setRegisteredPendingVerification({
             email: result.user.email,
             token: result.user.verificationToken,
@@ -114,11 +129,14 @@ export default function Login() {
         }
 
         setSuccessMsg('Account created successfully!')
+        toast.success(`Welcome to My Case Buddy, ${result.user.name}!`, 'Account Created')
         const authedUser = result.user
         navigate(authedUser?.role === 'LIP' ? '/cases' : '/professional-dashboard', { replace: true })
       }
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unexpected error occurred')
+      const msg = err instanceof Error ? err.message : 'An unexpected error occurred'
+      setError(msg)
+      toast.error(msg, 'Authentication Error')
     } finally {
       setLoading(false)
     }

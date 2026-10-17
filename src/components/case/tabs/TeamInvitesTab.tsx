@@ -5,6 +5,7 @@ import { useAuthStore } from '../../../store/authStore'
 import { generateId, createInvite, getAllInvites } from '../../../services/storage'
 import { listUsers } from '../../../services/auth'
 import { createStrapiInvite } from '../../../services/strapi'
+import { toast } from '../../../store/toastStore'
 import type { FamilyCase } from '../../../types/domain'
 import InviteLinkCard from '../InviteLinkCard'
 import { FaUserPlus, FaUsers } from 'react-icons/fa'
@@ -54,10 +55,15 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
 
     const inviteUrl = `${window.location.origin}/invite/${token}`
     setGeneratedInvite(inviteUrl)
+    toast.success(
+      `Generated invitation link for ${inviteRole === 'McKenzieFriend' ? 'McKenzie Friend' : inviteRole}.`,
+      'Invite Created'
+    )
   }
 
   function addSolicitor() {
     if (!solicitorName.trim()) return
+    const name = solicitorName.trim()
     const updated: FamilyCase = {
       ...current,
       parties: [
@@ -65,19 +71,21 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
         {
           id: generateId('PTY'),
           role: 'Applicant',
-          firstName: solicitorName.trim().split(' ')[0] || '',
-          lastName: solicitorName.trim().split(' ').slice(1).join(' ') || '',
+          firstName: name.split(' ')[0] || '',
+          lastName: name.split(' ').slice(1).join(' ') || '',
           solicitorFirm: solicitorFirm.trim() || undefined,
         },
       ],
     }
     store.addOrUpdate(updated)
+    toast.success(`Solicitor ${name} added to legal team.`, 'Solicitor Added')
     setSolicitorName('')
     setSolicitorFirm('')
   }
 
   function addBarrister() {
     if (!barristerName.trim()) return
+    const name = barristerName.trim()
     const updated: FamilyCase = {
       ...current,
       parties: [
@@ -85,13 +93,14 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
         {
           id: generateId('PTY'),
           role: 'Applicant',
-          firstName: barristerName.trim().split(' ')[0] || '',
-          lastName: barristerName.trim().split(' ').slice(1).join(' ') || '',
+          firstName: name.split(' ')[0] || '',
+          lastName: name.split(' ').slice(1).join(' ') || '',
           solicitorFirm: barristerChambers.trim() || undefined,
         },
       ],
     }
     store.addOrUpdate(updated)
+    toast.success(`Counsel ${name} added to legal team.`, 'Barrister Added')
     setBarristerName('')
     setBarristerChambers('')
   }

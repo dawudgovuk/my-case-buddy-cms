@@ -13,6 +13,7 @@ import EmptyCasesState from '../components/case/EmptyCasesState'
 import DeleteCaseModal from '../components/case/DeleteCaseModal'
 import { CASE_TYPE_OPTIONS } from '../utils/caseConstants'
 import { countChildren } from '../utils/partyUtils'
+import { toast } from '../store/toastStore'
 
 export default function CasesList() {
   const { cases, remove, togglePeerSupport, refresh } = useCasesStore()
@@ -100,6 +101,9 @@ export default function CasesList() {
   const hasActiveFilters = Boolean(q.trim() || selectedStatus !== 'All' || selectedCaseType)
 
   function handleResetFilters() {
+    if (hasActiveFilters) {
+      toast.info('Search and status filters reset to default.', 'Filters Reset')
+    }
     setQ('')
     setSelectedStatus('All')
     setSelectedCaseType('')

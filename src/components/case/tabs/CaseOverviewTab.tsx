@@ -17,6 +17,7 @@ import AddDeadlineModal from '../AddDeadlineModal'
 import { getStagesForCase, getCurrentStageIndex } from '../../../utils/caseStages'
 import { partitionParties } from '../../../utils/partyUtils'
 import { FaClock, FaPlus, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
+import { toast } from '../../../store/toastStore'
 
 export interface CaseOverviewTabProps {
   caseData?: FamilyCase
@@ -68,6 +69,12 @@ export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabPro
     setCaseDeadlines((prev) =>
       prev.map((d) => (d.id === dl.id ? { ...d, status: nextStatus } : d))
     )
+
+    if (nextStatus === 'submitted') {
+      toast.success(`Marked "${dl.title}" as submitted.`, 'Deadline Completed')
+    } else {
+      toast.info(`Reopened deadline "${dl.title}".`, 'Deadline Pending')
+    }
 
     if (isStrapiMode) {
       try {

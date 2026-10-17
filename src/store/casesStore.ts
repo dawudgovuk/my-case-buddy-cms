@@ -22,6 +22,7 @@ import {
 } from '../services/strapi';
 
 import { getCurrentUser } from '../services/auth';
+import { toast } from './toastStore';
 
 interface CasesState {
   cases: FamilyCase[];
@@ -56,8 +57,10 @@ export const useCasesStore = create<CasesState>((set, get) => ({
     setStrapiEnabled(enabled);
     set({ isStrapiMode: enabled, strapiError: null });
     if (enabled) {
+      toast.info('Switched to Live Strapi API mode.', 'API Mode Changed');
       void get().syncWithStrapi();
     } else {
+      toast.info('Switched to Local Snapshot mode.', 'Storage Mode Changed');
       set({ cases: loadSnapshot().cases });
     }
   },
@@ -153,13 +156,17 @@ export const useCasesStore = create<CasesState>((set, get) => ({
   },
 
   remove: (caseId: string) => {
+    const existing = get().getById(caseId);
+    const caseTitle = existing?.title || caseId;
     deleteCase(caseId);
     set({ cases: loadSnapshot().cases });
+    toast.success(`Case "${caseTitle}" was permanently deleted.`, 'Case Deleted');
 
     if (get().isStrapiMode) {
       deleteStrapiCase(caseId).catch((err: unknown) => {
         const message = err instanceof Error ? err.message : 'Strapi deletion failed';
         set({ strapiError: message });
+        toast.error(`Remote deletion failed: ${message}`, 'Strapi Error');
       });
     }
   },
@@ -169,13 +176,22 @@ export const useCasesStore = create<CasesState>((set, get) => ({
   },
 
   togglePeerSupport: (caseId: string, seeking: boolean, note?: string) => {
+    const existing = get().getById(caseId);
+    const caseTitle = existing?.title || caseId;
     toggleCasePeerSupport(caseId, seeking, note);
     set({ cases: loadSnapshot().cases });
+
+    if (seeking) {
+      toast.success(`"${caseTitle}" is now seeking legal peer support.`, 'Peer Support Active');
+    } else {
+      toast.info(`Peer support request turned off for "${caseTitle}".`, 'Peer Support Deactivated');
+    }
 
     if (get().isStrapiMode) {
       toggleStrapiPeerSupport(caseId, seeking, note).catch((err: unknown) => {
         const message = err instanceof Error ? err.message : 'Strapi peer support update failed';
         set({ strapiError: message });
+        toast.error(`Failed to update peer support in Strapi: ${message}`, 'Strapi Error');
       });
     }
   },
@@ -219,6 +235,10 @@ export const useCasesStore = create<CasesState>((set, get) => ({
       }
 
       set({ cases: loadSnapshot().cases, strapiError: null });
+      toast.success(
+        `Peer support request sent to ${targetProfessional.name} (${targetProfessional.role}).`,
+        'Support Requested'
+      );
     }
 
     // 2. If Strapi mode, transmit via Strapi API
@@ -249,6 +269,7 @@ export const useCasesStore = create<CasesState>((set, get) => ({
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Strapi peer support request failed';
         set({ strapiError: message, isLoadingStrapi: false });
+        toast.error(`Peer support request failed: ${message}`, 'Request Error');
         throw err;
       } finally {
         set({ isLoadingStrapi: false });

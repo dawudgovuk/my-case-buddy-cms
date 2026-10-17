@@ -1,5 +1,5 @@
 import type { FamilyCase } from '../../types/domain';
-import { strapiGet, strapiPost, strapiPut, strapiDelete } from './strapiClient';
+import { strapiGet, strapiPost, strapiPut, strapiDelete, StrapiApiError } from './strapiClient';
 import {
   toDomainCase,
   toStrapiCasePayload,
@@ -55,14 +55,18 @@ export async function fetchStrapiCases(): Promise<FamilyCase[]> {
  */
 export async function fetchStrapiCaseById(caseIdOrNumber: string): Promise<FamilyCase | null> {
   // Try querying by caseNumber filter first
-  const query = {
-    'filters[caseNumber][$eq]': caseIdOrNumber,
-    ...COMMON_POPULATE_PARAMS,
-  };
+  try {
+    const query = {
+      'filters[caseNumber][$eq]': caseIdOrNumber,
+      ...COMMON_POPULATE_PARAMS,
+    };
 
-  const listResponse = await strapiGet<StrapiListResponse<StrapiCaseRaw>>('/api/cases', query);
-  if (listResponse?.data && listResponse.data.length > 0) {
-    return toDomainCase(listResponse.data[0]);
+    const listResponse = await strapiGet<StrapiListResponse<StrapiCaseRaw>>('/api/cases', query);
+    if (listResponse?.data && listResponse.data.length > 0) {
+      return toDomainCase(listResponse.data[0]);
+    }
+  } catch {
+    // If filter query fails or errors, continue to direct lookup
   }
 
   // Fallback to direct ID / documentId fetch
@@ -116,11 +120,24 @@ export async function updateStrapiCase(
  * Deletes a case from Strapi.
  */
 export async function deleteStrapiCase(caseIdOrNumber: string): Promise<boolean> {
-  // If numeric or alphanumeric, try delete by ID / documentId
-  const existing = await fetchStrapiCaseById(caseIdOrNumber);
-  const targetId = existing?.documentId || existing?.id || caseIdOrNumber;
-  await strapiDelete(`/api/cases/${encodeURIComponent(targetId)}`);
-  return true;
+  try {
+    const existing = await fetchStrapiCaseById(caseIdOrNumber);
+    if (!existing) {
+      // The case does not exist on Strapi (e.g. was a local-only draft or already removed)
+      return true;
+    }
+
+    const targetId = existing.documentId || existing.id;
+    if (targetId) {
+      await strapiDelete(`/api/cases/${encodeURIComponent(targetId)}`);
+    }
+    return true;
+  } catch (err: unknown) {
+    if (err instanceof StrapiApiError && (err.status === 404 || err.status === 204)) {
+      return true;
+    }
+    throw err;
+  }
 }
 
 /**

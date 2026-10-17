@@ -1,6 +1,7 @@
 import { Badge, Button } from 'react-bootstrap'
 import { FaCopy, FaCheck, FaUserFriends } from 'react-icons/fa'
 import { useState } from 'react'
+import { toast } from '../../store/toastStore'
 
 export interface InviteLinkCardProps {
   id: string
@@ -29,6 +30,7 @@ export default function InviteLinkCard({
     if (typeof navigator !== 'undefined' && navigator.clipboard) {
       navigator.clipboard.writeText(inviteUrl)
       setCopied(true)
+      toast.success('Case invitation link copied to clipboard.', 'Link Copied')
       onCopy?.(inviteUrl)
       setTimeout(() => setCopied(false), 2500)
     }

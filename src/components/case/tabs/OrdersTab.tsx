@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card, Form, Row, Col, Button } from 'react-bootstrap'
 import { useCasesStore } from '../../../store/casesStore'
 import { generateId } from '../../../services/storage'
+import { toast } from '../../../store/toastStore'
 import type { FamilyCase, OrderRecord } from '../../../types/domain'
 import OrderCard from '../OrderCard'
 
@@ -36,6 +37,7 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
       ],
     }
     store.addOrUpdate(updated)
+    toast.success(`Recorded court order: "${type}".`, 'Order Recorded')
     setSummary('')
     setExpiresOn('')
   }
@@ -117,6 +119,7 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
               orders: current.orders.map((ord) => (ord.id === o.id ? updatedOrder : ord)),
             }
             store.addOrUpdate(updated)
+            toast.success(`Court order details updated (${updatedOrder.type}).`, 'Order Updated')
           }}
           onDelete={() => {
             const updated: FamilyCase = {
@@ -124,6 +127,7 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
               orders: current.orders.filter((ord) => ord.id !== o.id),
             }
             store.addOrUpdate(updated)
+            toast.info(`Court order (${o.type}) removed from case.`, 'Order Removed')
           }}
         />
       ))}
