@@ -6,7 +6,22 @@ import { useTranslation } from '../hooks/useTranslation'
 import type { UserRole } from '../types/domain'
 import { USER_ROLES } from '../utils/caseConstants'
 import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
+import heartLogo from '../assets/heart-logo.png'
 import { FaEye, FaEyeSlash, FaLock, FaUserPlus } from 'react-icons/fa'
+
+const ROLE_TITLES: Record<UserRole, string> = {
+  LIP: 'litigant in person',
+  McKenzieFriend: 'McKenzie Friend',
+  Solicitor: 'solicitor',
+  Barrister: 'barrister',
+}
+
+const ROLE_INTROS: Record<UserRole, string> = {
+  LIP: 'Keep track of your family court case, hearings and documents in one place.',
+  McKenzieFriend: 'Support people who are going through family court on their own.',
+  Solicitor: 'Offer your expertise to people representing themselves in family court.',
+  Barrister: 'Offer your expertise to people representing themselves in family court.',
+}
 
 function isValidRole(r: string | undefined): r is UserRole {
   return typeof r === 'string' && (USER_ROLES as readonly string[]).includes(r)
@@ -34,8 +49,11 @@ export default function Register() {
 
   if (!isValidRole(role)) {
     return (
-      <Container className="d-flex justify-content-center align-items-center min-vh-100">
-        <Alert variant="danger">{t('auth.invalidRegistrationType')}</Alert>
+      <Container className="auth-shell">
+        <div className="auth-panel">
+          <Alert variant="danger" className="mb-3">{t('auth.invalidRegistrationType')}</Alert>
+          <Button variant="primary" onClick={() => navigate('/login')}>{t('auth.backToLogin')}</Button>
+        </div>
       </Container>
     )
   }
@@ -107,14 +125,16 @@ export default function Register() {
   }
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-50 py-4 py-md-5">
-      <Card className="shadow-lg border-0" style={{ width: '100%', maxWidth: '520px', borderRadius: '16px' }}>
-        <Card.Header className="text-center py-4 bg-white border-bottom">
-          <h1 className="h4 fw-bold mb-1">
-            {t('auth.registerAsTitle', { role: userRole })}
-          </h1>
-          <p className="text-muted small mb-0">Create an account to manage your cases and peer support</p>
-        </Card.Header>
+    <Container className="auth-shell">
+      <div className="auth-panel">
+      <Card className="overflow-hidden">
+        <div className="auth-hero">
+          <div className="auth-hero-icon">
+            <img src={heartLogo} alt="" />
+          </div>
+          <h1 className="h3 fw-bold mb-1">Join as a {ROLE_TITLES[userRole]}</h1>
+          <p>{ROLE_INTROS[userRole]}</p>
+        </div>
         <Card.Body className="p-4">
           <Form onSubmit={handleSubmit}>
             {error && (
@@ -249,6 +269,13 @@ export default function Register() {
           </Form>
         </Card.Body>
       </Card>
+      <p className="text-center text-muted small mt-3 mb-0">
+        Not a {ROLE_TITLES[userRole]}?{' '}
+        <button type="button" className="btn btn-link btn-sm p-0 align-baseline" onClick={() => navigate('/login')}>
+          Choose a different account type
+        </button>
+      </p>
+      </div>
     </Container>
   )
 }

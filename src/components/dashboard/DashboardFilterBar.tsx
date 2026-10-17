@@ -49,7 +49,7 @@ export default function DashboardFilterBar({
         {/* Left Side: Search Box + Status Filter Chips */}
         <div className="d-flex align-items-center gap-2 flex-grow-1 flex-wrap" style={{ minWidth: 260 }}>
           {/* Executive Search Input */}
-          <div className="position-relative flex-grow-1" style={{ maxWidth: 280, minWidth: 190 }}>
+          <div className="position-relative flex-grow-1 filter-search-wrap">
             <FaSearch
               size={12}
               className="position-absolute text-secondary opacity-75"
@@ -61,11 +61,9 @@ export default function DashboardFilterBar({
               size="sm"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="ps-4 pe-4 py-1.5 filter-search-input shadow-none"
-              style={{
-                fontSize: '0.825rem',
-                height: 36,
-              }}
+              className="filter-search-input search-with-icon shadow-none"
+              aria-label="Search cases"
+              style={{ fontSize: '0.9rem' }}
             />
             {searchQuery && (
               <button
@@ -81,7 +79,7 @@ export default function DashboardFilterBar({
           </div>
 
           {/* Premium Status Filter Chips with Counts */}
-          <div className="d-flex align-items-center gap-1.5 flex-wrap">
+          <div className="d-flex align-items-center gap-1.5 filter-chip-row">
             {STATUS_ITEMS.map((item) => {
               const isSelected = statusFilter === item.key
               const count = statusCounts[item.key] ?? 0

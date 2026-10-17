@@ -15,6 +15,7 @@ import { useTranslation } from '../hooks/useTranslation'
 import type { UserRole } from '../types/domain'
 import RoleRegistrationLinks from '../components/auth/RoleRegistrationLinks'
 import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
+import heartLogo from '../assets/heart-logo.png'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -143,22 +144,23 @@ export default function Login() {
   }
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-50 py-4 py-md-5">
-      <Card
-        className="shadow-lg border-0 overflow-hidden"
-        style={{ maxWidth: '540px', width: '100%', borderRadius: '16px' }}
-      >
+    <Container className="auth-shell">
+      <div className="auth-panel">
+      <Card className="overflow-hidden">
         {/* Header */}
-        <Card.Header className="text-center py-4 bg-white border-bottom position-relative">
-          <h1 className="h4 fw-bold mb-1 text-dark">{t('common.appName')}</h1>
-          <p className="text-muted small mb-0">
+        <div className="auth-hero">
+          <div className="auth-hero-icon">
+            <img src={heartLogo} alt="" />
+          </div>
+          <h1 className="h3 fw-bold mb-1">{authMode === 'signin' ? 'Welcome back' : 'Create your account'}</h1>
+          <p>
             {authMode === 'signin'
               ? t('auth.signInTitle')
-              : 'Create an account to manage your cases and peer support'}
+              : 'Manage your family court case and get support from people who can help'}
           </p>
-        </Card.Header>
+        </div>
 
-        <Card.Body className="p-4">
+        <Card.Body className="p-4 p-md-4">
           {error && (
             <Alert
               variant="danger"
@@ -183,7 +185,7 @@ export default function Login() {
 
           {/* Sub-toggle: Sign In vs Create Account */}
           <div className="d-flex justify-content-center mb-4">
-            <Nav variant="pills" className="bg-light p-1 rounded-pill border" style={{ width: '100%', maxWidth: '320px' }}>
+            <Nav variant="pills" className="p-1 rounded-pill border" style={{ width: '100%', maxWidth: '340px', background: '#eef1f6' }}>
               <Nav.Item className="flex-fill text-center">
                 <Nav.Link
                   active={authMode === 'signin'}
@@ -192,10 +194,10 @@ export default function Login() {
                     setError(null)
                     setSuccessMsg(null)
                   }}
-                  className={`rounded-pill py-1.5 fw-semibold ${
-                    authMode === 'signin' ? 'bg-white text-primary shadow-xs' : 'text-secondary'
+                  className={`rounded-pill fw-semibold d-inline-flex align-items-center justify-content-center ${
+                    authMode === 'signin' ? 'bg-white text-primary shadow-sm' : 'text-secondary'
                   }`}
-                  style={{ fontSize: '0.8125rem' }}
+                  style={{ fontSize: '0.875rem', minHeight: 38 }}
                 >
                   <FaSignInAlt className="me-1" />
                   <span>{t('common.signIn')}</span>
@@ -209,10 +211,10 @@ export default function Login() {
                     setError(null)
                     setSuccessMsg(null)
                   }}
-                  className={`rounded-pill py-1.5 fw-semibold ${
-                    authMode === 'signup' ? 'bg-white text-primary shadow-xs' : 'text-secondary'
+                  className={`rounded-pill fw-semibold d-inline-flex align-items-center justify-content-center ${
+                    authMode === 'signup' ? 'bg-white text-primary shadow-sm' : 'text-secondary'
                   }`}
-                  style={{ fontSize: '0.8125rem' }}
+                  style={{ fontSize: '0.875rem', minHeight: 38 }}
                 >
                   <FaUserPlus className="me-1" />
                   <span>Create Account</span>
@@ -388,12 +390,14 @@ export default function Login() {
             </Button>
           </div>
 
-          <hr className="my-3" />
-
           {/* Reusable Role Registration Shortcuts */}
           <RoleRegistrationLinks onSelectRole={(role) => navigate(`/register/${role}`)} />
         </Card.Body>
       </Card>
+      <p className="text-center text-muted small mt-3 mb-0">
+        Your case information is private and only shared with people you invite.
+      </p>
+      </div>
     </Container>
   )
 }

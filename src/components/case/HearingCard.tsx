@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { displayDate } from '../../utils/displayDate'
 import { Card, Form, Row, Col, Button, Badge } from 'react-bootstrap'
 import type { Hearing } from '../../types/domain'
 import { FaCalendarAlt, FaClock, FaMapMarkerAlt, FaGavel, FaEdit, FaTrash } from 'react-icons/fa'
@@ -150,7 +151,7 @@ export default function HearingCard({
             </Badge>
             <span className="fw-bold text-dark d-flex align-items-center gap-1">
               <FaCalendarAlt className="text-primary me-1" />
-              {hearing.date}
+              {displayDate(hearing.date)}
             </span>
             {hearing.time && (
               <span className="small text-secondary d-flex align-items-center gap-1">

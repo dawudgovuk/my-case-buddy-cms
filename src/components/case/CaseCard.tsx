@@ -158,45 +158,16 @@ export default function CaseCard({
           nextHearing ? (
             <NextHearingBanner hearing={nextHearing} className="mb-3" />
           ) : (
-            <div
-              className="next-hearing-banner p-3 rounded-3 mb-3 d-flex flex-column justify-content-between"
-              style={{
-                backgroundColor: '#f8fafc',
-                border: '1px solid #e2e8f0',
-                borderLeft: '4px solid #94a3b8',
-                height: '104px',
-                boxSizing: 'border-box',
-              }}
-            >
-              <div className="d-flex align-items-center justify-content-between gap-2">
-                <div className="d-flex align-items-center gap-2">
-                  <div
-                    className="d-flex align-items-center justify-content-center rounded-circle flex-shrink-0"
-                    style={{ width: 22, height: 22, backgroundColor: '#f1f5f9', color: '#64748b' }}
-                  >
-                    <FaCalendarAlt size={10} />
-                  </div>
-                  <span
-                    className="small text-uppercase fw-bold text-secondary"
-                    style={{ letterSpacing: '0.5px', fontSize: '0.7rem' }}
-                  >
-                    Next Court Hearing
-                  </span>
+            <div className="hearing-banner hearing-banner-empty p-3 mb-3">
+              <div className="d-flex gap-3 align-items-center">
+                <div className="hearing-date-chip is-empty" aria-hidden="true">
+                  <FaCalendarAlt size={16} />
                 </div>
-                <span
-                  className="badge bg-white text-muted border px-2 py-0.5 rounded-pill fw-medium"
-                  style={{ fontSize: '0.7rem' }}
-                >
-                  Awaiting listing
-                </span>
-              </div>
-
-              <div className="fw-semibold text-secondary small d-flex align-items-center gap-2">
-                <span>No upcoming hearing scheduled</span>
-              </div>
-
-              <div className="small text-muted text-truncate" style={{ fontSize: '0.74rem' }}>
-                Court hearing date & directions will appear here once listed
+                <div className="min-w-0">
+                  <div className="hearing-banner-label">Next court hearing</div>
+                  <div className="fw-semibold text-dark">No hearing booked yet</div>
+                  <div className="small text-muted">Add the date as soon as the court sends it.</div>
+                </div>
               </div>
             </div>
           )

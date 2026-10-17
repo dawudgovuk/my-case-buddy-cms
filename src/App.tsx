@@ -17,7 +17,9 @@ import ComponentShowcase from './pages/ComponentShowcase'
 import AppHeader from './components/common/AppHeader'
 import { useCasesStore } from './store/casesStore'
 import { useTranslation } from './hooks/useTranslation'
-import { FaLifeRing, FaExternalLinkAlt } from 'react-icons/fa'
+import { FaLifeRing, FaExternalLinkAlt, FaCompass } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
+import heartLogo from './assets/heart-logo.png'
 
 // Purge all legacy hardcoded demo personas and cases on module initialization
 purgeLegacyDemoData()
@@ -37,11 +39,16 @@ function Shell() {
 
   if (isLoadingSession) {
     return (
-      <div className="d-flex justify-content-center align-items-center min-vh-100 bg-light">
-        <div className="text-center p-4">
-          <Spinner animation="border" variant="primary" className="mb-3" />
-          <div className="text-dark fw-bold mb-1">My Case Buddy CMS</div>
-          <div className="text-muted small">Loading session...</div>
+      <div className="app-page-loader">
+        <div className="text-center p-4" role="status" aria-live="polite">
+          <img src={heartLogo} alt="" width={44} height={44} className="mb-3" />
+          <div className="mb-3">
+            <Spinner animation="border" variant="primary" size="sm" />
+          </div>
+          <div className="brand-wordmark mb-1">
+            My Case <span>Buddy</span>
+          </div>
+          <div className="text-muted small">Opening your account…</div>
         </div>
       </div>
     )
@@ -49,9 +56,12 @@ function Shell() {
 
   return (
     <div className="d-flex flex-column min-vh-100">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <AppHeader />
 
-      <Container fluid="xl" className="py-3 py-md-4 px-2 px-sm-3 px-md-4 flex-grow-1">
+      <Container as="main" id="main-content" fluid="xl" className="py-4 py-md-5 px-3 px-md-4 flex-grow-1">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register/:role" element={<Register />} />
@@ -118,31 +128,43 @@ function Shell() {
           <Route path="/cases/:caseId" element={user ? <CaseDetails /> : <Navigate to="/login" replace />} />
           <Route path="/cases/:caseId/edit" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
           <Route path="/components" element={<ComponentShowcase />} />
-          <Route path="*" element={<div className="text-center py-5 text-muted">{t('common.pageNotFound')}</div>} />
+          <Route
+            path="*"
+            element={
+              <div className="card not-found-card">
+                <div className="auth-hero-icon mx-auto" style={{ background: 'var(--mcb-primary-soft)', borderColor: 'var(--mcb-primary-border)', color: 'var(--mcb-primary)' }}>
+                  <FaCompass size={24} />
+                </div>
+                <h1 className="h3 mb-2">{t('common.pageNotFound')}</h1>
+                <p className="text-muted mb-4">The link may be out of date, or the page may have moved.</p>
+                <div>
+                  <Link to="/" className="btn btn-primary">Go to my home page</Link>
+                </div>
+              </div>
+            }
+          />
         </Routes>
       </Container>
 
-      <footer className="bg-light py-4 mt-auto border-top">
-        <Container className="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 text-center text-md-start">
-          <div>
-            <div className="fw-semibold text-dark mb-1" style={{ fontSize: '0.875rem' }}>
-              My Case Buddy CMS
+      <footer className="app-footer py-4 mt-auto">
+        <Container fluid="xl" className="px-3 px-md-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div className="d-flex align-items-start gap-3">
+            <img src={heartLogo} alt="" width={28} height={28} className="mt-1" />
+            <div>
+              <div className="footer-brand mb-1">My Case Buddy</div>
+              <p className="mb-0" style={{ maxWidth: '38rem' }}>{t('common.disclaimer')}</p>
             </div>
-            <small className="text-muted d-block">{t('common.disclaimer')}</small>
           </div>
-          <div className="d-flex align-items-center gap-2 flex-shrink-0">
-            <a
-              href="https://support.mycourtbuddy.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3 py-1 shadow-xs"
-              style={{ fontSize: '0.8rem' }}
-            >
-              <FaLifeRing size={12} className="text-primary" />
-              <span>{t('common.supportKnowledgeBase')}</span>
-              <FaExternalLinkAlt size={10} className="text-muted" />
-            </a>
-          </div>
+          <a
+            href="https://support.mycourtbuddy.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-outline-secondary btn-sm flex-shrink-0 align-self-start align-self-md-center"
+          >
+            <FaLifeRing size={13} className="text-primary" />
+            <span>{t('common.supportKnowledgeBase')}</span>
+            <FaExternalLinkAlt size={10} className="text-muted" />
+          </a>
         </Container>
       </footer>
     </div>

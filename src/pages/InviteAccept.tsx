@@ -8,7 +8,7 @@ import { useTranslation } from '../hooks/useTranslation'
 import type { CaseInvite, FamilyCase } from '../types/domain'
 import { isUserCaseMember } from '../utils/caseMembership'
 import { Card, Button, Alert, Container, Row, Col, Badge, Spinner } from 'react-bootstrap'
-import { FaHandshake, FaBalanceScale, FaCheckCircle, FaShieldAlt, FaGavel, FaArrowRight } from 'react-icons/fa'
+import { FaHandshake, FaBalanceScale, FaCheckCircle, FaShieldAlt, FaGavel, FaArrowRight, FaExclamationTriangle } from 'react-icons/fa'
 
 export default function InviteAccept() {
   const navigate = useNavigate()
@@ -152,73 +152,95 @@ export default function InviteAccept() {
   if (loading) {
     return (
       <Container className="d-flex justify-content-center align-items-center min-vh-50 py-5">
-        <div className="text-center p-4">
+        <div className="text-center p-4" role="status">
           <Spinner animation="border" variant="primary" className="mb-3" />
-          <div className="fw-semibold text-secondary">Verifying peer support invitation...</div>
+          <div className="fw-semibold text-secondary">Opening your invitation…</div>
         </div>
       </Container>
     )
   }
 
+  const inviteRoleLabel =
+    invite?.role === 'McKenzieFriend' ? 'McKenzie Friend' : invite?.role === 'Solicitor' ? 'Solicitor' : invite?.role === 'Barrister' ? 'Barrister' : 'Legal supporter'
+
   if (error) {
     return (
-      <Container className="d-flex justify-content-center align-items-center min-vh-50 py-5">
-        <Card className="shadow-lg border-0 p-4 text-center" style={{ maxWidth: 520, borderRadius: 16 }}>
-          <div className="mx-auto mb-3" style={{ fontSize: '3rem', color: '#dc3545' }}>⚠️</div>
-          <h4 className="fw-bold mb-2">Invitation Notice</h4>
-          <Alert variant="danger" className="py-2 text-start small mb-3">
-            {error}
-          </Alert>
-          <div className="d-flex gap-2 justify-content-center">
-            <Button variant="outline-secondary" onClick={() => navigate('/professional-dashboard')}>
-              Go to Dashboard
-            </Button>
-            <Button variant="primary" onClick={() => navigate('/login')}>
-              Sign In
-            </Button>
-          </div>
-        </Card>
+      <Container className="auth-shell">
+        <div className="auth-panel">
+          <Card className="overflow-hidden">
+            <div className="auth-hero" style={{ background: 'linear-gradient(135deg, #7a2a20 0%, #c0392b 100%)' }}>
+              <div className="auth-hero-icon">
+                <FaExclamationTriangle size={22} />
+              </div>
+              <h1 className="h3 fw-bold mb-1">This invitation can’t be opened</h1>
+              <p>Ask the person who invited you to send a new link.</p>
+            </div>
+            <Card.Body className="p-4">
+              <Alert variant="danger" className="small mb-4">
+                {error}
+              </Alert>
+              <div className="d-grid d-sm-flex gap-2">
+                <Button variant="primary" className="flex-fill" onClick={() => navigate('/login')}>
+                  Sign in
+                </Button>
+                <Button variant="outline-secondary" className="flex-fill" onClick={() => navigate('/professional-dashboard')}>
+                  Go to dashboard
+                </Button>
+              </div>
+            </Card.Body>
+          </Card>
+        </div>
       </Container>
     )
   }
 
   if (!user) {
     return (
-      <Container className="d-flex justify-content-center align-items-center min-vh-50 py-5">
-        <Card className="shadow-lg border-0 p-4 text-center" style={{ maxWidth: 540, borderRadius: 16 }}>
-          <div className="mx-auto mb-3" style={{ fontSize: '3rem' }}>🤝</div>
-          <h4 className="fw-bold mb-2">Peer Support Invitation</h4>
-          <p className="text-muted small mb-4">
-            You have been invited to assist a Litigant in Person as a{' '}
-            <strong className="text-dark">{invite?.role || 'Legal Supporter'}</strong> under Family Procedure Rules.
-            Please sign in or register to accept.
-          </p>
-          <Row className="g-2">
-            <Col sm={6}>
-              <Button className="w-100" variant="primary" onClick={() => navigate('/login')}>
-                Sign In to Accept
-              </Button>
-            </Col>
-            <Col sm={6}>
-              <Button className="w-100" variant="outline-primary" onClick={() => navigate(`/register/${invite?.role || 'McKenzieFriend'}`)}>
-                Register as {invite?.role || 'Supporter'}
-              </Button>
-            </Col>
-          </Row>
-        </Card>
+      <Container className="auth-shell">
+        <div className="auth-panel">
+          <Card className="overflow-hidden">
+            <div className="auth-hero">
+              <div className="auth-hero-icon">
+                <FaHandshake size={24} />
+              </div>
+              <h1 className="h3 fw-bold mb-1">You’ve been invited to help</h1>
+              <p>
+                A litigant in person would like you to join their case team as a <strong className="text-white">{inviteRoleLabel}</strong>.
+              </p>
+            </div>
+            <Card.Body className="p-4">
+              <ul className="list-unstyled d-grid gap-2 mb-4 small">
+                <li className="d-flex gap-2"><FaCheckCircle className="text-success mt-1 flex-shrink-0" /> See the case details, hearings and documents once you join</li>
+                <li className="d-flex gap-2"><FaShieldAlt className="text-primary mt-1 flex-shrink-0" /> Everything in the case is confidential under the Family Procedure Rules</li>
+              </ul>
+              <Row className="g-2">
+                <Col sm={6}>
+                  <Button className="w-100" variant="primary" size="lg" onClick={() => navigate('/login')}>
+                    Sign in to accept
+                  </Button>
+                </Col>
+                <Col sm={6}>
+                  <Button className="w-100" variant="outline-primary" size="lg" onClick={() => navigate(`/register/${invite?.role || 'McKenzieFriend'}`)}>
+                    Create an account
+                  </Button>
+                </Col>
+              </Row>
+            </Card.Body>
+          </Card>
+        </div>
       </Container>
     )
   }
 
   const roleTheme = invite?.role === 'McKenzieFriend'
-    ? { gradient: 'linear-gradient(135deg, #065f46 0%, #059669 100%)', badge: 'success', label: 'McKenzie Friend (Court Lay Supporter)' }
+    ? { gradient: 'linear-gradient(135deg, #0a5c40 0%, #0e7a55 60%, #23a07a 100%)', badge: 'success', label: 'McKenzie Friend (court lay supporter)' }
     : invite?.role === 'Solicitor'
-    ? { gradient: 'linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%)', badge: 'primary', label: 'Solicitor' }
-    : { gradient: 'linear-gradient(135deg, #581c87 0%, #7c3aed 100%)', badge: 'secondary', label: 'Barrister' }
+    ? { gradient: 'var(--mcb-hero)', badge: 'primary', label: 'Solicitor' }
+    : { gradient: 'linear-gradient(135deg, #3b2a8a 0%, #5b3fc4 100%)', badge: 'secondary', label: 'Barrister' }
 
   return (
     <Container className="d-flex justify-content-center align-items-center min-vh-50 py-4 py-md-5">
-      <Card className="shadow-lg border-0 overflow-hidden" style={{ maxWidth: 650, borderRadius: 16, width: '100%' }}>
+      <Card className="overflow-hidden" style={{ maxWidth: 650, width: '100%', boxShadow: 'var(--mcb-shadow)' }}>
         {/* Banner Header */}
         <div style={{ background: roleTheme.gradient, padding: '28px 24px', color: '#ffffff' }} className="text-center">
           <div className="d-inline-flex p-3 rounded-circle bg-white bg-opacity-25 mb-2 shadow-sm" style={{ fontSize: '1.75rem' }}>

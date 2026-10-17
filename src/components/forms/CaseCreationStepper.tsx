@@ -61,7 +61,7 @@ export default function CaseCreationStepper({
     <Card className={`border-0 shadow-sm mb-4 bg-white ${className}`}>
       <Card.Body className="p-3 p-md-4">
         {/* Stepper Tabs Bar */}
-        <div className="d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-2">
+        <div className="d-flex flex-row align-items-stretch justify-content-between gap-2">
           {STEPS.map((s) => {
             const isActive = currentStep === s.step
             const isCompleted =
@@ -80,7 +80,7 @@ export default function CaseCreationStepper({
                 key={s.step}
                 type="button"
                 onClick={() => onSelectStep(s.step)}
-                className={`btn text-start p-2 p-md-3 rounded-3 transition-all d-flex align-items-center gap-3 border position-relative ${
+                className={`btn stepper-step ${isActive ? 'is-active' : ''} text-start p-2 p-md-3 rounded-3 d-flex align-items-center gap-3 border position-relative ${
                   isActive
                     ? 'border-primary bg-primary-subtle text-primary shadow-xs'
                     : isStep0Error
@@ -118,7 +118,7 @@ export default function CaseCreationStepper({
                 >
                   <Icon size={16} />
                 </div>
-                <div className="overflow-hidden flex-grow-1">
+                <div className="overflow-hidden flex-grow-1 stepper-text">
                   <div className="d-flex align-items-center justify-content-between gap-1">
                     <span
                       className={`fw-bold small ${

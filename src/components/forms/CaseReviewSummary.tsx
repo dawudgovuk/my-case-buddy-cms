@@ -1,4 +1,5 @@
 import { Card, Row, Col, Button, Badge, Spinner, Alert } from 'react-bootstrap'
+import { displayDate } from '../../utils/displayDate'
 import type { FamilyCase } from '../../types/domain'
 import CaseReadinessChecklist from './CaseReadinessChecklist'
 import {
@@ -210,7 +211,7 @@ export default function CaseReviewSummary({
                   <span className="text-muted">Started On:</span>
                   <span className="fw-semibold text-dark">
                     <FaCalendarAlt className="me-1 text-muted" size={11} />
-                    {caseData.startedAt}
+                    {displayDate(caseData.startedAt)}
                   </span>
                 </div>
                 <div className="d-flex justify-content-between">

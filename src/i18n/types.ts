@@ -61,6 +61,7 @@ export interface TranslationSchema {
   }
   caseDetails: {
     notFound: string
+    adultsCount: string
     overviewTab: string
     partiesTab: string
     hearingsTab: string

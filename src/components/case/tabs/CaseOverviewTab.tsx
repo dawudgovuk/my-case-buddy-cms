@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react'
+import { displayDate } from '../../../utils/displayDate'
 import { Accordion, Badge, Button } from 'react-bootstrap'
 import type { FamilyCase, DocumentDeadline } from '../../../types/domain'
 import { useCasesStore } from '../../../store/casesStore'
@@ -217,10 +218,10 @@ export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabPro
                           </span>
                         ) : new Date(dl.deadlineDate) < new Date() ? (
                           <span className="d-inline-flex align-items-center gap-1">
-                            <FaExclamationTriangle size={10} /> Overdue: {dl.deadlineDate}
+                            <FaExclamationTriangle size={10} /> Overdue: {displayDate(dl.deadlineDate)}
                           </span>
                         ) : (
-                          <span>Due: {dl.deadlineDate}</span>
+                          <span>Due: {displayDate(dl.deadlineDate)}</span>
                         )}
                       </Badge>
                     </div>

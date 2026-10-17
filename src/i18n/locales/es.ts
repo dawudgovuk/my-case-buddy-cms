@@ -2,7 +2,7 @@ import type { TranslationSchema } from '../types'
 
 export const es: TranslationSchema = {
   common: {
-    appName: 'MyCase Buddy',
+    appName: 'My Case Buddy',
     dashboard: 'Panel de Control',
     cases: 'Casos',
     newCase: 'Nuevo Caso',
@@ -54,6 +54,7 @@ export const es: TranslationSchema = {
   },
   caseDetails: {
     notFound: 'Caso no encontrado.',
+    adultsCount: 'Adults & representatives ({{count}})',
     overviewTab: 'Resumen del Caso',
     partiesTab: 'Partes',
     hearingsTab: 'Audiencias',

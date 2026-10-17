@@ -224,8 +224,8 @@ export default function PeerDirectory() {
                 placeholder={t('peerDirectory.searchPlaceholder')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="form-control form-control-sm ps-4 pe-4 py-2 bg-light border-0"
-                style={{ fontSize: '0.88rem', borderRadius: '10px' }}
+                className="form-control search-with-icon"
+                aria-label={t('peerDirectory.searchPlaceholder')}
               />
               {searchTerm && (
                 <button

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { displayDate } from '../../utils/displayDate'
 import { Card, Form, Row, Col, Button, Badge } from 'react-bootstrap'
 import type { OrderRecord } from '../../types/domain'
 import { FaBalanceScale, FaCalendarCheck, FaClock, FaEdit, FaTrash } from 'react-icons/fa'
@@ -129,12 +130,12 @@ export default function OrderCard({
             </Badge>
             <span className="small text-muted d-flex align-items-center gap-1">
               <FaCalendarCheck className="text-success" />
-              <span>Made on {order.dateMade}</span>
+              <span>Made on {displayDate(order.dateMade)}</span>
             </span>
             {order.expiresOn ? (
               <span className="small text-danger d-flex align-items-center gap-1">
                 <FaClock />
-                <span>Expires: {order.expiresOn}</span>
+                <span>Expires: {displayDate(order.expiresOn)}</span>
               </span>
             ) : (
               <span className="small text-secondary">• No expiry set</span>

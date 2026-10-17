@@ -239,7 +239,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
                   <div className="fw-bold text-dark">{memberUser?.name || 'Unknown User'}</div>
                   {memberUser?.email && <div className="small text-muted">{memberUser.email}</div>}
                 </div>
-                <Badge bg="primary">{member.role}</Badge>
+                <Badge bg={member.role === 'Owner' ? 'primary' : 'success'}>{member.role === 'McKenzieFriend' ? 'McKenzie Friend' : member.role}</Badge>
               </div>
             )
           })}

@@ -72,18 +72,16 @@ export default function CaseQuickPresets({
   className = '',
 }: CaseQuickPresetsProps) {
   return (
-    <Card className={`border-0 bg-light p-3 mb-4 rounded-3 ${className}`}>
-      <div className="d-flex align-items-center justify-content-between mb-2">
+    <Card className={`p-3 mb-4 ${className}`} style={{ background: 'linear-gradient(135deg, #f3f6ff 0%, #ffffff 70%)', borderColor: 'var(--mcb-primary-border)' }}>
+      <div className="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-1 mb-2">
         <div className="d-flex align-items-center gap-2">
-          <Badge bg="primary" className="p-1 px-2 d-flex align-items-center gap-1">
+          <Badge bg="primary" className="d-inline-flex align-items-center gap-1">
             <FaBolt size={10} />
-            <span>Quick Start</span>
+            <span>Quick start</span>
           </Badge>
-          <span className="small fw-bold text-dark">Common Proceeding Templates</span>
+          <span className="small fw-bold text-dark">Common case types</span>
         </div>
-        <span className="text-muted small" style={{ fontSize: '0.75rem' }}>
-          Select to auto-populate title & jurisdiction
-        </span>
+        <span className="text-muted small">Pick one to fill in the title and court for you</span>
       </div>
 
       <div className="d-flex flex-wrap gap-2 pt-1">
@@ -102,12 +100,11 @@ export default function CaseQuickPresets({
                   court: p.court,
                 })
               }
-              className={`btn btn-sm d-flex align-items-center gap-2 rounded-pill px-3 py-1 transition-all ${
-                isSelected
-                  ? 'btn-primary shadow-xs'
-                  : 'btn-outline-secondary bg-white text-dark border-secondary-subtle'
+              className={`btn btn-sm d-flex align-items-center gap-2 rounded-pill px-3 ${
+                isSelected ? 'btn-primary' : 'btn-outline-secondary'
               }`}
-              style={{ fontSize: '0.825rem' }}
+              style={{ fontSize: '0.85rem' }}
+              aria-pressed={isSelected}
               title={p.description}
             >
               <Icon size={12} className={isSelected ? 'text-white' : 'text-primary'} />

@@ -12,7 +12,6 @@ import {
   FaHandshake,
   FaPuzzlePiece,
   FaSignOutAlt,
-  FaUserCircle,
   FaCheckCircle,
   FaExclamationCircle,
   FaLifeRing,
@@ -22,6 +21,13 @@ import type { UserRole } from '../../types/domain'
 
 export interface AppHeaderProps {
   className?: string
+}
+
+const roleLabel: Record<UserRole, string> = {
+  LIP: 'Litigant in person',
+  McKenzieFriend: 'McKenzie Friend',
+  Solicitor: 'Solicitor',
+  Barrister: 'Barrister',
 }
 
 const roleBadgeVariant: Record<UserRole, 'secondary' | 'success' | 'primary' | 'warning'> = {
@@ -66,12 +72,8 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
       expanded={expanded}
       onToggle={(exp) => setExpanded(exp)}
       sticky="top"
-      className={`app-navbar bg-white border-bottom shadow-sm ${className}`}
-      style={{
-        zIndex: 1030,
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
-        backdropFilter: 'blur(10px)',
-      }}
+      className={`app-navbar ${className}`}
+      style={{ zIndex: 1030, backdropFilter: 'blur(12px)' }}
     >
       <Container fluid className="px-lg-4">
         {/* Brand Logo */}
@@ -154,11 +156,8 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                   onClick={() => handleNavigate('/components')}
                   className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
                 >
-                  <FaPuzzlePiece size={14} className="text-primary" />
+                  <FaPuzzlePiece size={14} className="text-muted" />
                   <span>{t('common.components')}</span>
-                  <Badge bg="primary-subtle" className="text-primary border border-primary-subtle small ms-1 px-1">
-                    {t('common.docs')}
-                  </Badge>
                 </Nav.Link>
 
 
@@ -173,18 +172,21 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                     <Dropdown.Toggle
                       variant="light"
                       id="user-profile-dropdown"
-                      className="d-flex align-items-center gap-2 border bg-light py-1 px-2 rounded-pill shadow-none"
-                      style={{ fontSize: '0.875rem' }}
+                      className="d-flex align-items-center gap-2 border py-1 ps-1 pe-3 rounded-pill shadow-none"
+                      style={{ fontSize: '0.875rem', minHeight: 42 }}
                     >
-                      <FaUserCircle size={18} className="text-primary flex-shrink-0" />
+                      <span
+                        className="d-inline-flex align-items-center justify-content-center rounded-circle fw-bold flex-shrink-0"
+                        style={{ width: 32, height: 32, background: 'var(--mcb-primary-soft)', color: 'var(--mcb-primary)', fontSize: '0.8rem' }}
+                        aria-hidden="true"
+                      >
+                        {user.name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()}
+                      </span>
                       <span className="fw-semibold text-dark text-truncate" style={{ maxWidth: '140px' }}>
                         {user.name}
                       </span>
-                      <Badge
-                        bg={roleBadgeVariant[user.role] || 'secondary'}
-                        className={`px-2 py-1 small ${user.role === 'Barrister' ? 'text-dark' : ''}`}
-                      >
-                        {user.role}
+                      <Badge bg={roleBadgeVariant[user.role] || 'secondary'} className="d-none d-sm-inline-flex">
+                        {roleLabel[user.role]}
                       </Badge>
                     </Dropdown.Toggle>
 
@@ -192,6 +194,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                       <div className="px-3 py-2 border-bottom">
                         <div className="fw-bold text-dark">{user.name}</div>
                         <div className="small text-muted text-truncate">{user.email}</div>
+                        <div className="small mt-1">{roleLabel[user.role]}</div>
                         <div className="mt-2 d-flex align-items-center gap-1">
                           {user.role !== 'LIP' && (
                             user.isVerified ? (
@@ -251,7 +254,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                   onClick={() => handleNavigate('/components')}
                   className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
                 >
-                  <FaPuzzlePiece size={14} className="text-primary" />
+                  <FaPuzzlePiece size={14} className="text-muted" />
                   <span>{t('common.components')}</span>
                 </Nav.Link>
                 <Nav.Link
@@ -270,7 +273,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                   <LanguageSwitcher />
                   <Nav.Link
                     onClick={() => handleNavigate('/login')}
-                    className="btn btn-outline-primary px-3 py-1 text-center flex-fill flex-xl-grow-0"
+                    className="btn btn-primary btn-sm px-3 text-center flex-fill flex-xl-grow-0 text-white"
                   >
                     {t('common.signIn')}
                   </Nav.Link>

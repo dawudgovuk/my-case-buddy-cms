@@ -2,7 +2,7 @@ import type { TranslationSchema } from '../types'
 
 export const cy: TranslationSchema = {
   common: {
-    appName: 'MyCase Buddy',
+    appName: 'My Case Buddy',
     dashboard: 'Dangosfwrdd',
     cases: 'Achosion',
     newCase: 'Achos Newydd',
@@ -54,6 +54,7 @@ export const cy: TranslationSchema = {
   },
   caseDetails: {
     notFound: 'Achos heb ei ganfod.',
+    adultsCount: 'Adults & representatives ({{count}})',
     overviewTab: 'Trosolwg o’r Achos',
     partiesTab: 'Partïon',
     hearingsTab: 'Gwrandawiadau',

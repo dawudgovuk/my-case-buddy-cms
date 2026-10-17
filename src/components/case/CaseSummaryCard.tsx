@@ -1,4 +1,5 @@
 import { Button } from 'react-bootstrap'
+import { displayDate } from '../../utils/displayDate'
 import type { FamilyCase } from '../../types/domain'
 import CaseStatusBadge from '../common/CaseStatusBadge'
 import {
@@ -97,7 +98,7 @@ export default function CaseSummaryCard({
               {caseData.startedAt && (
                 <>
                   <span className="text-muted">•</span>
-                  <span className="text-muted">Started: {caseData.startedAt}</span>
+                  <span className="text-muted">Started: {displayDate(caseData.startedAt)}</span>
                 </>
               )}
             </div>
