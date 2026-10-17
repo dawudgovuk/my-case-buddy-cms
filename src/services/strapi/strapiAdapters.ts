@@ -13,6 +13,7 @@ import type {
   HearingType,
   OrderType,
 } from '../../types/domain';
+import { unwrapEntry as unwrap } from './strapiTypes';
 
 export interface StrapiCaseRaw {
   id: number;
@@ -121,13 +122,6 @@ export interface StrapiDeadlineRaw {
   case?: { id?: number; documentId?: string; caseNumber?: string };
   assignedTo?: { id?: number; documentId?: string; username?: string };
   attributes?: Record<string, unknown>;
-}
-
-function unwrap<T extends { attributes?: Record<string, unknown> }>(item: T): Record<string, unknown> {
-  if (item.attributes && typeof item.attributes === 'object') {
-    return { ...item.attributes, id: (item as { id?: unknown }).id };
-  }
-  return item as unknown as Record<string, unknown>;
 }
 
 export function toDomainParty(raw: StrapiPartyRaw): Party {

@@ -57,6 +57,7 @@ import {
   LanguageSwitcherPreview,
   StrapiSyncModalPreview,
 } from './CaseDetailsPreviews'
+import { AuthFieldsPreview, DirectoryFilterBarPreview, EmptyStatesPreview } from './FormPrimitivePreviews'
 
 export const COMPONENT_CATALOG: ComponentItem[] = [
   // 1. Cases & Progression
@@ -1046,5 +1047,67 @@ export const COMPONENT_CATALOG: ComponentItem[] = [
       { name: 'onHide', type: '() => void', required: true, description: 'Callback invoked when modal is dismissed' },
     ],
     renderPreview: (onFeedback) => createElement(StrapiSyncModalPreview, { onFeedback }),
+  },
+  {
+    id: 'auth-form-fields',
+    name: 'Auth Hero & Form Fields',
+    category: 'Form Inputs & Controls',
+    filePath: 'src/components/auth/PasswordField.tsx',
+    importStatement: "import AuthHero from '../components/auth/AuthHero'\nimport IconInputField from '../components/auth/IconInputField'\nimport PasswordField from '../components/auth/PasswordField'",
+    description:
+      'Building blocks of the sign-in and registration cards: branded hero header, icon-prefixed input and password input with show/hide toggle and optional length hint.',
+    badges: ['Auth', 'Controlled Inputs', 'Accessible'],
+    codeSnippet: `<AuthHero title="Welcome back" subtitle="Sign in to manage your cases." />
+<IconInputField label="Email Address" icon={<FaEnvelope />} type="email" value={email} onChange={setEmail} />
+<PasswordField
+  value={password}
+  onChange={setPassword}
+  showPassword={show}
+  onToggleShow={() => setShow((v) => !v)}
+  autoComplete="current-password"
+/>`,
+    propsDoc: [
+      { name: 'value / onChange', type: 'string / (value: string) => void', required: true, description: 'Controlled input value (both fields)' },
+      { name: 'icon', type: 'ReactNode', required: true, description: 'IconInputField: leading icon' },
+      { name: 'showPassword / onToggleShow', type: 'boolean / () => void', required: true, description: 'PasswordField: visibility state, owned by the parent' },
+      { name: 'showLengthHint', type: 'boolean', defaultVal: 'false', description: 'PasswordField: show the minimum-length hint' },
+    ],
+    renderPreview: () => createElement(AuthFieldsPreview),
+  },
+  {
+    id: 'directory-filter-bar',
+    name: 'Directory Filter Bar',
+    category: 'Legal Directory & Safeguarding',
+    filePath: 'src/components/directory/DirectoryFilterBar.tsx',
+    importStatement: "import DirectoryFilterBar from '../components/directory/DirectoryFilterBar'",
+    description: 'Search box plus role filter chips (with counts) for the legal professionals directory.',
+    badges: ['Filter', 'Search', 'Role Chips'],
+    codeSnippet: `<DirectoryFilterBar
+  searchTerm={searchTerm}
+  onSearchChange={setSearchTerm}
+  searchPlaceholder="Search by name, firm or specialism"
+  roleFilter={roleFilter}
+  onRoleChange={setRoleFilter}
+  counts={countProfessionalsByRole(professionals)}
+/>`,
+    propsDoc: [
+      { name: 'searchTerm / onSearchChange', type: 'string / (term: string) => void', required: true, description: 'Controlled search text' },
+      { name: 'roleFilter / onRoleChange', type: 'DirectoryRoleFilter', required: true, description: 'Selected role chip' },
+      { name: 'counts', type: 'DirectoryCounts', required: true, description: 'Number of professionals per role' },
+    ],
+    renderPreview: () => createElement(DirectoryFilterBarPreview),
+  },
+  {
+    id: 'filtered-empty-states',
+    name: 'Filtered Empty States',
+    category: 'Case Lists & Badges',
+    filePath: 'src/components/dashboard/NoMatchingCasesCard.tsx',
+    importStatement: "import NoMatchingCasesCard from '../components/dashboard/NoMatchingCasesCard'\nimport DirectoryEmptyState from '../components/directory/DirectoryEmptyState'",
+    description: 'Empty states shown when search or filters match nothing, each with a clear-filters action.',
+    badges: ['Empty State', 'Filters'],
+    codeSnippet: `<NoMatchingCasesCard onClearFilters={clearFilters} />
+<DirectoryEmptyState onClearFilters={clearFilters} />`,
+    propsDoc: [{ name: 'onClearFilters', type: '() => void', required: true, description: 'Resets the active filters' }],
+    renderPreview: (onFeedback) => createElement(EmptyStatesPreview, { onFeedback }),
   },
 ]

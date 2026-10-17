@@ -23,6 +23,8 @@ import {
 
 import { getCurrentUser } from '../services/auth';
 import { toast } from './toastStore';
+import { getErrorMessage } from '../utils/errors';
+import { isSameCase, mergeCaseMembers, upsertCaseInList } from '../utils/caseCollection';
 
 interface CasesState {
   cases: FamilyCase[];
@@ -74,7 +76,7 @@ export const useCasesStore = create<CasesState>((set, get) => ({
       saveSnapshot((prev) => ({ ...prev, cases: strapiCases }));
       set({ cases: strapiCases, isLoadingStrapi: false });
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch from Strapi';
+      const message = getErrorMessage(err, 'Failed to fetch from Strapi');
       // Graceful fallback to local snapshot on network failure
       set({
         cases: loadSnapshot().cases,
@@ -86,22 +88,11 @@ export const useCasesStore = create<CasesState>((set, get) => ({
 
   addOrUpdate: async (fc: FamilyCase): Promise<FamilyCase> => {
     // Determine whether this case already exists before any mutation
-    const isExisting = Boolean(
-      get().cases.some((c) => c.id === fc.id || (Boolean(fc.documentId) && c.documentId === fc.documentId)) ||
-      getCase(fc.id)
-    );
+    const isExisting = Boolean(get().cases.some((c) => isSameCase(c, fc)) || getCase(fc.id));
 
     // Optimistic persistence to local snapshot and Zustand store
     upsertCase(fc);
-    set((state) => {
-      const exists = state.cases.some((c) => c.id === fc.id || (Boolean(fc.documentId) && c.documentId === fc.documentId));
-      return {
-        cases: exists
-          ? state.cases.map((c) => (c.id === fc.id || (Boolean(fc.documentId) && c.documentId === fc.documentId) ? fc : c))
-          : [fc, ...state.cases],
-        strapiError: null,
-      };
-    });
+    set((state) => ({ cases: upsertCaseInList(state.cases, fc), strapiError: null }));
 
     if (get().isStrapiMode) {
       set({ isLoadingStrapi: true });
@@ -112,39 +103,18 @@ export const useCasesStore = create<CasesState>((set, get) => ({
           : await createStrapiCase(fc, currentUser);
 
         if (savedCase) {
-          // Merge incoming savedCase members with original fc members so client-side user ownership is never lost
-          const mergedMembers = [...(savedCase.members || [])];
-          (fc.members || []).forEach((origM) => {
-            if (!mergedMembers.some((m) => m.userId === origM.userId || (origM.email && m.email === origM.email))) {
-              mergedMembers.push(origM);
-            }
-          });
-          const hydratedCase: FamilyCase = {
-            ...savedCase,
-            members: mergedMembers.length > 0 ? mergedMembers : fc.members,
-          };
-
+          // Client-side ownership must never be lost when the server omits members
+          const hydratedCase = mergeCaseMembers(savedCase, fc);
           upsertCase(hydratedCase);
-          set((state) => {
-            const exists = state.cases.some(
-              (c) => c.id === hydratedCase.id || (Boolean(hydratedCase.documentId) && c.documentId === hydratedCase.documentId)
-            );
-            return {
-              cases: exists
-                ? state.cases.map((c) =>
-                    c.id === hydratedCase.id || (Boolean(hydratedCase.documentId) && c.documentId === hydratedCase.documentId)
-                      ? hydratedCase
-                      : c
-                  )
-                : [hydratedCase, ...state.cases],
-              isLoadingStrapi: false,
-              strapiError: null,
-            };
-          });
+          set((state) => ({
+            cases: upsertCaseInList(state.cases, hydratedCase),
+            isLoadingStrapi: false,
+            strapiError: null,
+          }));
           return hydratedCase;
         }
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Strapi sync failed';
+        const message = getErrorMessage(err, 'Strapi sync failed');
         set({ strapiError: message, isLoadingStrapi: false });
         throw err;
       } finally {
@@ -164,7 +134,7 @@ export const useCasesStore = create<CasesState>((set, get) => ({
 
     if (get().isStrapiMode) {
       deleteStrapiCase(caseId).catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : 'Strapi deletion failed';
+        const message = getErrorMessage(err, 'Strapi deletion failed');
         set({ strapiError: message });
         toast.error(`Remote deletion failed: ${message}`, 'Strapi Error');
       });
@@ -189,7 +159,7 @@ export const useCasesStore = create<CasesState>((set, get) => ({
 
     if (get().isStrapiMode) {
       toggleStrapiPeerSupport(caseId, seeking, note).catch((err: unknown) => {
-        const message = err instanceof Error ? err.message : 'Strapi peer support update failed';
+        const message = getErrorMessage(err, 'Strapi peer support update failed');
         set({ strapiError: message });
         toast.error(`Failed to update peer support in Strapi: ${message}`, 'Strapi Error');
       });
@@ -248,26 +218,15 @@ export const useCasesStore = create<CasesState>((set, get) => ({
         const result = await requestStrapiPeerSupport(caseId, targetProfessional.id, helpNote);
         if (result.case) {
           upsertCase(result.case);
-          const currentCases = get().cases;
-          const updatedList = currentCases.some(
-            (c) => c.id === result.case!.id || (result.case!.documentId && c.documentId === result.case!.documentId)
-          )
-            ? currentCases.map((c) =>
-                c.id === result.case!.id || (result.case!.documentId && c.documentId === result.case!.documentId)
-                  ? result.case!
-                  : c
-              )
-            : [...currentCases, result.case];
-
           set({
-            cases: updatedList,
+            cases: upsertCaseInList(get().cases, result.case, 'end'),
             isLoadingStrapi: false,
             strapiError: null,
           });
           return result.case;
         }
       } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Strapi peer support request failed';
+        const message = getErrorMessage(err, 'Strapi peer support request failed');
         set({ strapiError: message, isLoadingStrapi: false });
         toast.error(`Peer support request failed: ${message}`, 'Request Error');
         throw err;
@@ -286,6 +245,3 @@ if (isStrapiEnabled()) {
     void useCasesStore.getState().syncWithStrapi();
   }, 0);
 }
-
-
-

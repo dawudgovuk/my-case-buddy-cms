@@ -1,6 +1,7 @@
 import type { CaseInvite } from '../../types/domain';
 import { strapiGet, strapiPost } from './strapiClient';
 import { fetchStrapiCaseById } from './casesApiService';
+import { unwrapEntry as unwrap, type StrapiListResponse, type StrapiSingleResponse } from './strapiTypes';
 
 interface StrapiInviteRaw {
   id: number;
@@ -14,21 +15,6 @@ interface StrapiInviteRaw {
   createdBy?: { id?: number; documentId?: string };
   usedBy?: { id?: number; documentId?: string };
   attributes?: Record<string, unknown>;
-}
-
-interface StrapiListResponse<T> {
-  data: T[];
-}
-
-interface StrapiSingleResponse<T> {
-  data: T;
-}
-
-function unwrap<T extends { attributes?: Record<string, unknown> }>(item: T): Record<string, unknown> {
-  if (item.attributes && typeof item.attributes === 'object') {
-    return { ...item.attributes, id: (item as { id?: unknown }).id };
-  }
-  return item as unknown as Record<string, unknown>;
 }
 
 export function toDomainInvite(raw: StrapiInviteRaw, fallbackCaseId?: string): CaseInvite {

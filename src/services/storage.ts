@@ -1,7 +1,7 @@
 import type { AppStateSnapshot, FamilyCase, CaseInvite, DocumentDeadline } from '../types/domain';
 import { isDemoUser } from './auth';
+import { SNAPSHOT_STORAGE_KEY as STORAGE_KEY } from './storageKeys';
 
-const STORAGE_KEY = 'uk-family-court-cms:v1';
 const VERSION = 2;
 
 function nowIso(): string {

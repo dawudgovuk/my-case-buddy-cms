@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "tsx --test tests/unit/*.test.ts",
     "test:neon": "tsx scripts/test-neon-services.ts",
     "preview": "vite preview"
   },

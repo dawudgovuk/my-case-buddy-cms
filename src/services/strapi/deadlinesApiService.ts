@@ -2,14 +2,7 @@ import type { DocumentDeadline } from '../../types/domain';
 import { strapiGet, strapiPost, strapiPut } from './strapiClient';
 import { toDomainDeadline, type StrapiDeadlineRaw } from './strapiAdapters';
 import { fetchStrapiCaseById } from './casesApiService';
-
-interface StrapiListResponse<T> {
-  data: T[];
-}
-
-interface StrapiSingleResponse<T> {
-  data: T;
-}
+import type { StrapiListResponse, StrapiSingleResponse } from './strapiTypes';
 
 /**
  * Fetches filing deadlines from Strapi with optional filters

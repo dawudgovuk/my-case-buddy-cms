@@ -1,47 +1,36 @@
-import { useState, useMemo, useEffect } from 'react'
-import { Container, Row, Col, Card, Button, Alert, Spinner } from 'react-bootstrap'
+import { useMemo, useEffect } from 'react'
+import { Container, Alert } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 import { useCasesStore } from '../store/casesStore'
 import { useTranslation } from '../hooks/useTranslation'
-import type { CaseStatus } from '../types/domain'
+import { useResendVerificationEmail } from '../hooks/useResendVerificationEmail'
+import { useCaseDashboardFilters } from '../hooks/useCaseDashboardFilters'
 import { isUserCaseOwner } from '../utils/caseMembership'
-import CaseCard from '../components/case/CaseCard'
+import {
+  PEER_SUPPORT_REQUEST_NOTE,
+  countAllHearings,
+  countCasesSeekingPeerSupport,
+} from '../utils/dashboardUtils'
 import DashboardHeader from '../components/dashboard/DashboardHeader'
 import DashboardTableView from '../components/dashboard/DashboardTableView'
 import DashboardFilterBar from '../components/dashboard/DashboardFilterBar'
-import { FaFolderPlus, FaEnvelope, FaCheckCircle } from 'react-icons/fa'
-import { toast } from '../store/toastStore'
-
-type DashboardViewMode = 'grid' | 'table'
+import DashboardCaseGrid from '../components/dashboard/DashboardCaseGrid'
+import VerificationPendingAlert from '../components/dashboard/VerificationPendingAlert'
+import NoActiveCasesCard from '../components/dashboard/NoActiveCasesCard'
+import NoMatchingCasesCard from '../components/dashboard/NoMatchingCasesCard'
 
 export default function LIPDashboard() {
   const navigate = useNavigate()
-  const { user, resendRegistrationEmails } = useAuthStore()
+  const { user } = useAuthStore()
   const { cases, togglePeerSupport, refresh } = useCasesStore()
   const { t } = useTranslation()
-
-  const [resendingEmail, setResendingEmail] = useState(false)
-  const [emailNotice, setEmailNotice] = useState<string | null>(null)
+  const { isResending, notice, resend } = useResendVerificationEmail()
 
   // Auto-sync cases on dashboard mount
   useEffect(() => {
     refresh()
   }, [refresh])
-
-  // View mode state with local storage persistence
-  const [viewMode, setViewMode] = useState<DashboardViewMode>(() => {
-    const saved = localStorage.getItem('lip_dashboard_view')
-    return saved === 'table' ? 'table' : 'grid'
-  })
-
-  useEffect(() => {
-    localStorage.setItem('lip_dashboard_view', viewMode)
-  }, [viewMode])
-
-  // Search & Filter state
-  const [searchQuery, setSearchQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<CaseStatus | 'All'>('All')
 
   // User-owned cases using unified RBAC ownership helper
   const userCases = useMemo(() => {
@@ -49,38 +38,20 @@ export default function LIPDashboard() {
     return cases.filter((c) => isUserCaseOwner(c, user))
   }, [cases, user])
 
-  // Filtered cases based on search and status
-  const filteredCases = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase()
-    return userCases.filter((c) => {
-      if (statusFilter !== 'All' && c.status !== statusFilter) {
-        return false
-      }
-      if (query) {
-        const matches = [c.id, c.title, c.court, c.caseType, c.allocatedJudge]
-          .filter(Boolean)
-          .some((val) => String(val).toLowerCase().includes(query))
-        if (!matches) return false
-      }
-      return true
-    })
-  }, [userCases, searchQuery, statusFilter])
+  const {
+    viewMode,
+    setViewMode,
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter,
+    clearFilters,
+    filteredCases,
+    statusCounts,
+  } = useCaseDashboardFilters(userCases)
 
-  // Real-time status counts
-  const statusCounts = useMemo(() => {
-    return {
-      All: userCases.length,
-      Open: userCases.filter((c) => c.status === 'Open').length,
-      Stayed: userCases.filter((c) => c.status === 'Stayed').length,
-      Concluded: userCases.filter((c) => c.status === 'Concluded').length,
-    }
-  }, [userCases])
-
-  const upcomingHearingsCount = userCases.reduce(
-    (acc, c) => acc + (c.hearings ? c.hearings.length : 0),
-    0
-  )
-  const peerSupportCount = userCases.filter((c) => c.seekingPeerSupport).length
+  const upcomingHearingsCount = countAllHearings(userCases)
+  const peerSupportCount = countCasesSeekingPeerSupport(userCases)
 
   if (!user) {
     return (
@@ -91,12 +62,10 @@ export default function LIPDashboard() {
   }
 
   const handleTogglePeerSupport = (caseId: string, currentSeeking: boolean) => {
-    togglePeerSupport(
-      caseId,
-      !currentSeeking,
-      currentSeeking ? undefined : 'Seeking peer review from experienced supporters'
-    )
+    togglePeerSupport(caseId, !currentSeeking, currentSeeking ? undefined : PEER_SUPPORT_REQUEST_NOTE)
   }
+  const handleViewCase = (caseId: string) => navigate(`/cases/${caseId}`)
+  const handleEditCase = (caseId: string) => navigate(`/cases/${caseId}/edit`)
 
   return (
     <Container fluid className="px-lg-4 py-2">
@@ -114,83 +83,18 @@ export default function LIPDashboard() {
 
       {/* Verification Notice Banner if account not verified */}
       {!user.isVerified && (
-        <Alert variant="warning" className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3 shadow-xs border-warning-subtle">
-          <div className="d-flex align-items-center gap-2">
-            <FaEnvelope className="text-warning flex-shrink-0" />
-            <div>
-              <strong>Account Pending Email Verification:</strong> Welcome emails and your verification link were dispatched to <code>{user.email}</code>.
-              {emailNotice && <div className="text-success small fw-semibold mt-1"><FaCheckCircle className="me-1" />{emailNotice}</div>}
-            </div>
-          </div>
-          <div className="d-flex gap-2 align-items-center">
-            {user.verificationToken && (
-              <Button
-                variant="outline-dark"
-                size="sm"
-                onClick={() => navigate(`/verify-email/${user.verificationToken}`)}
-              >
-                Verify Now
-              </Button>
-            )}
-            <Button
-              variant="warning"
-              size="sm"
-              disabled={resendingEmail}
-              onClick={async () => {
-                setResendingEmail(true)
-                try {
-                  const res = await resendRegistrationEmails(user.email)
-                  if (res.success) {
-                    const notice = 'Verification and welcome emails re-dispatched to ' + user.email
-                    setEmailNotice(notice)
-                    toast.success(notice, 'Emails Dispatched')
-                  } else {
-                    const notice = 'Notice: ' + (res.error || 'Failed to dispatch')
-                    setEmailNotice(notice)
-                    toast.error(notice, 'Dispatch Failed')
-                  }
-                } finally {
-                  setResendingEmail(false)
-                }
-              }}
-            >
-              {resendingEmail ? (
-                <>
-                  <Spinner size="sm" animation="border" className="me-1" />
-                  Sending...
-                </>
-              ) : (
-                'Resend Verification Email'
-              )}
-            </Button>
-          </div>
-        </Alert>
+        <VerificationPendingAlert
+          email={user.email}
+          verificationToken={user.verificationToken}
+          notice={notice}
+          isResending={isResending}
+          onVerifyNow={() => navigate(`/verify-email/${user.verificationToken}`)}
+          onResend={() => resend(user.email)}
+        />
       )}
 
       {userCases.length === 0 ? (
-        <Card className="premium-card text-center p-5 border-0">
-          <Card.Body className="py-5">
-            <div
-              className="d-flex align-items-center justify-content-center mx-auto rounded-circle bg-primary-subtle text-primary mb-3"
-              style={{ width: 64, height: 64 }}
-            >
-              <FaFolderPlus size={28} />
-            </div>
-            <h3 className="mb-2 fw-bold text-dark">
-              {t('lipDashboard.noActiveCasesTitle')}
-            </h3>
-            <p className="mb-4 text-muted" style={{ maxWidth: 440, margin: '0 auto' }}>
-              {t('lipDashboard.noActiveCasesDesc')}
-            </p>
-            <Button
-              className="btn-obsidian fw-semibold px-4 py-2 rounded-3 shadow-sm"
-              size="lg"
-              onClick={() => navigate('/cases/new')}
-            >
-              {t('lipDashboard.createFirstCaseBtn')}
-            </Button>
-          </Card.Body>
-        </Card>
+        <NoActiveCasesCard onCreateCase={() => navigate('/cases/new')} />
       ) : (
         <>
           {/* Controls & View Switcher Toolbar */}
@@ -202,55 +106,26 @@ export default function LIPDashboard() {
             statusCounts={statusCounts}
             viewMode={viewMode}
             onViewModeChange={setViewMode}
-            onClearFilters={() => {
-              setSearchQuery('')
-              setStatusFilter('All')
-            }}
+            onClearFilters={clearFilters}
           />
 
           {/* Active View Display */}
           {filteredCases.length === 0 ? (
-            <Card className="premium-card text-center p-5 border-0">
-              <Card.Body className="py-4">
-                <h6 className="fw-bold text-dark">No matching cases found</h6>
-                <p className="small text-muted mb-3">
-                  Try adjusting your search query or status filter to see your active court cases.
-                </p>
-                <Button
-                  variant="light"
-                  className="btn-soft border px-3 py-1.5 small fw-semibold"
-                  onClick={() => {
-                    setSearchQuery('')
-                    setStatusFilter('All')
-                  }}
-                >
-                  Clear Filters
-                </Button>
-              </Card.Body>
-            </Card>
+            <NoMatchingCasesCard onClearFilters={clearFilters} />
           ) : viewMode === 'grid' ? (
             /* 1. Grid / Cards View (with Timeline) */
-            <Row className="g-4">
-              {filteredCases.map((caseData) => (
-                <Col key={caseData.id} xs={12} md={6} lg={4} className="d-flex">
-                  <CaseCard
-                    caseData={caseData}
-                    buttonLayout="vertical"
-                    progressComponent="timeline"
-                    timelineDefaultExpanded={false}
-                    onTogglePeerSupport={handleTogglePeerSupport}
-                    onViewDetails={(caseId) => navigate(`/cases/${caseId}`)}
-                    onEdit={(caseId) => navigate(`/cases/${caseId}/edit`)}
-                  />
-                </Col>
-              ))}
-            </Row>
+            <DashboardCaseGrid
+              cases={filteredCases}
+              onTogglePeerSupport={handleTogglePeerSupport}
+              onViewCase={handleViewCase}
+              onEditCase={handleEditCase}
+            />
           ) : (
             /* 2. Table View */
             <DashboardTableView
               cases={filteredCases}
-              onViewCase={(caseId) => navigate(`/cases/${caseId}`)}
-              onEditCase={(caseId) => navigate(`/cases/${caseId}/edit`)}
+              onViewCase={handleViewCase}
+              onEditCase={handleEditCase}
               onTogglePeerSupport={handleTogglePeerSupport}
             />
           )}
@@ -259,4 +134,3 @@ export default function LIPDashboard() {
     </Container>
   )
 }
-

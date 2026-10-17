@@ -5,22 +5,7 @@ import {
   toStrapiCasePayload,
   type StrapiCaseRaw,
 } from './strapiAdapters';
-
-interface StrapiListResponse<T> {
-  data: T[];
-  meta?: {
-    pagination?: {
-      page: number;
-      pageSize: number;
-      pageCount: number;
-      total: number;
-    };
-  };
-}
-
-interface StrapiSingleResponse<T> {
-  data: T;
-}
+import type { StrapiListResponse, StrapiSingleResponse } from './strapiTypes';
 
 const COMMON_POPULATE_PARAMS = {
   'populate[parties]': 'true',

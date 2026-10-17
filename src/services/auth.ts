@@ -1,4 +1,6 @@
 import type { User, FamilyCase } from '../types/domain'
+import { isVerifiedLegalProfessional } from '../utils/directoryUtils'
+import { SNAPSHOT_STORAGE_KEY } from './storageKeys'
 
 const AUTH_KEY = 'mycasebuddy:auth:v1'
 const USERS_KEY = 'mycasebuddy:users:v1'
@@ -93,7 +95,7 @@ export function purgeLegacyDemoData(): void {
     }
 
     // 3. Local cases snapshot
-    const rawSnapshot = localStorage.getItem('uk-family-court-cms:v1')
+    const rawSnapshot = localStorage.getItem(SNAPSHOT_STORAGE_KEY)
     if (rawSnapshot) {
       const snap = JSON.parse(rawSnapshot)
       if (Array.isArray(snap.cases)) {
@@ -102,7 +104,7 @@ export function purgeLegacyDemoData(): void {
           const isDemoSeeded = typeof c.caseNumber === 'string' && c.caseNumber.startsWith('FC-') && c.id.startsWith('case_')
           return !hasDemoMember && !isDemoSeeded
         })
-        localStorage.setItem('uk-family-court-cms:v1', JSON.stringify(snap))
+        localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(snap))
       }
     }
   } catch (err) {
@@ -119,6 +121,16 @@ export function findUserByToken(token: string): User | undefined {
   return listUsers().find((u) => u.verificationToken === token)
 }
 
+/** Saves `updated` at `index` and refreshes the session when it is the signed-in user. */
+function replaceStoredUser(users: User[], index: number, updated: User): void {
+  users[index] = updated
+  saveUsers(users)
+  const currentUser = getCurrentUser()
+  if (currentUser && currentUser.id === updated.id) {
+    setCurrentUser(updated)
+  }
+}
+
 export function verifyUserToken(token: string): { success: boolean; user?: User; error?: string } {
   const users = listUsers()
 
@@ -133,15 +145,7 @@ export function verifyUserToken(token: string): { success: boolean; user?: User;
       lastVerifiedToken: token,
     }
 
-    users[index] = updatedUser
-    saveUsers(users)
-
-    // Update current session if the verified user is currently logged in
-    const currentUser = getCurrentUser()
-    if (currentUser && currentUser.id === updatedUser.id) {
-      setCurrentUser(updatedUser)
-    }
-
+    replaceStoredUser(users, index, updatedUser)
     return { success: true, user: updatedUser }
   }
 
@@ -172,14 +176,7 @@ export function verifyUserById(userId: string): User | undefined {
     verificationToken: undefined,
   }
 
-  users[index] = updatedUser
-  saveUsers(users)
-
-  const currentUser = getCurrentUser()
-  if (currentUser && currentUser.id === updatedUser.id) {
-    setCurrentUser(updatedUser)
-  }
-
+  replaceStoredUser(users, index, updatedUser)
   return updatedUser
 }
 
@@ -203,11 +200,7 @@ export function verifyAllProfessionals(): User[] {
 }
 
 export function getVerifiedProfessionals(): User[] {
-  return listUsers().filter(
-    (u) =>
-      (u.role === 'Solicitor' || u.role === 'Barrister' || u.role === 'McKenzieFriend') &&
-      Boolean(u.isVerified)
-  )
+  return listUsers().filter(isVerifiedLegalProfessional)
 }
 
 

@@ -1,0 +1,119 @@
+import type { ReactNode } from 'react'
+import { Card, Button, Badge } from 'react-bootstrap'
+import { FaEdit, FaGavel, FaFolder, FaCalendarAlt, FaExclamationTriangle } from 'react-icons/fa'
+import { displayDate } from '../../utils/displayDate'
+import type { FamilyCase } from '../../types/domain'
+
+export interface CaseIdentificationReviewCardProps {
+  caseData: FamilyCase
+  hasTitle: boolean
+  onEditDetails: () => void
+}
+
+interface DetailRowProps {
+  label: string
+  isLast?: boolean
+  children: ReactNode
+}
+
+function DetailRow({ label, isLast = false, children }: DetailRowProps) {
+  return (
+    <div className={isLast ? 'd-flex justify-content-between' : 'd-flex justify-content-between border-bottom pb-1'}>
+      <span className="text-muted">{label}</span>
+      {children}
+    </div>
+  )
+}
+
+/**
+ * Review card summarising case identification metadata (title, reference, court, type, status, dates, judge).
+ */
+export default function CaseIdentificationReviewCard({
+  caseData,
+  hasTitle,
+  onEditDetails,
+}: CaseIdentificationReviewCardProps) {
+  return (
+    <Card
+      className={`border shadow-sm bg-white rounded-3 h-100 ${
+        !hasTitle ? 'border-danger-subtle' : ''
+      }`}
+    >
+      <Card.Header
+        className={`border-bottom py-3 px-3 d-flex justify-content-between align-items-center ${
+          !hasTitle ? 'bg-danger-subtle text-danger' : 'bg-white'
+        }`}
+      >
+        <div className="d-flex align-items-center gap-2">
+          <FaFolder className={!hasTitle ? 'text-danger' : 'text-primary'} />
+          <h6 className="fw-bold mb-0 text-dark">Case Identification</h6>
+          {!hasTitle && (
+            <Badge bg="danger" className="py-0.5 px-1.5 ms-1 font-monospace" style={{ fontSize: '0.68rem' }}>
+              ⚠️ Issue
+            </Badge>
+          )}
+        </div>
+        <Button
+          variant={!hasTitle ? 'danger' : 'outline-primary'}
+          size="sm"
+          className="py-0 px-2 fw-semibold"
+          style={{ fontSize: '0.78rem' }}
+          onClick={onEditDetails}
+        >
+          <FaEdit className="me-1" size={10} />
+          {!hasTitle ? 'Fix in Step 1' : 'Edit'}
+        </Button>
+      </Card.Header>
+      <Card.Body className="p-3">
+        {!caseData.title.trim() ? (
+          <div className="alert alert-danger py-2 px-3 small d-flex align-items-center justify-content-between mb-3 rounded-3 border-danger-subtle">
+            <span className="text-danger fw-semibold d-flex align-items-center gap-1.5">
+              <FaExclamationTriangle /> Case Title is missing
+            </span>
+            <Button
+              variant="danger"
+              size="sm"
+              className="py-1 px-2 fw-bold text-nowrap"
+              style={{ fontSize: '0.75rem' }}
+              onClick={onEditDetails}
+            >
+              Add Title Now
+            </Button>
+          </div>
+        ) : (
+          <h6 className="fw-bold text-dark mb-1">{caseData.title}</h6>
+        )}
+
+        <div className="text-muted small mb-3">
+          Reference: <code className="text-dark fw-bold">{caseData.id || '(Auto-generated)'}</code>
+        </div>
+
+        <div className="d-flex flex-column gap-2 small">
+          <DetailRow label="Court:">
+            <span className="fw-semibold text-dark">{caseData.court}</span>
+          </DetailRow>
+          <DetailRow label="Case Type:">
+            <span className="fw-semibold text-dark">{caseData.caseType}</span>
+          </DetailRow>
+          <DetailRow label="Status:">
+            <Badge bg="success" className="fw-normal">
+              {caseData.status}
+            </Badge>
+          </DetailRow>
+          <DetailRow label="Started On:">
+            <span className="fw-semibold text-dark">
+              <FaCalendarAlt className="me-1 text-muted" size={11} />
+              {displayDate(caseData.startedAt)}
+            </span>
+          </DetailRow>
+          <DetailRow label="Allocated Judge:" isLast>
+            <span className="fw-semibold text-dark">
+              <FaGavel className="me-1 text-muted" size={11} />
+              {caseData.allocatedJudge || 'Unassigned / Bench'}
+            </span>
+          </DetailRow>
+        </div>
+      </Card.Body>
+    </Card>
+  )
+}

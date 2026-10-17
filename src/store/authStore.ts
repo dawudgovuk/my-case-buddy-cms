@@ -14,6 +14,8 @@ import { generateId } from '../services/storage'
 import { authClient } from '../auth'
 import { dispatchMcKenzieRegistrationEmails, resendMcKenzieRegistrationEmails } from '../services/emailService'
 import { toast } from './toastStore'
+import { getErrorMessage } from '../utils/errors'
+import { appUserFromNeon, findUserByEmail, sameEmail, toStrapiUsername } from '../utils/userUtils'
 
 export interface NeonSessionData {
   id: string
@@ -73,15 +75,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         const nUser = res.data.user as NeonUserData
         const nSession = res.data.session as NeonSessionData
         const users = get().users
-        let matched = users.find((u) => u.email.toLowerCase() === nUser.email.toLowerCase())
+        let matched = findUserByEmail(users, nUser.email)
         if (!matched) {
-          matched = {
-            id: nUser.id,
-            name: nUser.name || nUser.email.split('@')[0],
-            email: nUser.email,
-            role: 'LIP',
-            isVerified: Boolean(nUser.emailVerified),
-          }
+          matched = appUserFromNeon(nUser, nUser.email.split('@')[0])
           const updatedUsers = [...users, matched]
           saveUsers(updatedUsers)
           set({ users: updatedUsers })
@@ -119,15 +115,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Sync into application user list
       const users = get().users
-      let matched = users.find((u) => u.email.toLowerCase() === nUser.email.toLowerCase())
+      let matched = findUserByEmail(users, nUser.email)
       if (!matched) {
-        matched = {
-          id: nUser.id,
-          name: nUser.name || email.split('@')[0],
-          email: nUser.email,
-          role: 'LIP',
-          isVerified: Boolean(nUser.emailVerified),
-        }
+        matched = appUserFromNeon(nUser, email.split('@')[0])
         const updatedUsers = [...users, matched]
         saveUsers(updatedUsers)
         set({ users: updatedUsers })
@@ -160,7 +150,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
             }
             const currentUsers = get().users
             const updatedUsers = currentUsers.map((u) =>
-              u.id === matched!.id || u.email.toLowerCase() === matched!.email.toLowerCase() ? matched! : u
+              u.id === matched!.id || sameEmail(u.email, matched!.email) ? matched! : u
             )
             saveUsers(updatedUsers)
             setCurrentUser(matched)
@@ -169,9 +159,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         } catch {
           // If login fails (user registered in Neon Auth but missing in Strapi), auto-register into Strapi
           try {
-            const sanitizedUsername = (matched.name || email.split('@')[0]).trim().replace(/\s+/g, '_').toLowerCase() + '_' + Math.random().toString(36).substring(2, 6)
             await strapiRegister({
-              username: sanitizedUsername,
+              username: toStrapiUsername(matched.name || email.split('@')[0]),
               email: email.trim(),
               password,
               userRole: matched.role || 'LIP',
@@ -186,8 +175,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       return { success: true, user: matched }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err)
-      return { success: false, error: message }
+      return { success: false, error: getErrorMessage(err) }
     }
   },
 
@@ -210,7 +198,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const isVerified = false
 
       const users = get().users
-      const existingIndex = users.findIndex((u) => u.email.toLowerCase() === email.toLowerCase())
+      const existingIndex = users.findIndex((u) => sameEmail(u.email, email))
 
       const appUser: User = {
         id: nUser?.id || generateId('user'),
@@ -244,9 +232,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Synchronize newly registered account into Strapi API so it appears in live directory
       if (isStrapiEnabled()) {
         try {
-          const sanitizedUsername = name.trim().replace(/\s+/g, '_').toLowerCase() + '_' + Math.random().toString(36).substring(2, 6)
           await strapiRegister({
-            username: sanitizedUsername,
+            username: toStrapiUsername(name),
             email: email.trim(),
             password,
             userRole: role,
@@ -272,18 +259,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       return { success: true, user: appUser }
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : String(err)
-      return { success: false, error: message }
+      return { success: false, error: getErrorMessage(err) }
     }
   },
 
   resendRegistrationEmails: async (email: string) => {
     try {
       const allUsers = get().users
-      let user = allUsers.find((u) => u.email.toLowerCase() === email.toLowerCase())
+      let user = findUserByEmail(allUsers, email)
       if (!user) {
         const current = get().user
-        if (current && current.email.toLowerCase() === email.toLowerCase()) {
+        if (current && sameEmail(current.email, email)) {
           user = current
         } else {
           user = {
@@ -303,7 +289,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         verificationSentAt: new Date().toISOString(),
       }
 
-      const existingIdx = allUsers.findIndex((u) => u.email.toLowerCase() === email.toLowerCase())
+      const existingIdx = allUsers.findIndex((u) => sameEmail(u.email, email))
       const updatedUsers = existingIdx >= 0
         ? allUsers.map((u, i) => (i === existingIdx ? updatedUser : u))
         : [...allUsers, updatedUser]
@@ -322,7 +308,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       })
       return { success: true }
     } catch (err: unknown) {
-      return { success: false, error: err instanceof Error ? err.message : String(err) }
+      return { success: false, error: getErrorMessage(err) }
     }
   },
 
@@ -334,9 +320,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   loginWithUser: (user: User) => {
     const existing = get().users
-    const isExisting = existing.some((u) => u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase())
+    const isExisting = existing.some((u) => u.id === user.id || sameEmail(u.email, user.email))
     const updated = isExisting
-      ? existing.map((u) => (u.id === user.id || u.email.toLowerCase() === user.email.toLowerCase() ? user : u))
+      ? existing.map((u) => (u.id === user.id || sameEmail(u.email, user.email) ? user : u))
       : [user, ...existing]
     saveUsers(updated)
     setCurrentUser(user)
@@ -372,15 +358,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   verifyUserById: (userId: string) => {
     verifyUserByIdService(userId)
-    const allUsers = listUsers()
-    const current = getCurrentUser()
-    set({ users: allUsers, user: current })
+    get().refreshUsers()
   },
 
   verifyAllProfessionals: () => {
     verifyAllProfessionalsService()
-    const allUsers = listUsers()
-    const current = getCurrentUser()
-    set({ users: allUsers, user: current })
+    get().refreshUsers()
   },
 }))

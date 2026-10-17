@@ -1,52 +1,29 @@
-import { Container, Card, Form, Button, Alert, Row, Col, Spinner } from 'react-bootstrap'
-import { useState } from 'react'
-import { useAuthStore } from '../store/authStore'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Container, Card, Button, Alert } from 'react-bootstrap'
+import { useParams } from 'react-router-dom'
 import { useTranslation } from '../hooks/useTranslation'
+import { useRegisterForm } from '../hooks/useRegisterForm'
 import type { UserRole } from '../types/domain'
-import { USER_ROLES } from '../utils/caseConstants'
+import { ROLE_INTROS, ROLE_TITLES, isValidRole } from '../utils/authConstants'
 import RegistrationPendingCard from '../components/auth/RegistrationPendingCard'
-import heartLogo from '../assets/heart-logo.png'
-import { FaEye, FaEyeSlash, FaLock, FaUserPlus } from 'react-icons/fa'
-import { toast } from '../store/toastStore'
-
-const ROLE_TITLES: Record<UserRole, string> = {
-  LIP: 'litigant in person',
-  McKenzieFriend: 'McKenzie Friend',
-  Solicitor: 'solicitor',
-  Barrister: 'barrister',
-}
-
-const ROLE_INTROS: Record<UserRole, string> = {
-  LIP: 'Keep track of your family court case, hearings and documents in one place.',
-  McKenzieFriend: 'Support people who are going through family court on their own.',
-  Solicitor: 'Offer your expertise to people representing themselves in family court.',
-  Barrister: 'Offer your expertise to people representing themselves in family court.',
-}
-
-function isValidRole(r: string | undefined): r is UserRole {
-  return typeof r === 'string' && (USER_ROLES as readonly string[]).includes(r)
-}
+import AuthHero from '../components/auth/AuthHero'
+import RegisterForm from '../components/auth/RegisterForm'
 
 export default function Register() {
-  const navigate = useNavigate()
   const { role } = useParams<{ role: string }>()
-  const { registerWithNeon, resendRegistrationEmails } = useAuthStore()
   const { t } = useTranslation()
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [firm, setFirm] = useState('')
-  const [registrationNumber, setRegistrationNumber] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-
-  const [registeredPendingVerification, setRegisteredPendingVerification] = useState<{
-    email: string
-    token: string
-    name: string
-  } | null>(null)
+  const {
+    values,
+    setField,
+    showPassword,
+    toggleShowPassword,
+    error,
+    setError,
+    loading,
+    registeredPendingVerification,
+    resendRegistrationEmails,
+    handleSubmit,
+    navigate,
+  } = useRegisterForm()
 
   if (!isValidRole(role)) {
     return (
@@ -60,67 +37,6 @@ export default function Register() {
   }
 
   const userRole: UserRole = role
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError('')
-
-    if (!name.trim() || !email.trim()) {
-      const err = t('auth.nameAndEmailRequired')
-      setError(err)
-      toast.warning(err, 'Required Fields')
-      return
-    }
-
-    if (!password || password.length < 8) {
-      const err = 'Password must be at least 8 characters'
-      setError(err)
-      toast.warning(err, 'Password Length')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      const result = await registerWithNeon({
-        name: name.trim(),
-        email: email.trim(),
-        password,
-        role: userRole,
-        firm: firm.trim() || undefined,
-        registrationNumber: registrationNumber.trim() || undefined,
-      })
-
-      if (!result.success || !result.user) {
-        const err = result.error || 'Registration failed. Please try again.'
-        setError(err)
-        toast.error(err, 'Registration Failed')
-        setLoading(false)
-        return
-      }
-
-      if (result.user.verificationToken) {
-        toast.success(
-          `Registration submitted! Verification link dispatched to ${result.user.email}.`,
-          'Check Your Inbox'
-        )
-        setRegisteredPendingVerification({
-          email: result.user.email,
-          token: result.user.verificationToken,
-          name: result.user.name,
-        })
-      } else {
-        toast.success(`Welcome to My Case Buddy, ${result.user.name}!`, 'Account Created')
-        navigate(userRole === 'LIP' ? '/cases' : '/professional-dashboard')
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'An unexpected error occurred'
-      setError(msg)
-      toast.error(msg, 'Registration Error')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   if (registeredPendingVerification) {
     return (
@@ -142,145 +58,20 @@ export default function Register() {
     <Container className="auth-shell">
       <div className="auth-panel">
       <Card className="overflow-hidden">
-        <div className="auth-hero">
-          <div className="auth-hero-icon">
-            <img src={heartLogo} alt="" />
-          </div>
-          <h1 className="h3 fw-bold mb-1">Join as a {ROLE_TITLES[userRole]}</h1>
-          <p>{ROLE_INTROS[userRole]}</p>
-        </div>
+        <AuthHero title={<>Join as a {ROLE_TITLES[userRole]}</>} subtitle={ROLE_INTROS[userRole]} />
         <Card.Body className="p-4">
-          <Form onSubmit={handleSubmit}>
-            {error && (
-              <Alert variant="danger" dismissible onClose={() => setError('')} className="mb-3 py-2 px-3 small rounded-3">
-                {error}
-              </Alert>
-            )}
-
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-semibold small text-secondary">{t('auth.fullNameLabel')}</Form.Label>
-              <Form.Control
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                size="lg"
-                placeholder={t('auth.fullNamePlaceholder')}
-                disabled={loading}
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-semibold small text-secondary">{t('auth.emailLabel')}</Form.Label>
-              <Form.Control
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                size="lg"
-                placeholder={t('auth.emailPlaceholder')}
-                disabled={loading}
-                autoComplete="email"
-              />
-            </Form.Group>
-
-            <Form.Group className="mb-3">
-              <div className="d-flex justify-content-between align-items-center">
-                <Form.Label className="fw-semibold small text-secondary">Password</Form.Label>
-                <small className="text-muted" style={{ fontSize: '0.75rem' }}>Min 8 characters</small>
-              </div>
-              <div className="input-group">
-                <span className="input-group-text bg-white text-muted">
-                  <FaLock size={14} />
-                </span>
-                <Form.Control
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  required
-                  size="lg"
-                  disabled={loading}
-                  autoComplete="new-password"
-                />
-                <Button
-                  variant="outline-secondary"
-                  className="border-start-0 bg-white text-muted"
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
-                </Button>
-              </div>
-            </Form.Group>
-
-            {(userRole === 'Solicitor' || userRole === 'Barrister') && (
-              <>
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-semibold small text-secondary">
-                    {userRole === 'Solicitor' ? t('auth.firmLabel') : t('auth.chambersLabel')}
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={firm}
-                    onChange={(e) => setFirm(e.target.value)}
-                    size="lg"
-                    placeholder={userRole === 'Solicitor' ? t('auth.firmPlaceholder') : t('auth.chambersPlaceholder')}
-                    disabled={loading}
-                  />
-                </Form.Group>
-
-                <Form.Group className="mb-3">
-                  <Form.Label className="fw-semibold small text-secondary">
-                    {t('auth.registrationNumberLabel')}
-                  </Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={registrationNumber}
-                    onChange={(e) => setRegistrationNumber(e.target.value)}
-                    size="lg"
-                    placeholder={t('auth.registrationNumberPlaceholder')}
-                    disabled={loading}
-                  />
-                </Form.Group>
-              </>
-            )}
-
-            <Row className="g-2 mt-4">
-              <Col xs={12} sm={7}>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  className="w-100 d-flex align-items-center justify-content-center gap-2 fw-semibold"
-                  size="lg"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Spinner size="sm" animation="border" />
-                      <span>Creating...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FaUserPlus />
-                      <span>{t('auth.registerBtn')}</span>
-                    </>
-                  )}
-                </Button>
-              </Col>
-              <Col xs={12} sm={5}>
-                <Button
-                  variant="outline-secondary"
-                  size="lg"
-                  className="w-100"
-                  onClick={() => navigate('/login')}
-                  disabled={loading}
-                >
-                  {t('auth.backToLogin')}
-                </Button>
-              </Col>
-            </Row>
-          </Form>
+          <RegisterForm
+            role={userRole}
+            values={values}
+            onFieldChange={setField}
+            showPassword={showPassword}
+            onToggleShowPassword={toggleShowPassword}
+            error={error}
+            onDismissError={() => setError('')}
+            loading={loading}
+            onSubmit={(e) => handleSubmit(e, userRole)}
+            onBackToLogin={() => navigate('/login')}
+          />
         </Card.Body>
       </Card>
       <p className="text-center text-muted small mt-3 mb-0">
