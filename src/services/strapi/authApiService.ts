@@ -92,6 +92,46 @@ export async function strapiGetMe(): Promise<User | null> {
 }
 
 /**
+ * Retrieves the currently authenticated user profile from Strapi /api/user-profile (or /api/users/me fallback)
+ */
+export async function strapiGetProfile(): Promise<User | null> {
+  try {
+    const res = await strapiGet<{ success: boolean; user: StrapiAuthResponse['user'] }>('/api/user-profile');
+    if (res?.user?.id) {
+      return mapStrapiUserToDomain(res.user);
+    }
+  } catch {
+    // Fallback to /api/users/me
+  }
+  return strapiGetMe();
+}
+
+/**
+ * Updates the user's profile on Strapi via /api/user-profile
+ */
+export async function updateStrapiUserProfile(data: Partial<User>): Promise<{ success: boolean; user?: User; error?: string }> {
+  try {
+    const res = await strapiPut<{ success: boolean; user: StrapiAuthResponse['user'] }>('/api/user-profile', {
+      name: data.name,
+      userRole: data.role,
+      firm: data.firm,
+      registrationNumber: data.registrationNumber,
+      phone: data.phone,
+      bio: data.bio,
+      specialisms: data.specialisms,
+      yearsExperience: data.yearsExperience,
+    });
+
+    if (res?.user) {
+      return { success: true, user: mapStrapiUserToDomain(res.user) };
+    }
+    return { success: false, error: 'Failed to update profile' };
+  } catch (err: unknown) {
+    return { success: false, error: err instanceof Error ? err.message : 'Failed to update profile' };
+  }
+}
+
+/**
  * Clears Strapi auth token
  */
 export function strapiLogout(): void {

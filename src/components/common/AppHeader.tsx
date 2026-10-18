@@ -16,6 +16,7 @@ import {
   FaExclamationCircle,
   FaLifeRing,
   FaExternalLinkAlt,
+  FaUserCog,
 } from 'react-icons/fa'
 import type { UserRole } from '../../types/domain'
 import { WELCOME_ROUTE } from '../../utils/authConstants'
@@ -269,6 +270,14 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                       >
                         <FaHome className="text-muted" />
                         <span>{t('common.myDashboard')}</span>
+                      </Dropdown.Item>
+
+                      <Dropdown.Item
+                        onClick={() => handleNavigate('/profile')}
+                        className="d-flex align-items-center gap-2 py-2"
+                      >
+                        <FaUserCog className="text-muted" />
+                        <span>My Profile</span>
                       </Dropdown.Item>
 
                       <Dropdown.Item

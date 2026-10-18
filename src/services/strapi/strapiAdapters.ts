@@ -12,6 +12,8 @@ import type {
   CaseStatus,
   HearingType,
   OrderType,
+  RemotePlatform,
+  ComplianceDeadline,
 } from '../../types/domain';
 import { unwrapEntry as unwrap } from './strapiTypes';
 
@@ -67,6 +69,10 @@ export interface StrapiHearingRaw {
   judge?: string;
   notes?: string;
   outcome?: string;
+  outcomeSummary?: string;
+  remotePlatform?: string;
+  remoteLink?: string;
+  specialMeasures?: string;
   attributes?: Record<string, unknown>;
 }
 
@@ -78,6 +84,9 @@ export interface StrapiOrderRaw {
   summary?: string;
   expiresOn?: string;
   documentUrl?: string;
+  hasPenalNotice?: boolean;
+  warningNotice?: string;
+  complianceDeadlines?: unknown[];
   attributes?: Record<string, unknown>;
 }
 
@@ -159,6 +168,10 @@ export function toDomainHearing(raw: StrapiHearingRaw): Hearing {
     judge: data.judge ? String(data.judge) : undefined,
     notes: data.notes ? String(data.notes) : undefined,
     outcome: data.outcome ? String(data.outcome) : undefined,
+    outcomeSummary: data.outcomeSummary ? String(data.outcomeSummary) : undefined,
+    remotePlatform: (data.remotePlatform as RemotePlatform) || undefined,
+    remoteLink: data.remoteLink ? String(data.remoteLink) : undefined,
+    specialMeasures: data.specialMeasures ? String(data.specialMeasures) : undefined,
   };
 }
 
@@ -171,6 +184,11 @@ export function toDomainOrder(raw: StrapiOrderRaw): OrderRecord {
     summary: String(data.summary || ''),
     expiresOn: data.expiresOn ? String(data.expiresOn) : undefined,
     documentUrl: data.documentUrl ? String(data.documentUrl) : undefined,
+    hasPenalNotice: Boolean(data.hasPenalNotice),
+    warningNotice: data.warningNotice ? String(data.warningNotice) : undefined,
+    complianceDeadlines: Array.isArray(data.complianceDeadlines)
+      ? (data.complianceDeadlines as ComplianceDeadline[])
+      : undefined,
   };
 }
 
@@ -355,6 +373,10 @@ export function toStrapiCasePayload(
         judge: h.judge,
         notes: h.notes,
         outcome: h.outcome,
+        outcomeSummary: h.outcomeSummary,
+        remotePlatform: h.remotePlatform,
+        remoteLink: h.remoteLink,
+        specialMeasures: h.specialMeasures,
       })),
       orders: (fc.orders || []).map((o) => ({
         documentId: o.id && !o.id.startsWith('ORD_') ? o.id : undefined,
@@ -363,6 +385,9 @@ export function toStrapiCasePayload(
         summary: o.summary,
         expiresOn: o.expiresOn,
         documentUrl: o.documentUrl,
+        hasPenalNotice: Boolean(o.hasPenalNotice),
+        warningNotice: o.warningNotice,
+        complianceDeadlines: o.complianceDeadlines,
       })),
       documents: (fc.documents || []).map((d) => ({
         documentId: d.id && !d.id.startsWith('DOC_') ? d.id : undefined,

@@ -1,7 +1,8 @@
-import { Row, Col } from 'react-bootstrap'
-import { FaSearch, FaTimes } from 'react-icons/fa'
+import { Row, Col, Form } from 'react-bootstrap'
+import { FaSearch, FaTimes, FaGraduationCap } from 'react-icons/fa'
 import {
   DIRECTORY_ROLE_CHIPS,
+  FAMILY_COURT_SPECIALISMS,
   type DirectoryCounts,
   type DirectoryRoleFilter,
 } from '../../utils/directoryUtils'
@@ -12,11 +13,13 @@ export interface DirectoryFilterBarProps {
   searchPlaceholder: string
   roleFilter: DirectoryRoleFilter
   onRoleChange: (role: DirectoryRoleFilter) => void
+  specialismFilter?: string
+  onSpecialismChange?: (spec: string) => void
   counts: DirectoryCounts
 }
 
 /**
- * Search input with clear button plus role filter chips for the peer directory.
+ * Search input with clear button, role filter chips, and specialism selector for the peer directory.
  */
 export default function DirectoryFilterBar({
   searchTerm,
@@ -24,13 +27,15 @@ export default function DirectoryFilterBar({
   searchPlaceholder,
   roleFilter,
   onRoleChange,
+  specialismFilter = 'ALL',
+  onSpecialismChange,
   counts,
 }: DirectoryFilterBarProps) {
   return (
-    <div className="premium-card p-3 mb-4 border-0 shadow-sm">
+    <div className="premium-card p-3 mb-4 border-0 shadow-sm bg-white rounded-3">
       <Row className="g-3 align-items-center">
         {/* Search Input with Icon */}
-        <Col xs={12} lg={5}>
+        <Col xs={12} md={5} lg={4}>
           <div className="position-relative">
             <FaSearch
               size={13}
@@ -59,8 +64,32 @@ export default function DirectoryFilterBar({
           </div>
         </Col>
 
+        {/* Specialism Selector Dropdown */}
+        {onSpecialismChange && (
+          <Col xs={12} md={7} lg={3}>
+            <div className="d-flex align-items-center gap-1.5">
+              <span className="text-secondary small d-none d-sm-inline-flex align-items-center gap-1 flex-shrink-0">
+                <FaGraduationCap size={12} className="text-primary" />
+              </span>
+              <Form.Select
+                size="sm"
+                value={specialismFilter}
+                onChange={(e) => onSpecialismChange(e.target.value)}
+                className="form-select-sm"
+              >
+                <option value="ALL">All Specialisms</option>
+                {FAMILY_COURT_SPECIALISMS.map((spec) => (
+                  <option key={spec} value={spec}>
+                    {spec}
+                  </option>
+                ))}
+              </Form.Select>
+            </div>
+          </Col>
+        )}
+
         {/* Role Filter Chips */}
-        <Col xs={12} lg={7}>
+        <Col xs={12} lg={onSpecialismChange ? 5 : 7}>
           <div className="d-flex align-items-center gap-1.5 justify-content-start justify-content-lg-end flex-wrap">
             {DIRECTORY_ROLE_CHIPS.map((chip) => (
               <button

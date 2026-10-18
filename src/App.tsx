@@ -17,6 +17,7 @@ import RequireVerified from './components/routing/RequireVerified'
 import { getLandingRoute } from './utils/authConstants'
 import PeerDirectory from './pages/PeerDirectory'
 import ComponentShowcase from './pages/ComponentShowcase'
+import Profile from './pages/Profile'
 import AppHeader from './components/common/AppHeader'
 import ToastContainer from './components/common/ToastContainer'
 import { useCasesStore } from './store/casesStore'
@@ -103,6 +104,7 @@ function Shell() {
           <Route path="/cases/new" element={<RequireVerified><CaseForm /></RequireVerified>} />
           <Route path="/cases/:caseId" element={<RequireVerified><CaseDetails /></RequireVerified>} />
           <Route path="/cases/:caseId/edit" element={<RequireVerified><CaseForm /></RequireVerified>} />
+          <Route path="/profile" element={<RequireVerified><Profile /></RequireVerified>} />
           <Route path="/components" element={<ComponentShowcase />} />
           <Route
             path="*"

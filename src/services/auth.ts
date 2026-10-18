@@ -203,5 +203,30 @@ export function getVerifiedProfessionals(): User[] {
   return listUsers().filter(isVerifiedLegalProfessional)
 }
 
+export function updateUserProfile(userId: string, updates: Partial<User>): User | undefined {
+  const users = listUsers()
+  const index = users.findIndex(
+    (u) => u.id === userId || (updates.email && u.email.toLowerCase() === updates.email.toLowerCase())
+  )
+  if (index === -1) {
+    const current = getCurrentUser()
+    if (
+      current &&
+      (current.id === userId || (updates.email && current.email.toLowerCase() === updates.email.toLowerCase()))
+    ) {
+      const updated: User = { ...current, ...updates }
+      setCurrentUser(updated)
+      saveUsers([...users, updated])
+      return updated
+    }
+    return undefined
+  }
+
+  const existing = users[index]
+  const updated: User = { ...existing, ...updates }
+  replaceStoredUser(users, index, updated)
+  return updated
+}
+
 
 

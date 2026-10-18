@@ -8,8 +8,9 @@ import {
   verifyUserToken,
   verifyUserById as verifyUserByIdService,
   verifyAllProfessionals as verifyAllProfessionalsService,
+  updateUserProfile as updateUserProfileService,
 } from '../services/auth'
-import { strapiLogout, strapiRegister, strapiLogin, isStrapiEnabled, setStrapiToken } from '../services/strapi'
+import { strapiLogout, strapiRegister, strapiLogin, isStrapiEnabled, setStrapiToken, updateStrapiUserProfile } from '../services/strapi'
 import { generateId } from '../services/storage'
 import { authClient } from '../auth'
 import { dispatchMcKenzieRegistrationEmails, resendMcKenzieRegistrationEmails } from '../services/emailService'
@@ -59,6 +60,7 @@ interface AuthState {
   verifyAllProfessionals: () => void
   refreshUsers: () => void
   resendRegistrationEmails: (email: string) => Promise<{ success: boolean; error?: string }>
+  updateProfile: (updates: Partial<User>) => Promise<{ success: boolean; user?: User; error?: string }>
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
@@ -368,5 +370,61 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   verifyAllProfessionals: () => {
     verifyAllProfessionalsService()
     get().refreshUsers()
+  },
+
+  updateProfile: async (updates: Partial<User>) => {
+    const current = get().user
+    if (!current) {
+      return { success: false, error: 'No user signed in' }
+    }
+
+    try {
+      // 1. Update Strapi backend if Strapi is enabled
+      let strapiUpdatedUser: User | undefined
+      if (isStrapiEnabled()) {
+        try {
+          const res = await updateStrapiUserProfile(updates)
+          if (res.success && res.user) {
+            strapiUpdatedUser = res.user
+          }
+        } catch (strapiErr) {
+          console.warn('[authStore] updateStrapiUserProfile error:', strapiErr)
+        }
+      }
+
+      // 2. Merge updates
+      const updatedUser: User = {
+        ...current,
+        ...(strapiUpdatedUser || {}),
+        ...updates,
+      }
+
+      // 3. Update Better Auth / Neon Auth if name changed
+      if (updates.name && updates.name !== current.name) {
+        try {
+          await authClient.updateUser({ name: updates.name })
+        } catch {
+          // Neon auth non-blocking
+        }
+      }
+
+      // 4. Update local storage
+      updateUserProfileService(current.id, updatedUser)
+      setCurrentUser(updatedUser)
+
+      // 5. Update Zustand state
+      const allUsers = get().users
+      const updatedUsers = allUsers.map((u) =>
+        u.id === current.id || sameEmail(u.email, current.email) ? updatedUser : u
+      )
+      set({ user: updatedUser, users: updatedUsers })
+
+      toast.success('Your profile details have been updated successfully.', 'Profile Updated')
+      return { success: true, user: updatedUser }
+    } catch (err: unknown) {
+      const errMsg = getErrorMessage(err)
+      toast.error(errMsg, 'Update Failed')
+      return { success: false, error: errMsg }
+    }
   },
 }))

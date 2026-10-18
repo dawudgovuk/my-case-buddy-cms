@@ -14,6 +14,8 @@ export default function PeerDirectory() {
     user,
     roleFilter,
     setRoleFilter,
+    specialismFilter,
+    setSpecialismFilter,
     searchTerm,
     setSearchTerm,
     requestTargetUser,
@@ -62,6 +64,8 @@ export default function PeerDirectory() {
         searchPlaceholder={t('peerDirectory.searchPlaceholder')}
         roleFilter={roleFilter}
         onRoleChange={setRoleFilter}
+        specialismFilter={specialismFilter}
+        onSpecialismChange={setSpecialismFilter}
         counts={counts}
       />
 

@@ -16,6 +16,7 @@ import DashboardHeader from '../components/dashboard/DashboardHeader'
 import DashboardTableView from '../components/dashboard/DashboardTableView'
 import DashboardFilterBar from '../components/dashboard/DashboardFilterBar'
 import DashboardCaseGrid from '../components/dashboard/DashboardCaseGrid'
+import UrgentHearingCard from '../components/dashboard/UrgentHearingCard'
 import VerificationPendingAlert from '../components/dashboard/VerificationPendingAlert'
 import NoActiveCasesCard from '../components/dashboard/NoActiveCasesCard'
 import NoMatchingCasesCard from '../components/dashboard/NoMatchingCasesCard'
@@ -97,6 +98,9 @@ export default function LIPDashboard() {
         <NoActiveCasesCard onCreateCase={() => navigate('/cases/new')} />
       ) : (
         <>
+          {/* Urgent / Upcoming Hearing Countdown & Readiness Checklist */}
+          <UrgentHearingCard cases={userCases} />
+
           {/* Controls & View Switcher Toolbar */}
           <DashboardFilterBar
             searchQuery={searchQuery}

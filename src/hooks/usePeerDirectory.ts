@@ -18,6 +18,8 @@ export interface UsePeerDirectoryResult {
   user: User | null
   roleFilter: DirectoryRoleFilter
   setRoleFilter: (role: DirectoryRoleFilter) => void
+  specialismFilter: string
+  setSpecialismFilter: (spec: string) => void
   searchTerm: string
   setSearchTerm: (term: string) => void
   requestTargetUser: string | null
@@ -44,6 +46,7 @@ export function usePeerDirectory(): UsePeerDirectoryResult {
   const { cases, requestPeerSupport, isStrapiMode, syncWithStrapi } = useCasesStore()
 
   const [roleFilter, setRoleFilter] = useState<DirectoryRoleFilter>('all')
+  const [specialismFilter, setSpecialismFilter] = useState<string>('ALL')
   const [searchTerm, setSearchTerm] = useState('')
   const [requestTargetUser, setRequestTargetUser] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -97,8 +100,8 @@ export function usePeerDirectory(): UsePeerDirectoryResult {
   const counts = useMemo(() => countProfessionalsByRole(professionals), [professionals])
 
   const filtered = useMemo(
-    () => filterProfessionals(professionals, roleFilter, searchTerm),
-    [professionals, roleFilter, searchTerm]
+    () => filterProfessionals(professionals, roleFilter, searchTerm, specialismFilter),
+    [professionals, roleFilter, searchTerm, specialismFilter]
   )
 
   const targetProfessional = useMemo(() => {
@@ -134,13 +137,16 @@ export function usePeerDirectory(): UsePeerDirectoryResult {
   function handleClearFilters() {
     setSearchTerm('')
     setRoleFilter('all')
-    toast.info('Directory search and role filters reset.', 'Filters Reset')
+    setSpecialismFilter('ALL')
+    toast.info('Directory search, role, and specialism filters reset.', 'Filters Reset')
   }
 
   return {
     user,
     roleFilter,
     setRoleFilter,
+    specialismFilter,
+    setSpecialismFilter,
     searchTerm,
     setSearchTerm,
     requestTargetUser,

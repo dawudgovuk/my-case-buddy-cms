@@ -40,6 +40,21 @@ export type HearingType =
   | 'Final'
   | 'Other';
 
+export type HearingOutcome =
+  | 'Pending'
+  | 'Order Made'
+  | 'Directions Given'
+  | 'Adjourned'
+  | 'Consent Order Agreed'
+  | 'Dismissed';
+
+export type RemotePlatform =
+  | 'In-Person'
+  | 'CVP (Cloud Video Platform)'
+  | 'MS Teams'
+  | 'BT MeetMe'
+  | 'Telephone';
+
 export interface Hearing {
   id: string;
   type: HearingType;
@@ -48,7 +63,11 @@ export interface Hearing {
   location?: string;
   judge?: string;
   notes?: string;
-  outcome?: string;
+  outcome?: HearingOutcome | string;
+  outcomeSummary?: string;
+  remotePlatform?: RemotePlatform;
+  remoteLink?: string;
+  specialMeasures?: string; // FPR Part 3A measures: screens, separate waiting rooms, video link
 }
 
 export type OrderType =
@@ -61,13 +80,25 @@ export type OrderType =
   | 'Financial Remedies Order'
   | 'Other';
 
+export interface ComplianceDeadline {
+  id: string;
+  title: string;
+  dueDate: string; // ISO date
+  responsibleParty?: string;
+  isCompleted?: boolean;
+  completedAt?: string;
+}
+
 export interface OrderRecord {
   id: string;
   type: OrderType;
   dateMade: string; // ISO date
   summary: string;
   expiresOn?: string; // ISO date
-  documentUrl?: string; // link to uploaded doc (placeholder)
+  documentUrl?: string; // link to uploaded doc
+  hasPenalNotice?: boolean; // Penal Notice warning (contempt of court s.42A FLA 1996)
+  warningNotice?: string;
+  complianceDeadlines?: ComplianceDeadline[];
 }
 
 export type DocumentFilingStatus = 'Draft' | 'Filed' | 'Served';

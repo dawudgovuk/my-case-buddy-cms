@@ -75,13 +75,26 @@ export function countProfessionalsByRole(professionals: User[]): DirectoryCounts
 }
 
 /**
- * Filters professionals by role and a free-text term matched against
- * name, firm, registration number and bio (case-insensitive).
+ * Key family court legal supporter specialisms for litigants seeking targeted help.
+ */
+export const FAMILY_COURT_SPECIALISMS = [
+  'Child Arrangements (Live with / Spend time with)',
+  'FHDRA Preparation & Position Statements',
+  'CAFCASS Section 7 Safeguarding Analysis',
+  'Domestic Abuse & Non-Molestation',
+  'FPR PD 27A Court Bundles',
+  'Fact-Finding & Evidence',
+  'Financial Remedies',
+] as const
+
+/**
+ * Filters professionals by role, a free-text search term, and an optional specialism.
  */
 export function filterProfessionals(
   professionals: User[],
   roleFilter: DirectoryRoleFilter,
-  searchTerm: string
+  searchTerm: string,
+  specialismFilter: string = 'ALL'
 ): User[] {
   const term = searchTerm.trim().toLowerCase()
   return professionals.filter((p) => {
@@ -91,7 +104,14 @@ export function filterProfessionals(
       p.name.toLowerCase().includes(term) ||
       (p.firm && p.firm.toLowerCase().includes(term)) ||
       (p.registrationNumber && p.registrationNumber.toLowerCase().includes(term)) ||
-      (p.bio && p.bio.toLowerCase().includes(term))
-    return matchesRole && matchesTerm
+      (p.bio && p.bio.toLowerCase().includes(term)) ||
+      (p.specialisms && p.specialisms.some((s) => s.toLowerCase().includes(term)))
+
+    const matchesSpecialism =
+      specialismFilter === 'ALL' ||
+      (Array.isArray(p.specialisms) && p.specialisms.includes(specialismFilter)) ||
+      (p.bio && p.bio.toLowerCase().includes(specialismFilter.toLowerCase()))
+
+    return matchesRole && matchesTerm && matchesSpecialism
   })
 }
