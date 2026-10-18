@@ -86,7 +86,7 @@ export default function CaseDetails() {
                 </span>
               }
             >
-              <CaseOverviewTab caseData={fc} />
+              <CaseOverviewTab caseData={fc} onSelectTab={(k) => setTab(k)} />
             </Tab>
 
             <Tab

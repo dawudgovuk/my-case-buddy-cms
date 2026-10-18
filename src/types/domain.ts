@@ -15,6 +15,11 @@ export type CaseStatus =
   | 'Stayed'
   | 'Concluded';
 
+export type PartyRepresentation =
+  | 'Litigant in Person'
+  | 'Instructed Solicitor'
+  | 'Direct Access Barrister';
+
 export interface Party {
   id: string;
   role:
@@ -31,6 +36,10 @@ export interface Party {
   solicitorContact?: string;
   contactEmail?: string;
   contactPhone?: string;
+  representation?: PartyRepresentation;
+  parentalResponsibility?: boolean;
+  schoolOrNursery?: string;
+  specialMeasuresRequired?: string;
 }
 
 export type HearingType =
@@ -130,6 +139,7 @@ export interface CaseNote {
   createdAt: string; // ISO
   author: string;
   text: string;
+  category?: string;
 }
 
 export interface FamilyCase {

@@ -14,6 +14,7 @@ import type {
   OrderType,
   RemotePlatform,
   ComplianceDeadline,
+  PartyRepresentation,
 } from '../../types/domain';
 import { unwrapEntry as unwrap } from './strapiTypes';
 
@@ -56,6 +57,10 @@ export interface StrapiPartyRaw {
   solicitorContact?: string;
   contactEmail?: string;
   contactPhone?: string;
+  representation?: string;
+  parentalResponsibility?: boolean;
+  schoolOrNursery?: string;
+  specialMeasuresRequired?: string;
   attributes?: Record<string, unknown>;
 }
 
@@ -113,6 +118,7 @@ export interface StrapiNoteRaw {
   createdAt?: string;
   author?: string;
   text?: string;
+  category?: string;
   attributes?: Record<string, unknown>;
 }
 
@@ -154,6 +160,10 @@ export function toDomainParty(raw: StrapiPartyRaw): Party {
     solicitorContact: data.solicitorContact ? String(data.solicitorContact) : undefined,
     contactEmail: data.contactEmail ? String(data.contactEmail) : undefined,
     contactPhone: data.contactPhone ? String(data.contactPhone) : undefined,
+    representation: (data.representation as PartyRepresentation) || undefined,
+    parentalResponsibility: typeof data.parentalResponsibility === 'boolean' ? data.parentalResponsibility : undefined,
+    schoolOrNursery: data.schoolOrNursery ? String(data.schoolOrNursery) : undefined,
+    specialMeasuresRequired: data.specialMeasuresRequired ? String(data.specialMeasuresRequired) : undefined,
   };
 }
 
@@ -217,6 +227,7 @@ export function toDomainNote(raw: StrapiNoteRaw): CaseNote {
     createdAt: String(data.createdAt || new Date().toISOString()),
     author: String(data.author || 'Author'),
     text: String(data.text || ''),
+    category: data.category ? String(data.category) : undefined,
   };
 }
 
@@ -363,6 +374,10 @@ export function toStrapiCasePayload(
         solicitorContact: p.solicitorContact,
         contactEmail: p.contactEmail,
         contactPhone: p.contactPhone,
+        representation: p.representation,
+        parentalResponsibility: p.parentalResponsibility,
+        schoolOrNursery: p.schoolOrNursery,
+        specialMeasuresRequired: p.specialMeasuresRequired,
       })),
       hearings: (fc.hearings || []).map((h) => ({
         documentId: h.id && !h.id.startsWith('HRG_') ? h.id : undefined,
@@ -407,6 +422,7 @@ export function toStrapiCasePayload(
         documentId: n.id && !n.id.startsWith('NOTE_') ? n.id : undefined,
         author: n.author,
         text: n.text,
+        category: n.category,
       })),
     },
   };
