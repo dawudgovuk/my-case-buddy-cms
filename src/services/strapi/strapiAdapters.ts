@@ -89,6 +89,12 @@ export interface StrapiDocumentRaw {
   uploadedAt?: string;
   url?: string;
   notes?: string;
+  fileName?: string;
+  fileSize?: number;
+  mimeType?: string;
+  status?: string;
+  pageCount?: number;
+  exhibitRef?: string;
   attributes?: Record<string, unknown>;
 }
 
@@ -177,6 +183,12 @@ export function toDomainDocument(raw: StrapiDocumentRaw): DocumentRecord {
     uploadedAt: String(data.uploadedAt || data.createdAt || new Date().toISOString()),
     url: String(data.url || ''),
     notes: data.notes ? String(data.notes) : undefined,
+    fileName: data.fileName ? String(data.fileName) : undefined,
+    fileSize: typeof data.fileSize === 'number' ? data.fileSize : undefined,
+    mimeType: data.mimeType ? String(data.mimeType) : undefined,
+    status: (data.status as DocumentRecord['status']) || undefined,
+    pageCount: typeof data.pageCount === 'number' ? data.pageCount : undefined,
+    exhibitRef: data.exhibitRef ? String(data.exhibitRef) : undefined,
   };
 }
 
@@ -359,6 +371,12 @@ export function toStrapiCasePayload(
         uploadedAt: d.uploadedAt,
         url: d.url,
         notes: d.notes,
+        fileName: d.fileName,
+        fileSize: d.fileSize,
+        mimeType: d.mimeType,
+        status: d.status,
+        pageCount: d.pageCount,
+        exhibitRef: d.exhibitRef,
       })),
       notes: (fc.notes || []).map((n) => ({
         documentId: n.id && !n.id.startsWith('NOTE_') ? n.id : undefined,

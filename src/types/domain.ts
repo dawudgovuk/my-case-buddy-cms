@@ -70,6 +70,8 @@ export interface OrderRecord {
   documentUrl?: string; // link to uploaded doc (placeholder)
 }
 
+export type DocumentFilingStatus = 'Draft' | 'Filed' | 'Served';
+
 export interface DocumentRecord {
   id: string;
   title: string;
@@ -84,6 +86,12 @@ export interface DocumentRecord {
   uploadedAt: string; // ISO
   url: string;
   notes?: string;
+  fileName?: string;
+  fileSize?: number; // In bytes
+  mimeType?: string;
+  status?: DocumentFilingStatus;
+  pageCount?: number;
+  exhibitRef?: string;
 }
 
 export interface CaseNote {
@@ -150,6 +158,8 @@ export interface User {
   bio?: string;
   specialisms?: string[];
   yearsExperience?: number;
+  phone?: string;
+  location?: string;
 }
 
 export type CaseMemberRole = 'Owner' | 'Collaborator' | 'McKenzieFriend' | 'Solicitor' | 'Barrister';

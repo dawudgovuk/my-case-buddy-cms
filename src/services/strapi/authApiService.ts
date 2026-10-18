@@ -1,5 +1,5 @@
 import type { User, UserRole } from '../../types/domain';
-import { strapiPost, strapiGet } from './strapiClient';
+import { strapiPost, strapiGet, strapiPut } from './strapiClient';
 import { setStrapiToken } from './strapiConfig';
 
 interface StrapiAuthResponse {
@@ -8,24 +8,31 @@ interface StrapiAuthResponse {
     id: number | string;
     username: string;
     email: string;
+    name?: string;
     userRole?: string;
     firm?: string;
     registrationNumber?: string;
     confirmed?: boolean;
     bio?: string;
+    specialisms?: string[];
+    yearsExperience?: number;
+    phone?: string;
   };
 }
 
 function mapStrapiUserToDomain(u: StrapiAuthResponse['user']): User {
   return {
     id: String(u.id),
-    name: u.username || u.email,
+    name: u.name || u.username || u.email,
     email: u.email,
     role: (u.userRole as UserRole) || 'LIP',
     firm: u.firm,
     registrationNumber: u.registrationNumber,
     isVerified: u.confirmed ?? true,
     bio: u.bio,
+    specialisms: Array.isArray(u.specialisms) ? u.specialisms : undefined,
+    yearsExperience: u.yearsExperience,
+    phone: u.phone,
   };
 }
 

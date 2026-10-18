@@ -12,6 +12,7 @@ import DocumentsTab from '../components/case/tabs/DocumentsTab'
 import OrdersTab from '../components/case/tabs/OrdersTab'
 import NotesTab from '../components/case/tabs/NotesTab'
 import TeamInvitesTab from '../components/case/tabs/TeamInvitesTab'
+import LegalHubTab from '../components/case/tabs/LegalHubTab'
 import { CASE_DETAILS_TABS } from '../utils/caseConstants'
 import {
   FaInfoCircle,
@@ -21,6 +22,7 @@ import {
   FaBalanceScale,
   FaStickyNote,
   FaUserFriends,
+  FaGavel,
 } from 'react-icons/fa'
 
 export default function CaseDetails() {
@@ -182,6 +184,18 @@ export default function CaseDetails() {
               }
             >
               <TeamInvitesTab caseId={fc.id} />
+            </Tab>
+
+            <Tab
+              eventKey={CASE_DETAILS_TABS.LEGAL_HUB}
+              title={
+                <span className="d-inline-flex align-items-center gap-2">
+                  <FaGavel size={13} />
+                  <span>{t('caseDetails.legalHubTab')}</span>
+                </span>
+              }
+            >
+              <LegalHubTab caseData={fc} />
             </Tab>
           </Tabs>
         </Card.Body>

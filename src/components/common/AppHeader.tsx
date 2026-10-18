@@ -73,6 +73,9 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
   const isDirectoryActive =
     location.pathname.startsWith('/peer-directory')
 
+  const isDev = import.meta.env.DEV
+  const isComponentsActive = location.pathname.startsWith('/components')
+
   const safeName = user?.name || user?.email?.split('@')[0] || 'User'
   const userInitials = (user?.name || user?.email || 'U')
     .trim()
@@ -188,6 +191,25 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         </Nav.Link>
                       </>
                     )}
+
+                    {/* Developer Components Page (Dev Mode Only) */}
+                    {isDev && (
+                      <Nav.Link
+                        active={isComponentsActive}
+                        onClick={() => handleNavigate('/components')}
+                        className="px-3 py-2 fw-medium d-flex align-items-center gap-1.5 rounded"
+                        title="Component Showcase (Development Mode)"
+                      >
+                        <FaPuzzlePiece size={14} className="text-warning" />
+                        <span>Components</span>
+                        <span
+                          className="badge bg-warning text-dark px-1.5 py-0.5 rounded fw-bold"
+                          style={{ fontSize: '0.62rem', letterSpacing: '0.5px' }}
+                        >
+                          DEV
+                        </span>
+                      </Nav.Link>
+                    )}
                   </>
                 )}
 
@@ -288,6 +310,24 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
               </>
             ) : (
               <>
+                {isDev && (
+                  <Nav.Link
+                    active={isComponentsActive}
+                    onClick={() => handleNavigate('/components')}
+                    className="px-3 py-2 fw-medium d-flex align-items-center gap-1.5 rounded text-secondary"
+                    title="Component Showcase (Development Mode)"
+                  >
+                    <FaPuzzlePiece size={14} className="text-warning" />
+                    <span>Components</span>
+                    <span
+                      className="badge bg-warning text-dark px-1.5 py-0.5 rounded fw-bold"
+                      style={{ fontSize: '0.62rem', letterSpacing: '0.5px' }}
+                    >
+                      DEV
+                    </span>
+                  </Nav.Link>
+                )}
+
                 <Nav.Link
                   href="https://support.mycourtbuddy.com/"
                   target="_blank"
