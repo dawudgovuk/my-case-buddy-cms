@@ -40,6 +40,21 @@ export type HearingType =
   | 'Final'
   | 'Other';
 
+export type HearingOutcome =
+  | 'Pending'
+  | 'Order Made'
+  | 'Directions Given'
+  | 'Adjourned'
+  | 'Consent Order Agreed'
+  | 'Dismissed';
+
+export type RemotePlatform =
+  | 'In-Person'
+  | 'CVP (Cloud Video Platform)'
+  | 'MS Teams'
+  | 'BT MeetMe'
+  | 'Telephone';
+
 export interface Hearing {
   id: string;
   type: HearingType;
@@ -48,7 +63,11 @@ export interface Hearing {
   location?: string;
   judge?: string;
   notes?: string;
-  outcome?: string;
+  outcome?: HearingOutcome | string;
+  outcomeSummary?: string;
+  remotePlatform?: RemotePlatform;
+  remoteLink?: string;
+  specialMeasures?: string; // FPR Part 3A measures: screens, separate waiting rooms, video link
 }
 
 export type OrderType =
@@ -61,14 +80,28 @@ export type OrderType =
   | 'Financial Remedies Order'
   | 'Other';
 
+export interface ComplianceDeadline {
+  id: string;
+  title: string;
+  dueDate: string; // ISO date
+  responsibleParty?: string;
+  isCompleted?: boolean;
+  completedAt?: string;
+}
+
 export interface OrderRecord {
   id: string;
   type: OrderType;
   dateMade: string; // ISO date
   summary: string;
   expiresOn?: string; // ISO date
-  documentUrl?: string; // link to uploaded doc (placeholder)
+  documentUrl?: string; // link to uploaded doc
+  hasPenalNotice?: boolean; // Penal Notice warning (contempt of court s.42A FLA 1996)
+  warningNotice?: string;
+  complianceDeadlines?: ComplianceDeadline[];
 }
+
+export type DocumentFilingStatus = 'Draft' | 'Filed' | 'Served';
 
 export interface DocumentRecord {
   id: string;
@@ -84,6 +117,12 @@ export interface DocumentRecord {
   uploadedAt: string; // ISO
   url: string;
   notes?: string;
+  fileName?: string;
+  fileSize?: number; // In bytes
+  mimeType?: string;
+  status?: DocumentFilingStatus;
+  pageCount?: number;
+  exhibitRef?: string;
 }
 
 export interface CaseNote {
@@ -95,6 +134,8 @@ export interface CaseNote {
 
 export interface FamilyCase {
   id: string; // e.g., case number
+  documentId?: string; // Strapi v5 internal document identifier
+  caseNumber?: string; // HMCTS Court Case Number (e.g. FC-2026-10492)
   title: string; // short description
   court: CourtType;
   caseType: CaseType;
@@ -143,10 +184,13 @@ export interface User {
   registrationNumber?: string; // Professional registration number
   isVerified?: boolean; // Email verification status
   verificationToken?: string; // Token for email verification link
+  lastVerifiedToken?: string; // Last successfully verified token for idempotent verification page loads
   verificationSentAt?: string; // ISO date when verification email was sent
   bio?: string;
   specialisms?: string[];
   yearsExperience?: number;
+  phone?: string;
+  location?: string;
 }
 
 export type CaseMemberRole = 'Owner' | 'Collaborator' | 'McKenzieFriend' | 'Solicitor' | 'Barrister';
@@ -154,12 +198,27 @@ export type CaseMemberRole = 'Owner' | 'Collaborator' | 'McKenzieFriend' | 'Soli
 export interface CaseMember {
   userId: string;
   role: CaseMemberRole;
+  email?: string;
+  name?: string;
+  username?: string;
+  documentId?: string;
+  firm?: string; // Law firm or Chambers
+  phone?: string;
   invitedAt?: string; // ISO date
   invitedBy?: string; // userId
 }
 
+export interface InviteCaseSummary {
+  caseNumber?: string;
+  title?: string;
+  court?: string;
+  caseType?: string;
+  currentStage?: string;
+}
+
 export interface CaseInvite {
   id: string;
+  documentId?: string;
   caseId: string;
   token: string;
   role: 'McKenzieFriend' | 'Solicitor' | 'Barrister';
@@ -168,6 +227,7 @@ export interface CaseInvite {
   expiresAt?: string; // ISO date
   usedAt?: string; // ISO date
   usedBy?: string; // userId
+  caseSummary?: InviteCaseSummary;
 }
 
 export interface DocumentDeadline {

@@ -3,6 +3,7 @@ import { Card, Form, Button } from 'react-bootstrap'
 import { useCasesStore } from '../../../store/casesStore'
 import { useAuthStore } from '../../../store/authStore'
 import { generateId } from '../../../services/storage'
+import { toast } from '../../../store/toastStore'
 import type { FamilyCase } from '../../../types/domain'
 import CaseNoteCard from '../CaseNoteCard'
 
@@ -13,7 +14,8 @@ export interface NotesTabProps {
 export default function NotesTab({ caseId }: NotesTabProps) {
   const store = useCasesStore()
   const { user } = useAuthStore()
-  const [author, setAuthor] = useState(user?.name || '')
+  const defaultAuthor = user?.name || (user as { username?: string })?.username || (user?.email ? user.email.split('@')[0] : '')
+  const [author, setAuthor] = useState(defaultAuthor)
   const [text, setText] = useState('')
 
   const fc = store.getById(caseId)
@@ -22,6 +24,7 @@ export default function NotesTab({ caseId }: NotesTabProps) {
 
   function addNote() {
     if (!text.trim()) return
+    const authorName = author.trim() || defaultAuthor || 'User'
     const updated: FamilyCase = {
       ...current,
       notes: [
@@ -29,12 +32,13 @@ export default function NotesTab({ caseId }: NotesTabProps) {
         {
           id: generateId('NOTE'),
           createdAt: new Date().toISOString(),
-          author: author.trim() || 'User',
+          author: authorName,
           text: text.trim(),
         },
       ],
     }
     store.addOrUpdate(updated)
+    toast.success('Case strategy note recorded.', 'Note Saved')
     setText('')
   }
 
@@ -69,11 +73,18 @@ export default function NotesTab({ caseId }: NotesTabProps) {
         </Form>
       </Card>
 
+      <div className="d-flex justify-content-between align-items-center mb-2">
+        <h6 className="fw-bold text-dark mb-0">Case Notes & Timeline ({fc.notes.length})</h6>
+        <span className="text-muted small">Visible to all case team members</span>
+      </div>
+
       {fc.notes.length === 0 && <div className="text-muted p-3 bg-light rounded">No notes recorded yet.</div>}
 
-      {fc.notes.map((n) => (
-        <CaseNoteCard key={n.id} note={n} />
-      ))}
+      {[...fc.notes]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .map((n) => (
+          <CaseNoteCard key={n.id} note={n} />
+        ))}
     </div>
   )
 }

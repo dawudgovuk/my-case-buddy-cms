@@ -1,154 +1,55 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Card, Button } from 'react-bootstrap'
-import type { FamilyCase, Party, CaseType, CourtType } from '../types/domain'
-import { generateId } from '../services/storage'
-import { useCasesStore } from '../store/casesStore'
 import { useNavigate, useParams } from 'react-router-dom'
-import { useAuthStore } from '../store/authStore'
-import CaseMetadataForm, { type CaseMetadataFormValues } from '../components/forms/CaseMetadataForm'
+import { FaArrowLeft } from 'react-icons/fa'
+import CaseMetadataForm from '../components/forms/CaseMetadataForm'
 import PartyFormSection from '../components/case/PartyFormSection'
 import CaseCreationStepper from '../components/forms/CaseCreationStepper'
 import CaseQuickPresets from '../components/forms/CaseQuickPresets'
 import CaseReviewSummary from '../components/forms/CaseReviewSummary'
-import { FaSave, FaArrowRight, FaArrowLeft, FaTimes } from 'react-icons/fa'
+import CaseFormHeader from '../components/forms/CaseFormHeader'
+import CaseFormErrorAlert from '../components/forms/CaseFormErrorAlert'
+import CaseFormStepFooter from '../components/forms/CaseFormStepFooter'
+import { useCaseForm } from '../hooks/useCaseForm'
 import { useTranslation } from '../hooks/useTranslation'
+import { countAdults, countChildren } from '../utils/partyUtils'
 
 export default function CaseForm() {
   const navigate = useNavigate()
   const { caseId } = useParams()
-  const { getById, addOrUpdate } = useCasesStore()
-  const { user } = useAuthStore()
+  const {
+    existing,
+    form,
+    currentStep,
+    setCurrentStep,
+    isSubmitting,
+    errorMessage,
+    clearError,
+    handleMetadataChange,
+    handleSelectPreset,
+    handleAddParty,
+    handleUpdateParty,
+    handleRemoveParty,
+    handleSubmit,
+  } = useCaseForm(caseId)
   const { t } = useTranslation()
 
-  const existing = useMemo(() => (caseId ? getById(caseId) : undefined), [caseId, getById])
-  const [currentStep, setCurrentStep] = useState<number>(0)
-
-  const [form, setForm] = useState<FamilyCase>(() =>
-    existing ?? {
-      id: '',
-      title: '',
-      court: 'Family Court',
-      caseType: 'Private Law (Child Arrangements)',
-      status: 'Open',
-      startedAt: new Date().toISOString().slice(0, 10),
-      allocatedJudge: '',
-      childrenInvolved: undefined,
-      parties: [],
-      hearings: [],
-      orders: [],
-      documents: [],
-      notes: [],
-      lastUpdatedAt: new Date().toISOString(),
-      currentStage: 'application',
-    }
-  )
-
-  useEffect(() => {
-    if (existing) setForm(existing)
-  }, [existing])
-
-  function handleMetadataChange<K extends keyof CaseMetadataFormValues>(
-    field: K,
-    value: CaseMetadataFormValues[K]
-  ) {
-    setForm((f) => ({
-      ...f,
-      [field]: value,
-    }))
-  }
-
-  function handleSelectPreset(preset: { title: string; caseType: CaseType; court: CourtType }) {
-    setForm((f) => ({
-      ...f,
-      title: preset.title,
-      caseType: preset.caseType,
-      court: preset.court,
-    }))
-  }
-
-  function handleAddParty(newParty: Party) {
-    setForm((f) => ({
-      ...f,
-      parties: [...f.parties, newParty],
-    }))
-  }
-
-  function handleUpdateParty(updatedParty: Party) {
-    setForm((f) => ({
-      ...f,
-      parties: f.parties.map((p) => (p.id === updatedParty.id ? updatedParty : p)),
-    }))
-  }
-
-  function handleRemoveParty(partyId: string) {
-    setForm((f) => ({
-      ...f,
-      parties: f.parties.filter((p) => p.id !== partyId),
-    }))
-  }
-
-  function handleSubmit() {
-    const trimmedTitle = form.title.trim()
-    const trimmedJudge = form.allocatedJudge?.trim() || undefined
-    const id = existing?.id || form.id || generateId('CASE')
-    const payload: FamilyCase = {
-      ...form,
-      id,
-      title: trimmedTitle,
-      allocatedJudge: trimmedJudge,
-      startedAt: form.startedAt,
-      members: existing?.members ?? (user ? [{ userId: user.id, role: 'Owner' }] : []),
-      currentStage: existing?.currentStage || 'application',
-    }
-    addOrUpdate(payload)
-    navigate(`/cases/${id}`)
-  }
-
-  const childrenCount = form.parties.filter((p) => p.role === 'Child').length
-  const adultPartiesCount = form.parties.filter((p) => p.role !== 'Child').length
+  const childrenCount = countChildren(form.parties)
+  const adultPartiesCount = countAdults(form.parties)
   const isDetailsValid = Boolean(form.title.trim())
+  const exitToCaseOrHome = () => navigate(existing ? `/cases/${existing.id}` : '/')
 
   return (
     <div className="py-2" style={{ maxWidth: '980px', margin: '0 auto' }}>
       {/* Page Header */}
-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3">
-        <div>
-          <div className="text-primary small fw-bold text-uppercase mb-1" style={{ letterSpacing: '0.5px' }}>
-            {existing ? t('caseForm.categoryManage') : t('caseForm.categorySetup')}
-          </div>
-          <h2 className="fw-bold text-dark mb-0">{existing ? t('caseForm.editTitle') : t('caseForm.createTitle')}</h2>
-          <p className="text-secondary small mb-0">
-            {existing
-              ? t('caseForm.managementSubtitle', { id: existing.id })
-              : t('caseForm.setupSubtitle')}
-          </p>
-        </div>
+      <CaseFormHeader
+        existingCase={existing}
+        isSubmitting={isSubmitting}
+        isSaveDisabled={!isDetailsValid || isSubmitting}
+        onCancel={() => navigate(existing ? `/cases/${existing.id}` : '/cases')}
+        onSave={handleSubmit}
+      />
 
-        <div className="d-flex align-items-center gap-2">
-          <Button
-            variant="outline-secondary"
-            size="sm"
-            className="px-3 d-flex align-items-center gap-1 shadow-xs"
-            onClick={() => navigate(existing ? `/cases/${existing.id}` : '/cases')}
-          >
-            <FaTimes size={12} />
-            <span>{t('common.cancel')}</span>
-          </Button>
-
-          {existing && (
-            <Button
-              variant="primary"
-              size="sm"
-              className="px-3 d-flex align-items-center gap-1 shadow-xs"
-              onClick={handleSubmit}
-              disabled={!isDetailsValid}
-            >
-              <FaSave size={12} />
-              <span>{t('common.saveChanges')}</span>
-            </Button>
-          )}
-        </div>
-      </div>
+      {/* Action Error Alert */}
+      {errorMessage && <CaseFormErrorAlert message={errorMessage} onDismiss={clearError} />}
 
       {/* Guided 3-Step Interactive Stepper */}
       <CaseCreationStepper
@@ -156,6 +57,7 @@ export default function CaseForm() {
         onSelectStep={(step) => setCurrentStep(step)}
         status={{
           detailsValid: isDetailsValid,
+          titleMissing: !isDetailsValid,
           partiesCount: adultPartiesCount,
           childrenCount,
         }}
@@ -186,25 +88,13 @@ export default function CaseForm() {
             className="mb-4"
           />
 
-          <Card className="p-3 border shadow-sm bg-white rounded-3">
-            <div className="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2">
-              <Button
-                variant="outline-secondary"
-                onClick={() => navigate(existing ? `/cases/${existing.id}` : '/')}
-              >
-                {t('common.cancel')}
-              </Button>
-              <Button
-                variant="primary"
-                className="px-4 fw-semibold d-flex align-items-center justify-content-center gap-2"
-                onClick={() => setCurrentStep(1)}
-                disabled={!isDetailsValid}
-              >
-                <span>{t('caseForm.continueToParties')}</span>
-                <FaArrowRight size={12} />
-              </Button>
-            </div>
-          </Card>
+          <CaseFormStepFooter
+            backContent={t('common.cancel')}
+            onBack={exitToCaseOrHome}
+            nextLabel={t('caseForm.continueToParties')}
+            nextDisabled={!isDetailsValid}
+            onNext={() => setCurrentStep(1)}
+          />
         </div>
       )}
 
@@ -229,26 +119,18 @@ export default function CaseForm() {
             isChildSection={true}
           />
 
-          <Card className="p-3 border shadow-sm bg-white rounded-3">
-            <div className="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-stretch align-items-sm-center gap-2">
-              <Button
-                variant="outline-secondary"
-                className="d-flex align-items-center justify-content-center gap-2"
-                onClick={() => setCurrentStep(0)}
-              >
+          <CaseFormStepFooter
+            backContent={
+              <>
                 <FaArrowLeft size={12} />
                 <span>{t('caseForm.backToDetails')}</span>
-              </Button>
-              <Button
-                variant="primary"
-                className="px-4 fw-semibold d-flex align-items-center justify-content-center gap-2"
-                onClick={() => setCurrentStep(2)}
-              >
-                <span>{t('caseForm.proceedToReview')}</span>
-                <FaArrowRight size={12} />
-              </Button>
-            </div>
-          </Card>
+              </>
+            }
+            backClassName="d-flex align-items-center justify-content-center gap-2"
+            onBack={() => setCurrentStep(0)}
+            nextLabel={t('caseForm.proceedToReview')}
+            onNext={() => setCurrentStep(2)}
+          />
         </div>
       )}
 
@@ -258,8 +140,9 @@ export default function CaseForm() {
           caseData={form}
           onEditStep={(step) => setCurrentStep(step)}
           isEditMode={Boolean(existing)}
+          isSubmitting={isSubmitting}
           onSubmit={handleSubmit}
-          onCancel={() => navigate(existing ? `/cases/${existing.id}` : '/')}
+          onCancel={exitToCaseOrHome}
         />
       )}
     </div>

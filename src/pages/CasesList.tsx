@@ -1,23 +1,28 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Row, Col } from 'react-bootstrap'
 import { useCasesStore } from '../store/casesStore'
 import { useAuthStore } from '../store/authStore'
 import type { CaseStatus, FamilyCase } from '../types/domain'
+import { isUserCaseMember } from '../utils/caseMembership'
 import CasesHeader from '../components/case/CasesHeader'
 import CasesFilterBar from '../components/case/CasesFilterBar'
 import CaseListItemCard from '../components/case/CaseListItemCard'
 import CaseCard from '../components/case/CaseCard'
 import EmptyCasesState from '../components/case/EmptyCasesState'
 import DeleteCaseModal from '../components/case/DeleteCaseModal'
-import { StrapiSyncModal } from '../components/strapi/StrapiSyncModal'
 import { CASE_TYPE_OPTIONS } from '../utils/caseConstants'
 import { countChildren } from '../utils/partyUtils'
+import { toast } from '../store/toastStore'
 
 export default function CasesList() {
-  const { cases, remove, togglePeerSupport, isStrapiMode } = useCasesStore()
+  const { cases, remove, togglePeerSupport, refresh } = useCasesStore()
   const { user } = useAuthStore()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
 
   // Filter & View State
   const [q, setQ] = useState('')
@@ -26,15 +31,11 @@ export default function CasesList() {
   const [sortBy, setSortBy] = useState<'recent' | 'started' | 'title' | 'hearings'>('recent')
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list')
   const [caseToDelete, setCaseToDelete] = useState<FamilyCase | null>(null)
-  const [showStrapiModal, setShowStrapiModal] = useState<boolean>(false)
 
-  // Visible user cases based on RBAC membership
+  // Visible user cases based on unified RBAC membership
   const userCases = useMemo(() => {
     if (!user) return []
-    return cases.filter((c) => {
-      const members = c.members || []
-      return members.some((m) => m.userId === user.id)
-    })
+    return cases.filter((c) => isUserCaseMember(c, user))
   }, [cases, user])
 
   // Summary Metrics
@@ -100,6 +101,9 @@ export default function CasesList() {
   const hasActiveFilters = Boolean(q.trim() || selectedStatus !== 'All' || selectedCaseType)
 
   function handleResetFilters() {
+    if (hasActiveFilters) {
+      toast.info('Search and status filters reset to default.', 'Filters Reset')
+    }
     setQ('')
     setSelectedStatus('All')
     setSelectedCaseType('')
@@ -122,8 +126,6 @@ export default function CasesList() {
         upcomingHearingsCount={upcomingHearingsCount}
         childrenCount={childrenCount}
         onNewCase={() => navigate('/cases/new')}
-        onOpenStrapiSync={() => setShowStrapiModal(true)}
-        isStrapiMode={isStrapiMode}
       />
 
       {/* Filter, Search & View Controls */}
@@ -177,6 +179,9 @@ export default function CasesList() {
             <Col key={c.id} xs={12} md={6} lg={4} className="d-flex">
               <CaseCard
                 caseData={c}
+                buttonLayout="vertical"
+                progressComponent="timeline"
+                timelineDefaultExpanded={false}
                 onViewDetails={(id) => navigate(`/cases/${id}`)}
                 onEdit={(id) => navigate(`/cases/${id}/edit`)}
                 onTogglePeerSupport={(id, cur) =>
@@ -202,12 +207,6 @@ export default function CasesList() {
           onCancel={() => setCaseToDelete(null)}
         />
       )}
-
-      {/* Strapi Backend & Neon PostgreSQL Sync Modal */}
-      <StrapiSyncModal
-        show={showStrapiModal}
-        onHide={() => setShowStrapiModal(false)}
-      />
     </div>
   )
 }

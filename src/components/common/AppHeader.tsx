@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navbar, Container, Nav, Dropdown, Badge } from 'react-bootstrap'
+import { Navbar, Container, Nav, Dropdown, Badge, Button } from 'react-bootstrap'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { useTranslation } from '../../hooks/useTranslation'
@@ -12,16 +12,24 @@ import {
   FaHandshake,
   FaPuzzlePiece,
   FaSignOutAlt,
-  FaUserCircle,
   FaCheckCircle,
   FaExclamationCircle,
   FaLifeRing,
   FaExternalLinkAlt,
+  FaUserCog,
 } from 'react-icons/fa'
 import type { UserRole } from '../../types/domain'
+import { WELCOME_ROUTE } from '../../utils/authConstants'
 
 export interface AppHeaderProps {
   className?: string
+}
+
+const roleLabel: Record<UserRole, string> = {
+  LIP: 'Litigant in person',
+  McKenzieFriend: 'McKenzie Friend',
+  Solicitor: 'Solicitor',
+  Barrister: 'Barrister',
 }
 
 const roleBadgeVariant: Record<UserRole, 'secondary' | 'success' | 'primary' | 'warning'> = {
@@ -51,14 +59,33 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
 
   const getHomeRoute = () => {
     if (!user) return '/login'
+    if (!user.isVerified) return WELCOME_ROUTE
     return user.role === 'LIP' ? '/dashboard' : '/professional-dashboard'
   }
 
-  const isActive = (path: string) => {
-    if (path === '/' && location.pathname === '/') return true
-    if (path !== '/' && location.pathname.startsWith(path)) return true
-    return false
-  }
+  const isDashboardActive =
+    location.pathname === '/dashboard' ||
+    location.pathname === '/professional-dashboard' ||
+    (location.pathname === '/' && Boolean(user?.isVerified))
+
+  const isCasesActive =
+    location.pathname.startsWith('/cases') && location.pathname !== '/cases/new'
+
+  const isDirectoryActive =
+    location.pathname.startsWith('/peer-directory')
+
+  const isDev = import.meta.env.DEV
+  const isComponentsActive = location.pathname.startsWith('/components')
+
+  const safeName = user?.name || user?.email?.split('@')[0] || 'User'
+  const userInitials = (user?.name || user?.email || 'U')
+    .trim()
+    .split(' ')
+    .filter(Boolean)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
   return (
     <Navbar
@@ -66,12 +93,8 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
       expanded={expanded}
       onToggle={(exp) => setExpanded(exp)}
       sticky="top"
-      className={`app-navbar bg-white border-bottom shadow-sm ${className}`}
-      style={{
-        zIndex: 1030,
-        backgroundColor: 'rgba(255, 255, 255, 0.98)',
-        backdropFilter: 'blur(10px)',
-      }}
+      className={`app-navbar ${className}`}
+      style={{ zIndex: 1030, backdropFilter: 'blur(12px)' }}
     >
       <Container fluid className="px-lg-4">
         {/* Brand Logo */}
@@ -94,86 +117,102 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
           <Nav className="ms-auto align-items-stretch align-items-xl-center gap-1 my-2 my-xl-0">
             {user ? (
               <>
-                {/* Dashboard Nav Link */}
-                <Nav.Link
-                  active={isActive(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}
-                  onClick={() => handleNavigate(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}
-                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                >
-                  <FaHome size={15} />
-                  <span>{t('common.dashboard')}</span>
-                </Nav.Link>
-
-                {/* Litigant in Person specific links */}
-                {user.role === 'LIP' && (
+                {/* App navigation is available once the email is verified */}
+                {user.isVerified && (
                   <>
+                    {/* Dashboard Nav Link */}
                     <Nav.Link
-                      active={location.pathname === '/cases' || location.pathname === '/'}
-                      onClick={() => handleNavigate('/cases')}
+                      active={isDashboardActive}
+                      onClick={() => handleNavigate(getHomeRoute())}
                       className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
                     >
-                      <FaGavel size={14} />
-                      <span>{t('common.cases')}</span>
+                      <FaHome size={15} />
+                      <span>{t('common.dashboard')}</span>
                     </Nav.Link>
 
-                    <Nav.Link
-                      active={isActive('/cases/new')}
-                      onClick={() => handleNavigate('/cases/new')}
-                      className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                    >
-                      <FaPlus size={13} />
-                      <span>{t('common.newCase')}</span>
-                    </Nav.Link>
+                    {/* Litigant in Person specific links */}
+                    {user.role === 'LIP' && (
+                      <>
+                        <Nav.Link
+                          active={isCasesActive}
+                          onClick={() => handleNavigate('/cases')}
+                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                        >
+                          <FaGavel size={14} />
+                          <span>{t('common.cases')}</span>
+                        </Nav.Link>
 
-                    <Nav.Link
-                      active={isActive('/peer-directory')}
-                      onClick={() => handleNavigate('/peer-directory')}
-                      className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                    >
-                      <FaHandshake size={15} />
-                      <span>{t('common.legalSupporters')}</span>
-                    </Nav.Link>
+                        <Nav.Link
+                          active={isDirectoryActive}
+                          onClick={() => handleNavigate('/peer-directory')}
+                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                        >
+                          <FaHandshake size={15} />
+                          <span>{t('common.legalSupporters')}</span>
+                        </Nav.Link>
+
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleNavigate('/cases/new')}
+                          className="d-none d-xl-inline-flex align-items-center gap-1.5 ms-xl-2 px-3 py-1.5 rounded-pill shadow-xs fw-semibold"
+                        >
+                          <FaPlus size={11} />
+                          <span>{t('common.newCase')}</span>
+                        </Button>
+                        <Nav.Link
+                          onClick={() => handleNavigate('/cases/new')}
+                          className="d-xl-none px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded text-primary fw-semibold"
+                        >
+                          <FaPlus size={13} />
+                          <span>{t('common.newCase')}</span>
+                        </Nav.Link>
+                      </>
+                    )}
+
+                    {/* Professional user specific links */}
+                    {user.role !== 'LIP' && (
+                      <>
+                        <Nav.Link
+                          active={isCasesActive}
+                          onClick={() => handleNavigate('/professional-dashboard')}
+                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                        >
+                          <FaGavel size={14} />
+                          <span>Assigned Cases</span>
+                        </Nav.Link>
+
+                        <Nav.Link
+                          active={isDirectoryActive}
+                          onClick={() => handleNavigate('/peer-directory')}
+                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                        >
+                          <FaHandshake size={15} />
+                          <span>{t('common.peerDirectory')}</span>
+                        </Nav.Link>
+                      </>
+                    )}
+
+                    {/* Developer Components Page (Dev Mode Only) */}
+                    {isDev && (
+                      <Nav.Link
+                        active={isComponentsActive}
+                        onClick={() => handleNavigate('/components')}
+                        className="px-3 py-2 fw-medium d-flex align-items-center gap-1.5 rounded"
+                        title="Component Showcase (Development Mode)"
+                      >
+                        <FaPuzzlePiece size={14} className="text-warning" />
+                        <span>Components</span>
+                        <span
+                          className="badge bg-warning text-dark px-1.5 py-0.5 rounded fw-bold"
+                          style={{ fontSize: '0.62rem', letterSpacing: '0.5px' }}
+                        >
+                          DEV
+                        </span>
+                      </Nav.Link>
+                    )}
                   </>
                 )}
-
-                {/* Professional user specific links */}
-                {user.role !== 'LIP' && (
-                  <Nav.Link
-                    active={isActive('/peer-directory')}
-                    onClick={() => handleNavigate('/peer-directory')}
-                    className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                  >
-                    <FaHandshake size={15} />
-                    <span>{t('common.peerDirectory')}</span>
-                  </Nav.Link>
-                )}
-
-                {/* Component Explorer link */}
-                <Nav.Link
-                  active={isActive('/components')}
-                  onClick={() => handleNavigate('/components')}
-                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                >
-                  <FaPuzzlePiece size={14} className="text-primary" />
-                  <span>{t('common.components')}</span>
-                  <Badge bg="primary-subtle" className="text-primary border border-primary-subtle small ms-1 px-1">
-                    {t('common.docs')}
-                  </Badge>
-                </Nav.Link>
-
-                {/* Support & Knowledge Base link */}
-                <Nav.Link
-                  href="https://support.mycourtbuddy.com/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => setExpanded(false)}
-                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded text-secondary"
-                  title="MyCourtBuddy Support & Knowledge Base (Case Law, Guidance, FAQ)"
-                >
-                  <FaLifeRing size={14} className="text-info" />
-                  <span>{t('common.support')}</span>
-                  <FaExternalLinkAlt size={10} className="text-muted ms-1" />
-                </Nav.Link>
 
                 {/* Responsive Mobile / Desktop Controls (Language + User Profile) */}
                 <div className="d-flex align-items-center justify-content-between gap-2 ms-xl-2 pt-2 pt-xl-0 border-top border-top-xl-0">
@@ -185,25 +224,29 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                     <Dropdown.Toggle
                       variant="light"
                       id="user-profile-dropdown"
-                      className="d-flex align-items-center gap-2 border bg-light py-1 px-2 rounded-pill shadow-none"
-                      style={{ fontSize: '0.875rem' }}
+                      className="d-flex align-items-center gap-2 border py-1 ps-1 pe-3 rounded-pill shadow-none"
+                      style={{ fontSize: '0.875rem', minHeight: 42 }}
                     >
-                      <FaUserCircle size={18} className="text-primary flex-shrink-0" />
-                      <span className="fw-semibold text-dark text-truncate" style={{ maxWidth: '140px' }}>
-                        {user.name}
-                      </span>
-                      <Badge
-                        bg={roleBadgeVariant[user.role] || 'secondary'}
-                        className={`px-2 py-1 small ${user.role === 'Barrister' ? 'text-dark' : ''}`}
+                      <span
+                        className="d-inline-flex align-items-center justify-content-center rounded-circle fw-bold flex-shrink-0"
+                        style={{ width: 32, height: 32, background: 'var(--mcb-primary-soft)', color: 'var(--mcb-primary)', fontSize: '0.8rem' }}
+                        aria-hidden="true"
                       >
-                        {user.role}
+                        {userInitials}
+                      </span>
+                      <span className="fw-semibold text-dark text-truncate" style={{ maxWidth: '140px' }}>
+                        {safeName}
+                      </span>
+                      <Badge bg={roleBadgeVariant[user.role] || 'secondary'} className="d-none d-sm-inline-flex">
+                        {roleLabel[user.role]}
                       </Badge>
                     </Dropdown.Toggle>
 
                     <Dropdown.Menu className="shadow border-0 py-2" style={{ minWidth: 240 }}>
                       <div className="px-3 py-2 border-bottom">
-                        <div className="fw-bold text-dark">{user.name}</div>
+                        <div className="fw-bold text-dark">{safeName}</div>
                         <div className="small text-muted text-truncate">{user.email}</div>
+                        <div className="small mt-1">{roleLabel[user.role]}</div>
                         <div className="mt-2 d-flex align-items-center gap-1">
                           {user.role !== 'LIP' && (
                             user.isVerified ? (
@@ -222,11 +265,19 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                       </div>
 
                       <Dropdown.Item
-                        onClick={() => handleNavigate(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}
+                        onClick={() => handleNavigate(getHomeRoute())}
                         className="d-flex align-items-center gap-2 py-2"
                       >
                         <FaHome className="text-muted" />
                         <span>{t('common.myDashboard')}</span>
+                      </Dropdown.Item>
+
+                      <Dropdown.Item
+                        onClick={() => handleNavigate('/profile')}
+                        className="d-flex align-items-center gap-2 py-2"
+                      >
+                        <FaUserCog className="text-muted" />
+                        <span>My Profile</span>
                       </Dropdown.Item>
 
                       <Dropdown.Item
@@ -246,6 +297,16 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                       <Dropdown.Divider />
 
                       <Dropdown.Item
+                        onClick={() => handleNavigate('/components')}
+                        className="d-flex align-items-center gap-2 py-1.5 text-muted small"
+                      >
+                        <FaPuzzlePiece size={12} />
+                        <span>Component Showcase</span>
+                      </Dropdown.Item>
+
+                      <Dropdown.Divider />
+
+                      <Dropdown.Item
                         onClick={handleLogout}
                         className="d-flex align-items-center gap-2 py-2 text-danger"
                       >
@@ -258,14 +319,24 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
               </>
             ) : (
               <>
-                <Nav.Link
-                  active={isActive('/components')}
-                  onClick={() => handleNavigate('/components')}
-                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                >
-                  <FaPuzzlePiece size={14} className="text-primary" />
-                  <span>{t('common.components')}</span>
-                </Nav.Link>
+                {isDev && (
+                  <Nav.Link
+                    active={isComponentsActive}
+                    onClick={() => handleNavigate('/components')}
+                    className="px-3 py-2 fw-medium d-flex align-items-center gap-1.5 rounded text-secondary"
+                    title="Component Showcase (Development Mode)"
+                  >
+                    <FaPuzzlePiece size={14} className="text-warning" />
+                    <span>Components</span>
+                    <span
+                      className="badge bg-warning text-dark px-1.5 py-0.5 rounded fw-bold"
+                      style={{ fontSize: '0.62rem', letterSpacing: '0.5px' }}
+                    >
+                      DEV
+                    </span>
+                  </Nav.Link>
+                )}
+
                 <Nav.Link
                   href="https://support.mycourtbuddy.com/"
                   target="_blank"
@@ -282,7 +353,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                   <LanguageSwitcher />
                   <Nav.Link
                     onClick={() => handleNavigate('/login')}
-                    className="btn btn-outline-primary px-3 py-1 text-center flex-fill flex-xl-grow-0"
+                    className="btn btn-primary btn-sm px-3 text-center flex-fill flex-xl-grow-0 text-white"
                   >
                     {t('common.signIn')}
                   </Nav.Link>

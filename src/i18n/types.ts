@@ -61,6 +61,7 @@ export interface TranslationSchema {
   }
   caseDetails: {
     notFound: string
+    adultsCount: string
     overviewTab: string
     partiesTab: string
     hearingsTab: string
@@ -68,6 +69,7 @@ export interface TranslationSchema {
     ordersTab: string
     notesTab: string
     teamTab: string
+    legalHubTab: string
     metadataTitle: string
     caseNumber: string
     courtVenue: string
@@ -200,6 +202,20 @@ export interface TranslationSchema {
     invalidRegistrationType: string
     nameAndEmailRequired: string
     emailAlreadyExists: string
+    twoEmailsDispatchedTitle: string
+    twoEmailsDispatchedNotice: string
+    confirmationTab: string
+    verificationTab: string
+    resendBothEmailsBtn: string
+    resendingEmails: string
+    bothEmailsResentSuccess: string
+    mckenzieRemitTitle: string
+    whatYouCanDo: string
+    whatYouCannotDo: string
+    copyVerificationLink: string
+    linkCopied: string
+    viewVerificationEmailBtn: string
+    referenceIdLabel: string
   }
   verifyEmail: {
     header: string
@@ -227,5 +243,28 @@ export interface TranslationSchema {
     declineBtn: string
     alreadyMember: string
     roleMismatch: string
+  }
+  welcome: {
+    title: string
+    subtitle: string
+    stepCreated: string
+    stepVerify: string
+    stepDashboard: string
+    checkInboxTitle: string
+    checkInboxBody: string
+    noLinkYetBody: string
+    checkInboxHint: string
+    alreadyVerifiedBtn: string
+    checking: string
+    notVerifiedYet: string
+    verifiedNow: string
+    resendBtn: string
+    sendBtn: string
+    sending: string
+    resent: string
+    sendFailed: string
+    useDifferentAccount: string
+    showEmails: string
+    hideEmails: string
   }
 }

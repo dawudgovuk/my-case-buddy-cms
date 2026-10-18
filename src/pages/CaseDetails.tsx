@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useCasesStore } from '../store/casesStore'
+import { useAuthStore } from '../store/authStore'
 import { useTranslation } from '../hooks/useTranslation'
-import { Card, Tabs, Tab, Badge } from 'react-bootstrap'
+import { Card, Tabs, Tab, Badge, Spinner } from 'react-bootstrap'
 import CaseSummaryCard from '../components/case/CaseSummaryCard'
 import CaseOverviewTab from '../components/case/tabs/CaseOverviewTab'
 import PartiesTab from '../components/case/tabs/PartiesTab'
@@ -11,6 +12,7 @@ import DocumentsTab from '../components/case/tabs/DocumentsTab'
 import OrdersTab from '../components/case/tabs/OrdersTab'
 import NotesTab from '../components/case/tabs/NotesTab'
 import TeamInvitesTab from '../components/case/tabs/TeamInvitesTab'
+import LegalHubTab from '../components/case/tabs/LegalHubTab'
 import { CASE_DETAILS_TABS } from '../utils/caseConstants'
 import {
   FaInfoCircle,
@@ -20,17 +22,36 @@ import {
   FaBalanceScale,
   FaStickyNote,
   FaUserFriends,
+  FaGavel,
 } from 'react-icons/fa'
 
 export default function CaseDetails() {
   const { caseId } = useParams()
   const navigate = useNavigate()
-  const { getById } = useCasesStore()
+  const { getById, isLoadingStrapi, refresh } = useCasesStore()
+  const { user } = useAuthStore()
   const { t } = useTranslation()
   const fc = useMemo(() => (caseId ? getById(caseId) : undefined), [caseId, getById])
   const [tab, setTab] = useState<number>(CASE_DETAILS_TABS.OVERVIEW)
 
-  if (!caseId || !fc) return <div className="text-danger p-4">{t('caseDetails.notFound')}</div>
+  const isProfessional = Boolean(user?.role && user.role !== 'LIP')
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
+  if (!caseId) return <div className="text-danger p-4">{t('caseDetails.notFound')}</div>
+
+  if (isLoadingStrapi && !fc) {
+    return (
+      <div className="d-flex justify-content-center align-items-center py-5">
+        <Spinner animation="border" variant="primary" className="me-2" />
+        <span className="text-muted">Loading case details...</span>
+      </div>
+    )
+  }
+
+  if (!fc) return <div className="text-danger p-4">{t('caseDetails.notFound')}</div>
 
   const partiesCount = fc.parties?.length || 0
   const hearingsCount = fc.hearings?.length || 0
@@ -44,7 +65,8 @@ export default function CaseDetails() {
       <CaseSummaryCard
         caseData={fc}
         onEdit={() => navigate(`/cases/${fc.id}/edit`)}
-        onBack={() => navigate('/cases')}
+        onBack={() => navigate(isProfessional ? '/professional-dashboard' : '/cases')}
+        backLabel={isProfessional ? 'Back to Dashboard' : undefined}
       />
 
       <Card className="shadow-sm border rounded-3 overflow-hidden bg-white">
@@ -162,6 +184,18 @@ export default function CaseDetails() {
               }
             >
               <TeamInvitesTab caseId={fc.id} />
+            </Tab>
+
+            <Tab
+              eventKey={CASE_DETAILS_TABS.LEGAL_HUB}
+              title={
+                <span className="d-inline-flex align-items-center gap-2">
+                  <FaGavel size={13} />
+                  <span>{t('caseDetails.legalHubTab')}</span>
+                </span>
+              }
+            >
+              <LegalHubTab caseData={fc} />
             </Tab>
           </Tabs>
         </Card.Body>

@@ -1,16 +1,12 @@
 import heartLogo from '../../assets/heart-logo.png'
 
-export default function Logo() {
+export default function Logo({ size = 32 }: { size?: number }) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <img
-        src={heartLogo}
-        alt="Heart in hand logo"
-        style={{ width: 32, height: 32, objectFit: 'contain', display: 'inline-block' }}
-      />
-      <span style={{ fontWeight: 700, fontSize: 20, color: '#1677ff', letterSpacing: 0.5 }}>
-        My Case Buddy
+    <span className="d-inline-flex align-items-center gap-2">
+      <img src={heartLogo} alt="" width={size} height={size} style={{ objectFit: 'contain' }} />
+      <span className="brand-wordmark">
+        My Case <span>Buddy</span>
       </span>
-    </div>
+    </span>
   )
 }

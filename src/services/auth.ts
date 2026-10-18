@@ -1,20 +1,42 @@
-import type { User } from '../types/domain'
+import type { User, FamilyCase } from '../types/domain'
+import { isVerifiedLegalProfessional } from '../utils/directoryUtils'
+import { SNAPSHOT_STORAGE_KEY } from './storageKeys'
 
 const AUTH_KEY = 'mycasebuddy:auth:v1'
 const USERS_KEY = 'mycasebuddy:users:v1'
+
+export function isDemoUser(u: { id?: string; email?: string } | null | undefined): boolean {
+  if (!u) return false
+  const id = u.id || ''
+  const email = (u.email || '').toLowerCase()
+  return (
+    id.startsWith('u_lip_') ||
+    id.startsWith('u_mf_') ||
+    id.startsWith('u_sol_') ||
+    id.startsWith('u_bar_') ||
+    email.endsWith('@example.com') ||
+    email.includes('unverified.co.uk') ||
+    email.includes('unverified.chambers.org')
+  )
+}
 
 export function getCurrentUser(): User | null {
   const raw = localStorage.getItem(AUTH_KEY)
   if (!raw) return null
   try {
-    return JSON.parse(raw) as User
+    const user = JSON.parse(raw) as User
+    if (isDemoUser(user)) {
+      localStorage.removeItem(AUTH_KEY)
+      return null
+    }
+    return user
   } catch {
     return null
   }
 }
 
 export function setCurrentUser(user: User | null) {
-  if (!user) {
+  if (!user || isDemoUser(user)) {
     localStorage.removeItem(AUTH_KEY)
     return
   }
@@ -26,56 +48,68 @@ export function listUsers(): User[] {
   if (!raw) return []
   try {
     const users = JSON.parse(raw) as User[]
-    if (!Array.isArray(users) || users.length === 0) return []
+    if (!Array.isArray(users)) return []
 
-    // Check if migration is needed (missing isVerified or imbalanced zero-verified/zero-unverified)
-    const pros = users.filter(
-      (u) => u.role === 'Solicitor' || u.role === 'Barrister' || u.role === 'McKenzieFriend'
-    )
-    const verifiedPros = pros.filter((p) => p.isVerified === true)
-    const unverifiedPros = pros.filter((p) => p.isVerified === false)
-    const hasMissingField = users.some((u) => typeof u.isVerified !== 'boolean')
-
-    if (hasMissingField || (pros.length > 0 && (verifiedPros.length === 0 || unverifiedPros.length === 0))) {
-      const roleCounts: Record<string, number> = {}
-
-      const migrated: User[] = users.map((u) => {
-        if (u.role === 'LIP') {
-          return { ...u, isVerified: true }
-        }
-
-        roleCounts[u.role] = (roleCounts[u.role] || 0) + 1
-        const indexInRole = roleCounts[u.role]
-
-        // First 8 in each professional role are verified; remaining are unverified
-        const isVerified = indexInRole <= 8
-        return {
-          ...u,
-          isVerified,
-          ...(!isVerified && !u.verificationToken
-            ? { verificationToken: `demo_token_${u.id}` }
-            : {}),
-          ...(isVerified && u.verificationToken ? { verificationToken: undefined } : {}),
-        }
-      })
-
-      saveUsers(migrated)
-      const current = getCurrentUser()
-      if (current) {
-        const matching = migrated.find((m) => m.id === current.id)
-        if (matching) setCurrentUser(matching)
-      }
-      return migrated
+    // Filter out any hardcoded legacy demo personas
+    const cleanUsers = users.filter((u) => !isDemoUser(u))
+    if (cleanUsers.length !== users.length) {
+      saveUsers(cleanUsers)
     }
-
-    return users
+    return cleanUsers
   } catch {
     return []
   }
 }
 
 export function saveUsers(users: User[]) {
-  localStorage.setItem(USERS_KEY, JSON.stringify(users))
+  const cleanUsers = users.filter((u) => !isDemoUser(u))
+  localStorage.setItem(USERS_KEY, JSON.stringify(cleanUsers))
+}
+
+/**
+ * Purges all hardcoded demo personas, seeded demo cases, and demo tokens from browser local storage.
+ */
+export function purgeLegacyDemoData(): void {
+  try {
+    // 1. Current user session
+    const rawAuth = localStorage.getItem(AUTH_KEY)
+    if (rawAuth) {
+      try {
+        const u = JSON.parse(rawAuth)
+        if (isDemoUser(u)) {
+          localStorage.removeItem(AUTH_KEY)
+        }
+      } catch {
+        localStorage.removeItem(AUTH_KEY)
+      }
+    }
+
+    // 2. Users list
+    const rawUsers = localStorage.getItem(USERS_KEY)
+    if (rawUsers) {
+      const users = JSON.parse(rawUsers)
+      if (Array.isArray(users)) {
+        const cleanUsers = (users as User[]).filter((u) => !isDemoUser(u))
+        localStorage.setItem(USERS_KEY, JSON.stringify(cleanUsers))
+      }
+    }
+
+    // 3. Local cases snapshot
+    const rawSnapshot = localStorage.getItem(SNAPSHOT_STORAGE_KEY)
+    if (rawSnapshot) {
+      const snap = JSON.parse(rawSnapshot)
+      if (Array.isArray(snap.cases)) {
+        snap.cases = (snap.cases as FamilyCase[]).filter((c) => {
+          const hasDemoMember = Boolean(c.members?.some((m) => isDemoUser({ id: m.userId, email: m.email })))
+          const isDemoSeeded = typeof c.caseNumber === 'string' && c.caseNumber.startsWith('FC-') && c.id.startsWith('case_')
+          return !hasDemoMember && !isDemoSeeded
+        })
+        localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(snap))
+      }
+    }
+  } catch (err) {
+    console.warn('Error purging legacy demo data:', err)
+  }
 }
 
 export function findUserById(userId: string): User | undefined {
@@ -87,30 +121,47 @@ export function findUserByToken(token: string): User | undefined {
   return listUsers().find((u) => u.verificationToken === token)
 }
 
+/** Saves `updated` at `index` and refreshes the session when it is the signed-in user. */
+function replaceStoredUser(users: User[], index: number, updated: User): void {
+  users[index] = updated
+  saveUsers(users)
+  const currentUser = getCurrentUser()
+  if (currentUser && currentUser.id === updated.id) {
+    setCurrentUser(updated)
+  }
+}
+
 export function verifyUserToken(token: string): { success: boolean; user?: User; error?: string } {
   const users = listUsers()
+
+  // 1. Direct match on active verificationToken
   const index = users.findIndex((u) => u.verificationToken === token)
-  if (index === -1) {
-    return { success: false, error: 'Invalid or expired verification token' }
+  if (index !== -1) {
+    const existingUser = users[index]
+    const updatedUser: User = {
+      ...existingUser,
+      isVerified: true,
+      verificationToken: undefined,
+      lastVerifiedToken: token,
+    }
+
+    replaceStoredUser(users, index, updatedUser)
+    return { success: true, user: updatedUser }
   }
 
-  const existingUser = users[index]
-  const updatedUser: User = {
-    ...existingUser,
-    isVerified: true,
-    verificationToken: undefined,
+  // 2. Check if user was already verified with this exact token (idempotent reload/Strict-Mode)
+  const alreadyVerifiedUser = users.find((u) => u.lastVerifiedToken === token)
+  if (alreadyVerifiedUser) {
+    return { success: true, user: alreadyVerifiedUser }
   }
 
-  users[index] = updatedUser
-  saveUsers(users)
-
-  // Update current session if the verified user is currently logged in
+  // 3. Fallback: if currently logged-in user is already verified
   const currentUser = getCurrentUser()
-  if (currentUser && currentUser.id === updatedUser.id) {
-    setCurrentUser(updatedUser)
+  if (currentUser?.isVerified) {
+    return { success: true, user: currentUser }
   }
 
-  return { success: true, user: updatedUser }
+  return { success: false, error: 'Invalid or expired verification token' }
 }
 
 export function verifyUserById(userId: string): User | undefined {
@@ -125,14 +176,7 @@ export function verifyUserById(userId: string): User | undefined {
     verificationToken: undefined,
   }
 
-  users[index] = updatedUser
-  saveUsers(users)
-
-  const currentUser = getCurrentUser()
-  if (currentUser && currentUser.id === updatedUser.id) {
-    setCurrentUser(updatedUser)
-  }
-
+  replaceStoredUser(users, index, updatedUser)
   return updatedUser
 }
 
@@ -156,11 +200,32 @@ export function verifyAllProfessionals(): User[] {
 }
 
 export function getVerifiedProfessionals(): User[] {
-  return listUsers().filter(
-    (u) =>
-      (u.role === 'Solicitor' || u.role === 'Barrister' || u.role === 'McKenzieFriend') &&
-      Boolean(u.isVerified)
+  return listUsers().filter(isVerifiedLegalProfessional)
+}
+
+export function updateUserProfile(userId: string, updates: Partial<User>): User | undefined {
+  const users = listUsers()
+  const index = users.findIndex(
+    (u) => u.id === userId || (updates.email && u.email.toLowerCase() === updates.email.toLowerCase())
   )
+  if (index === -1) {
+    const current = getCurrentUser()
+    if (
+      current &&
+      (current.id === userId || (updates.email && current.email.toLowerCase() === updates.email.toLowerCase()))
+    ) {
+      const updated: User = { ...current, ...updates }
+      setCurrentUser(updated)
+      saveUsers([...users, updated])
+      return updated
+    }
+    return undefined
+  }
+
+  const existing = users[index]
+  const updated: User = { ...existing, ...updates }
+  replaceStoredUser(users, index, updated)
+  return updated
 }
 
 

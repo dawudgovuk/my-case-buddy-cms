@@ -48,7 +48,7 @@ export function CaseActionButton({
       disabled={disabled}
       onClick={onClick}
       title={title}
-      className={`d-inline-flex align-items-center justify-content-center gap-2 py-2 px-3 fw-semibold rounded-3 shadow-none ${fullWidth ? 'w-100' : ''} ${className}`}
+      className={`d-inline-flex align-items-center justify-content-center text-center gap-2 py-2 px-3 fw-semibold rounded-3 shadow-none ${fullWidth ? 'w-100' : ''} ${className}`}
     >
       {icon && <span className="btn-icon">{icon}</span>}
       <span>{children}</span>
@@ -72,17 +72,20 @@ export function PeerSupportButton({
   className = '',
 }: PeerSupportButtonProps) {
   return (
-    <CaseActionButton
-      variant={isSeekingPeerSupport ? 'success' : 'outline-primary'}
-      onClick={onToggle}
+    <Button
+      variant={isSeekingPeerSupport ? 'success' : 'light'}
+      size="sm"
       disabled={disabled}
-      fullWidth={fullWidth}
-      className={className}
-      icon={<FaHandshake />}
-      title={isSeekingPeerSupport ? 'Peer Support is currently active' : 'Request peer assistance from professionals'}
+      onClick={onToggle}
+      title={isSeekingPeerSupport ? 'Peer Support is currently active. Click to toggle.' : 'Request peer review assistance'}
+      className={`d-inline-flex align-items-center justify-content-center text-center gap-2 py-2 px-3 rounded-3 shadow-none ${
+        isSeekingPeerSupport ? 'btn-peer-active text-white' : 'btn-peer-inactive'
+      } ${fullWidth ? 'w-100' : ''} ${className}`}
+      style={{ fontSize: '0.86rem', fontWeight: 600 }}
     >
-      {isSeekingPeerSupport ? 'Peer Support Active' : 'Request Peer Support'}
-    </CaseActionButton>
+      <FaHandshake size={15} className={isSeekingPeerSupport ? 'text-white flex-shrink-0' : 'text-muted flex-shrink-0'} />
+      <span className="text-center">{isSeekingPeerSupport ? 'Peer Support Active' : 'Request Peer Support'}</span>
+    </Button>
   )
 }
 
@@ -103,7 +106,6 @@ export function ViewCaseButton({
   href,
   fullWidth = false,
   className = '',
-  variant = 'primary',
   size = 'sm',
   label = 'View Details',
 }: ViewCaseButtonProps) {
@@ -112,17 +114,17 @@ export function ViewCaseButton({
   }
 
   return (
-    <CaseActionButton
-      variant={variant}
+    <Button
+      variant="primary"
       size={size}
       onClick={handleClick}
-      fullWidth={fullWidth}
-      className={className}
-      icon={<FaEye />}
+      className={`btn-case-view d-inline-flex align-items-center justify-content-center text-center gap-2 py-2 px-3 fw-semibold rounded-3 ${fullWidth ? 'w-100' : ''} ${className}`}
+      style={{ fontSize: '0.86rem' }}
       {...(href ? { as: 'a', href } : {})}
     >
-      {label}
-    </CaseActionButton>
+      <FaEye size={14} className="text-white flex-shrink-0" />
+      <span className="text-center">{label}</span>
+    </Button>
   )
 }
 
@@ -146,16 +148,17 @@ export function EditCaseButton({
   }
 
   return (
-    <CaseActionButton
+    <Button
       variant="outline-primary"
+      size="sm"
       onClick={handleClick}
-      fullWidth={fullWidth}
-      className={className}
-      icon={<FaEdit />}
+      className={`btn-case-edit d-inline-flex align-items-center justify-content-center text-center gap-2 py-2 px-3 fw-semibold rounded-3 ${fullWidth ? 'w-100' : ''} ${className}`}
+      style={{ fontSize: '0.86rem' }}
       {...(href ? { as: 'a', href } : {})}
     >
-      Edit
-    </CaseActionButton>
+      <FaEdit size={14} className="flex-shrink-0" />
+      <span className="text-center">Edit</span>
+    </Button>
   )
 }
 

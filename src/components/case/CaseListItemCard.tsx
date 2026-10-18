@@ -1,4 +1,5 @@
 import { Badge, Button } from 'react-bootstrap'
+import { displayDate } from '../../utils/displayDate'
 import type { FamilyCase } from '../../types/domain'
 import { useTranslation } from '../../hooks/useTranslation'
 import {
@@ -102,7 +103,7 @@ export default function CaseListItemCard({
             {caseData.startedAt && (
               <>
                 <span className="text-muted">•</span>
-                <span className="text-muted">Started: {caseData.startedAt}</span>
+                <span className="text-muted">Started: {displayDate(caseData.startedAt)}</span>
               </>
             )}
           </div>
@@ -132,7 +133,7 @@ export default function CaseListItemCard({
               <span className="badge bg-amber-subtle text-dark border border-warning-subtle d-inline-flex align-items-center gap-1 py-1 px-2" style={{ backgroundColor: '#fffbeb', fontSize: '0.75rem' }}>
                 <FaCalendarCheck size={11} className="text-warning" />
                 <span>
-                  Next: <strong>{nextHearing.date}</strong> ({nextHearing.type})
+                  Next: <strong>{displayDate(nextHearing.date)}</strong> ({nextHearing.type})
                 </span>
               </span>
             )}

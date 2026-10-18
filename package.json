@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
+    "test": "tsx --test tests/unit/*.test.ts",
     "test:neon": "tsx scripts/test-neon-services.ts",
     "preview": "vite preview"
   },
@@ -15,6 +16,7 @@
     "@ant-design/icons": "^6.1.0",
     "@neon/config": "^1.9.1",
     "@neon/env": "^1.6.2",
+    "@neondatabase/neon-js": "^0.8.0-beta",
     "@neondatabase/serverless": "^1.2.0",
     "antd": "^6.1.4",
     "bootstrap": "^5.3.3",

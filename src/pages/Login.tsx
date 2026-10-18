@@ -1,137 +1,101 @@
-import { Container, Card, Form, Button } from 'react-bootstrap'
-import { useEffect, useState, useMemo } from 'react'
-import { useAuthStore } from '../store/authStore'
-import { useNavigate } from 'react-router-dom'
-import { FaSignInAlt, FaCheckCircle } from 'react-icons/fa'
+import { Container, Card, Alert, Button } from 'react-bootstrap'
 import { useTranslation } from '../hooks/useTranslation'
+import { useLoginForm } from '../hooks/useLoginForm'
 import RoleRegistrationLinks from '../components/auth/RoleRegistrationLinks'
+import AuthHero from '../components/auth/AuthHero'
+import AuthModeToggle from '../components/auth/AuthModeToggle'
+import LoginForm from '../components/auth/LoginForm'
 
 export default function Login() {
-  const navigate = useNavigate()
-  const { user, users, login, ensureDemoUsers, verifyUserById } = useAuthStore()
   const { t } = useTranslation()
-  const [userId, setUserId] = useState('')
+  const {
+    authMode,
+    values,
+    setField,
+    showPassword,
+    toggleShowPassword,
+    switchMode,
+    loading,
+    error,
+    setError,
+    successMsg,
+    setSuccessMsg,
+    handleAuthSubmit,
+    navigate,
+  } = useLoginForm()
 
-  useEffect(() => {
-    ensureDemoUsers()
-  }, [ensureDemoUsers])
-
-  useEffect(() => {
-    if (user) {
-      navigate(user.role === 'LIP' ? '/cases' : '/professional-dashboard', { replace: true })
-    }
-  }, [user, navigate])
-
-  // Partition users into verified professionals, LIPs, and unverified professionals
-  const { verifiedPros, lips, unverifiedPros } = useMemo(() => {
-    const verifiedPros = users.filter((u) => u.role !== 'LIP' && Boolean(u.isVerified))
-    const lips = users.filter((u) => u.role === 'LIP')
-    const unverifiedPros = users.filter((u) => u.role !== 'LIP' && !u.isVerified)
-    return { verifiedPros, lips, unverifiedPros }
-  }, [users])
-
-  const selectedUser = useMemo(() => users.find((u) => u.id === userId), [users, userId])
-
-  function onSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!userId) return
-    const targetUser = users.find((u) => u.id === userId)
-    login(userId)
-    navigate(targetUser?.role === 'LIP' ? '/cases' : '/professional-dashboard', { replace: true })
-  }
-
-  function handleVerifySelected(id: string) {
-    verifyUserById(id)
-  }
+  const isSignIn = authMode === 'signin'
 
   return (
-    <Container className="d-flex justify-content-center align-items-center min-vh-50 py-5">
-      <Card className="shadow-lg border-0" style={{ maxWidth: '580px', width: '100%' }}>
-        <Card.Header className="text-center py-4 bg-white border-bottom">
-          <h1 className="h3 fw-bold mb-1">{t('common.appName')}</h1>
-          <p className="text-muted mb-0">{t('auth.signInTitle')}</p>
-        </Card.Header>
-        <Card.Body className="p-4">
-          <Form onSubmit={onSubmit}>
-            <Form.Group className="mb-3">
-              <Form.Label className="fw-bold">{t('auth.chooseUser')}</Form.Label>
-              <Form.Select
-                value={userId}
-                onChange={(e) => setUserId(e.target.value)}
-                required
-                size="lg"
-                className="mb-2"
-              >
-                <option value="">{t('auth.selectUserPrompt')}</option>
+    <Container className="auth-shell">
+      <div className="auth-panel">
+      <Card className="overflow-hidden">
+        <AuthHero
+          title={isSignIn ? 'Welcome back' : 'Create your account'}
+          subtitle={
+            isSignIn
+              ? t('auth.signInTitle')
+              : 'Manage your family court case and get support from people who can help'
+          }
+        />
 
-                {/* Verified Legal Professionals */}
-                {verifiedPros.length > 0 && (
-                  <optgroup label={`✓ ${t('auth.verifiedProfessionalsGroup')} (${verifiedPros.length})`}>
-                    {verifiedPros.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} — {u.role} [✓ {t('common.verified')}]
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-
-                {/* Litigants in Person */}
-                {lips.length > 0 && (
-                  <optgroup label={`${t('auth.lipsGroup')} (${lips.length})`}>
-                    {lips.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} — LIP
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-
-                {/* Unverified Professionals */}
-                {unverifiedPros.length > 0 && (
-                  <optgroup label={`⚠️ ${t('auth.unverifiedProfessionalsGroup')} (${unverifiedPros.length})`}>
-                    {unverifiedPros.map((u) => (
-                      <option key={u.id} value={u.id}>
-                        {u.name} — {u.role} [⚠️ {t('common.unverified')}]
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-              </Form.Select>
-
-              {/* Instant Verification Banner for Selected Unverified User */}
-              {selectedUser && !selectedUser.isVerified && selectedUser.role !== 'LIP' && (
-                <div className="alert alert-warning py-2 px-3 small d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between gap-2 mb-3 rounded-3 border-warning-subtle">
-                  <span>⚠️ {t('auth.accountUnverifiedAlert')}</span>
-                  <Button
-                    variant="warning"
-                    size="sm"
-                    className="fw-bold py-1 px-2 text-dark shadow-xs flex-shrink-0"
-                    onClick={() => handleVerifySelected(selectedUser.id)}
-                  >
-                    <FaCheckCircle className="me-1" />
-                    {t('auth.verifySelectedBtn')}
-                  </Button>
-                </div>
-              )}
-            </Form.Group>
-
-            <Button
-              type="submit"
-              variant="primary"
-              size="lg"
-              className="w-100 mb-3 d-flex align-items-center justify-content-center gap-2 shadow-xs"
+        <Card.Body className="p-4 p-md-4">
+          {error && (
+            <Alert
+              variant="danger"
+              dismissible
+              onClose={() => setError(null)}
+              className="py-2 px-3 small rounded-3 mb-3"
             >
-              <FaSignInAlt />
-              <span>{t('common.signIn')}</span>
+              {error}
+            </Alert>
+          )}
+
+          {successMsg && (
+            <Alert
+              variant="success"
+              dismissible
+              onClose={() => setSuccessMsg(null)}
+              className="py-2 px-3 small rounded-3 mb-3"
+            >
+              {successMsg}
+            </Alert>
+          )}
+
+          <AuthModeToggle mode={authMode} onChange={switchMode} />
+
+          <LoginForm
+            mode={authMode}
+            values={values}
+            onFieldChange={setField}
+            showPassword={showPassword}
+            onToggleShowPassword={toggleShowPassword}
+            loading={loading}
+            onSubmit={handleAuthSubmit}
+          />
+
+          {/* Mode Switch Prompt */}
+          <div className="text-center mb-2">
+            <span className="text-muted small">
+              {isSignIn ? "Don't have an account? " : 'Already registered? '}
+            </span>
+            <Button
+              variant="link"
+              className="p-0 small fw-bold text-decoration-none"
+              onClick={() => switchMode(isSignIn ? 'signup' : 'signin')}
+            >
+              {isSignIn ? 'Create an account' : 'Sign in'}
             </Button>
-          </Form>
+          </div>
 
-          <hr className="my-4" />
-
-          {/* Extracted Reusable Role Registration Shortcuts */}
+          {/* Reusable Role Registration Shortcuts */}
           <RoleRegistrationLinks onSelectRole={(role) => navigate(`/register/${role}`)} />
         </Card.Body>
       </Card>
+      <p className="text-center text-muted small mt-3 mb-0">
+        Your case information is private and only shared with people you invite.
+      </p>
+      </div>
     </Container>
   )
 }

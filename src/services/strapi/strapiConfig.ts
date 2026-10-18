@@ -21,7 +21,7 @@ export function isStrapiEnabled(): boolean {
   if (localPref !== null) {
     return localPref === 'true';
   }
-  return import.meta.env.VITE_USE_STRAPI === 'true';
+  return import.meta.env.VITE_USE_STRAPI !== 'false';
 }
 
 /**

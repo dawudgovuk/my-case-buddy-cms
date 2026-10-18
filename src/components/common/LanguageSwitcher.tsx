@@ -2,6 +2,7 @@ import { Dropdown } from 'react-bootstrap'
 import { useTranslation } from '../../hooks/useTranslation'
 import type { SupportedLanguage } from '../../i18n'
 import { FaGlobe, FaCheck } from 'react-icons/fa'
+import { toast } from '../../store/toastStore'
 
 export interface LanguageSwitcherProps {
   className?: string
@@ -20,6 +21,13 @@ export default function LanguageSwitcher({
   showLabel = true,
 }: LanguageSwitcherProps) {
   const { language, setLanguage, languages, currentLanguageOption } = useTranslation()
+
+  const handleSelectLanguage = (lang: (typeof languages)[number]) => {
+    if (lang.code !== language) {
+      setLanguage(lang.code as SupportedLanguage)
+      toast.info(`Switched interface language to ${lang.label} (${lang.nativeName}).`, 'Language Changed')
+    }
+  }
 
   return (
     <Dropdown className={`language-switcher ${className}`}>
@@ -53,7 +61,7 @@ export default function LanguageSwitcher({
             <Dropdown.Item
               key={lang.code}
               active={isSelected}
-              onClick={() => setLanguage(lang.code as SupportedLanguage)}
+              onClick={() => handleSelectLanguage(lang)}
               className="d-flex align-items-center justify-content-between py-2 px-3 small"
             >
               <div className="d-flex align-items-center gap-2">

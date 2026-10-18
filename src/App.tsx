@@ -1,8 +1,10 @@
+import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import { Container } from 'react-bootstrap'
+import { Container, Spinner } from 'react-bootstrap'
 import CasesList from './pages/CasesList'
 import CaseForm from './pages/CaseForm'
 import { useAuthStore } from './store/authStore'
+import { purgeLegacyDemoData } from './services/auth'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import InviteAccept from './pages/InviteAccept'
@@ -10,112 +12,137 @@ import LIPDashboard from './pages/LIPDashboard'
 import ProfessionalDashboard from './pages/ProfessionalDashboard'
 import CaseDetails from './pages/CaseDetails'
 import VerifyEmail from './pages/VerifyEmail'
+import Welcome from './pages/Welcome'
+import RequireVerified from './components/routing/RequireVerified'
+import { getLandingRoute } from './utils/authConstants'
 import PeerDirectory from './pages/PeerDirectory'
 import ComponentShowcase from './pages/ComponentShowcase'
+import Profile from './pages/Profile'
 import AppHeader from './components/common/AppHeader'
+import ToastContainer from './components/common/ToastContainer'
+import { useCasesStore } from './store/casesStore'
 import { useTranslation } from './hooks/useTranslation'
-import { FaLifeRing, FaExternalLinkAlt } from 'react-icons/fa'
+import { FaLifeRing, FaExternalLinkAlt, FaCompass } from 'react-icons/fa'
+import { Link } from 'react-router-dom'
+import heartLogo from './assets/heart-logo.png'
+
+// Purge all legacy hardcoded demo personas and cases on module initialization
+purgeLegacyDemoData()
 
 function Shell() {
-  const { user } = useAuthStore()
+  const { user, initNeonAuth, isLoadingSession } = useAuthStore()
+  const { isStrapiMode, syncWithStrapi } = useCasesStore()
   const { t } = useTranslation()
+  const isLip = user?.role === 'LIP'
+
+  useEffect(() => {
+    void initNeonAuth()
+    if (isStrapiMode) {
+      void syncWithStrapi()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  if (isLoadingSession) {
+    return (
+      <div className="app-page-loader">
+        <div className="text-center p-4" role="status" aria-live="polite">
+          <img src={heartLogo} alt="" width={44} height={44} className="mb-3" />
+          <div className="mb-3">
+            <Spinner animation="border" variant="primary" size="sm" />
+          </div>
+          <div className="brand-wordmark mb-1">
+            My Case <span>Buddy</span>
+          </div>
+          <div className="text-muted small">Opening your account…</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="d-flex flex-column min-vh-100">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <AppHeader />
+      <ToastContainer />
 
-      <Container fluid="xl" className="py-3 py-md-4 px-2 px-sm-3 px-md-4 flex-grow-1">
+      <Container as="main" id="main-content" fluid="xl" className="py-4 py-md-5 px-3 px-md-4 flex-grow-1">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register/:role" element={<Register />} />
           <Route path="/verify-email/:token" element={<VerifyEmail />} />
-          <Route path="/peer-directory" element={user ? <PeerDirectory /> : <Navigate to="/login" replace />} />
+          <Route path="/welcome" element={<Welcome />} />
+          <Route path="/peer-directory" element={<RequireVerified><PeerDirectory /></RequireVerified>} />
           <Route path="/invite/:token" element={<InviteAccept />} />
           <Route
             path="/dashboard"
             element={
-              user ? (
-                user.role === 'LIP' ? (
-                  <LIPDashboard />
-                ) : (
-                  <Navigate to="/professional-dashboard" replace />
-                )
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <RequireVerified>
+                {isLip ? <LIPDashboard /> : <Navigate to="/professional-dashboard" replace />}
+              </RequireVerified>
             }
           />
           <Route
             path="/professional-dashboard"
             element={
-              user ? (
-                user.role !== 'LIP' ? (
-                  <ProfessionalDashboard />
-                ) : (
-                  <Navigate to="/dashboard" replace />
-                )
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <RequireVerified>
+                {isLip ? <Navigate to="/dashboard" replace /> : <ProfessionalDashboard />}
+              </RequireVerified>
             }
           />
           <Route
             path="/cases"
             element={
-              user ? (
-                user.role === 'LIP' ? (
-                  <CasesList />
-                ) : (
-                  <Navigate to="/professional-dashboard" replace />
-                )
-              ) : (
-                <Navigate to="/login" replace />
-              )
+              <RequireVerified>
+                {isLip ? <CasesList /> : <Navigate to="/professional-dashboard" replace />}
+              </RequireVerified>
             }
           />
-          <Route
-            path="/"
-            element={
-              user ? (
-                user.role === 'LIP' ? (
-                  <Navigate to="/cases" replace />
-                ) : (
-                  <Navigate to="/professional-dashboard" replace />
-                )
-              ) : (
-                <Navigate to="/login" replace />
-              )
-            }
-          />
-          <Route path="/cases/new" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
-          <Route path="/cases/:caseId" element={user ? <CaseDetails /> : <Navigate to="/login" replace />} />
-          <Route path="/cases/:caseId/edit" element={user ? <CaseForm /> : <Navigate to="/login" replace />} />
+          <Route path="/" element={<Navigate to={getLandingRoute(user)} replace />} />
+          <Route path="/cases/new" element={<RequireVerified><CaseForm /></RequireVerified>} />
+          <Route path="/cases/:caseId" element={<RequireVerified><CaseDetails /></RequireVerified>} />
+          <Route path="/cases/:caseId/edit" element={<RequireVerified><CaseForm /></RequireVerified>} />
+          <Route path="/profile" element={<RequireVerified><Profile /></RequireVerified>} />
           <Route path="/components" element={<ComponentShowcase />} />
-          <Route path="*" element={<div className="text-center py-5 text-muted">{t('common.pageNotFound')}</div>} />
+          <Route
+            path="*"
+            element={
+              <div className="card not-found-card">
+                <div className="auth-hero-icon mx-auto" style={{ background: 'var(--mcb-primary-soft)', borderColor: 'var(--mcb-primary-border)', color: 'var(--mcb-primary)' }}>
+                  <FaCompass size={24} />
+                </div>
+                <h1 className="h3 mb-2">{t('common.pageNotFound')}</h1>
+                <p className="text-muted mb-4">The link may be out of date, or the page may have moved.</p>
+                <div>
+                  <Link to="/" className="btn btn-primary">Go to my home page</Link>
+                </div>
+              </div>
+            }
+          />
         </Routes>
       </Container>
 
-      <footer className="bg-light py-4 mt-auto border-top">
-        <Container className="d-flex flex-column flex-md-row align-items-center justify-content-between gap-3 text-center text-md-start">
-          <div>
-            <div className="fw-semibold text-dark mb-1" style={{ fontSize: '0.875rem' }}>
-              My Case Buddy CMS
+      <footer className="app-footer py-4 mt-auto">
+        <Container fluid="xl" className="px-3 px-md-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
+          <div className="d-flex align-items-start gap-3">
+            <img src={heartLogo} alt="" width={28} height={28} className="mt-1" />
+            <div>
+              <div className="footer-brand mb-1">My Case Buddy</div>
+              <p className="mb-0" style={{ maxWidth: '38rem' }}>{t('common.disclaimer')}</p>
             </div>
-            <small className="text-muted d-block">{t('common.disclaimer')}</small>
           </div>
-          <div className="d-flex align-items-center gap-2 flex-shrink-0">
-            <a
-              href="https://support.mycourtbuddy.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3 py-1 shadow-xs"
-              style={{ fontSize: '0.8rem' }}
-            >
-              <FaLifeRing size={12} className="text-primary" />
-              <span>{t('common.supportKnowledgeBase')}</span>
-              <FaExternalLinkAlt size={10} className="text-muted" />
-            </a>
-          </div>
+          <a
+            href="https://support.mycourtbuddy.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-outline-secondary btn-sm flex-shrink-0 align-self-start align-self-md-center"
+          >
+            <FaLifeRing size={13} className="text-primary" />
+            <span>{t('common.supportKnowledgeBase')}</span>
+            <FaExternalLinkAlt size={10} className="text-muted" />
+          </a>
         </Container>
       </footer>
     </div>
