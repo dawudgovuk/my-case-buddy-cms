@@ -1,6 +1,7 @@
 import { useMemo, useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useCasesStore } from '../store/casesStore'
+import { useAuthStore } from '../store/authStore'
 import { useTranslation } from '../hooks/useTranslation'
 import { Card, Tabs, Tab, Badge, Spinner } from 'react-bootstrap'
 import CaseSummaryCard from '../components/case/CaseSummaryCard'
@@ -26,15 +27,16 @@ export default function CaseDetails() {
   const { caseId } = useParams()
   const navigate = useNavigate()
   const { getById, isLoadingStrapi, refresh } = useCasesStore()
+  const { user } = useAuthStore()
   const { t } = useTranslation()
   const fc = useMemo(() => (caseId ? getById(caseId) : undefined), [caseId, getById])
   const [tab, setTab] = useState<number>(CASE_DETAILS_TABS.OVERVIEW)
 
+  const isProfessional = Boolean(user?.role && user.role !== 'LIP')
+
   useEffect(() => {
-    if (!fc) {
-      refresh()
-    }
-  }, [fc, refresh])
+    refresh()
+  }, [refresh])
 
   if (!caseId) return <div className="text-danger p-4">{t('caseDetails.notFound')}</div>
 
@@ -61,7 +63,8 @@ export default function CaseDetails() {
       <CaseSummaryCard
         caseData={fc}
         onEdit={() => navigate(`/cases/${fc.id}/edit`)}
-        onBack={() => navigate('/cases')}
+        onBack={() => navigate(isProfessional ? '/professional-dashboard' : '/cases')}
+        backLabel={isProfessional ? 'Back to Dashboard' : undefined}
       />
 
       <Card className="shadow-sm border rounded-3 overflow-hidden bg-white">

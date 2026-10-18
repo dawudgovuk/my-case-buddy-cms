@@ -124,6 +124,13 @@ export function updateInvite(inviteId: string, updates: Partial<CaseInvite>): Ap
   }));
 }
 
+export function deleteInvite(inviteIdOrToken: string): AppStateSnapshot {
+  return saveSnapshot((prev) => ({
+    ...prev,
+    invites: prev.invites.filter((i) => i.id !== inviteIdOrToken && i.token !== inviteIdOrToken),
+  }));
+}
+
 export function createDeadline(deadline: DocumentDeadline): AppStateSnapshot {
   return saveSnapshot((prev) => ({
     ...prev,

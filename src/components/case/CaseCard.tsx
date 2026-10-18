@@ -178,6 +178,7 @@ export default function CaseCard({
           <div className="flex-grow-1 mb-3">
             {progressComponent === 'timeline' ? (
               <CaseTimeline
+                caseData={caseData}
                 stages={stages}
                 currentStageIndex={currentStageIndex}
                 compact={true}

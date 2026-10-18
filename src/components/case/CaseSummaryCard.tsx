@@ -2,6 +2,7 @@ import { Button } from 'react-bootstrap'
 import { displayDate } from '../../utils/displayDate'
 import type { FamilyCase } from '../../types/domain'
 import CaseStatusBadge from '../common/CaseStatusBadge'
+import { getStagesForCase, getCurrentStageIndex } from '../../utils/caseStages'
 import {
   FaEdit,
   FaArrowLeft,
@@ -10,6 +11,9 @@ import {
   FaCalendarAlt,
   FaBalanceScale,
   FaHandshake,
+  FaFolderOpen,
+  FaUserFriends,
+  FaTasks,
 } from 'react-icons/fa'
 import { useTranslation } from '../../hooks/useTranslation'
 
@@ -17,6 +21,7 @@ export interface CaseSummaryCardProps {
   caseData: FamilyCase
   onEdit?: () => void
   onBack?: () => void
+  backLabel?: string
   showActions?: boolean
   className?: string
 }
@@ -25,6 +30,7 @@ export default function CaseSummaryCard({
   caseData,
   onEdit,
   onBack,
+  backLabel,
   showActions = true,
   className = '',
 }: CaseSummaryCardProps) {
@@ -35,6 +41,7 @@ export default function CaseSummaryCard({
   const childrenCount = caseData.parties?.filter((p) => p.role === 'Child').length || 0
   const hearingsCount = caseData.hearings?.length || 0
   const ordersCount = caseData.orders?.length || 0
+  const teamMembersCount = caseData.members?.length || 0
 
   return (
     <div className={`mb-3 ${className}`}>
@@ -48,7 +55,7 @@ export default function CaseSummaryCard({
             style={{ fontSize: '0.85rem' }}
           >
             <FaArrowLeft size={11} className="text-primary" />
-            <span>{t('common.back')} to {t('common.cases')}</span>
+            <span>{backLabel || `${t('common.back')} to ${t('common.cases')}`}</span>
           </button>
         </div>
       )}
@@ -59,10 +66,31 @@ export default function CaseSummaryCard({
           <div className="overflow-hidden flex-grow-1">
             {/* Badges / Identifiers Row */}
             <div className="d-flex align-items-center gap-2 flex-wrap mb-2">
-              <span className="badge bg-light text-muted border font-monospace px-2 py-1" style={{ fontSize: '0.75rem' }}>
-                {caseData.id}
+              <span
+                className="badge bg-light text-dark border font-monospace px-2.5 py-1.5 rounded-2 d-inline-flex align-items-center gap-1.5"
+                style={{ fontSize: '0.78rem' }}
+                title="Case Number"
+              >
+                <FaFolderOpen className="text-primary" size={11} />
+                <span>{caseData.caseNumber || caseData.id}</span>
               </span>
               <CaseStatusBadge status={caseData.status} />
+              {(() => {
+                const stages = getStagesForCase(caseData)
+                const currentStageIdx = getCurrentStageIndex(caseData)
+                const stageObj = stages[currentStageIdx]
+                if (!stageObj) return null
+                return (
+                  <span
+                    className="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1.5 py-1 px-2.5 rounded-2"
+                    style={{ fontSize: '0.74rem' }}
+                    title={`Current Court Milestone: ${stageObj.description}`}
+                  >
+                    <FaTasks size={10} />
+                    <span>Stage {currentStageIdx + 1}/{stages.length}: {stageObj.name}</span>
+                  </span>
+                )
+              })()}
               {caseData.seekingPeerSupport && (
                 <span
                   className="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1 py-1 px-2"
@@ -138,31 +166,17 @@ export default function CaseSummaryCard({
             </span>
           </div>
 
-          {childrenCount > 0 ? (
-            <div className="stat-pill d-inline-flex align-items-center gap-2 py-1 px-3">
-              <div
-                className="rounded-circle d-flex align-items-center justify-content-center bg-warning-subtle text-warning-emphasis"
-                style={{ width: 24, height: 24 }}
-              >
-                <FaChild size={11} />
-              </div>
-              <span className="small text-secondary" style={{ fontSize: '0.8rem' }}>
-                Children: <strong className="text-dark">{childrenCount}</strong>
-              </span>
+          <div className="stat-pill d-inline-flex align-items-center gap-2 py-1 px-3">
+            <div
+              className="rounded-circle d-flex align-items-center justify-content-center bg-warning-subtle text-warning-emphasis"
+              style={{ width: 24, height: 24 }}
+            >
+              <FaChild size={11} />
             </div>
-          ) : (
-            <div className="stat-pill d-inline-flex align-items-center gap-2 py-1 px-3">
-              <div
-                className="rounded-circle d-flex align-items-center justify-content-center bg-light text-muted border"
-                style={{ width: 24, height: 24 }}
-              >
-                <FaChild size={11} />
-              </div>
-              <span className="small text-muted" style={{ fontSize: '0.8rem' }}>
-                Children: 0
-              </span>
-            </div>
-          )}
+            <span className="small text-secondary" style={{ fontSize: '0.8rem' }}>
+              Children: <strong className="text-dark">{childrenCount}</strong>
+            </span>
+          </div>
 
           <div className="stat-pill d-inline-flex align-items-center gap-2 py-1 px-3">
             <div
@@ -186,6 +200,20 @@ export default function CaseSummaryCard({
               </div>
               <span className="small text-secondary" style={{ fontSize: '0.8rem' }}>
                 Orders: <strong className="text-dark">{ordersCount}</strong>
+              </span>
+            </div>
+          )}
+
+          {teamMembersCount > 0 && (
+            <div className="stat-pill d-inline-flex align-items-center gap-2 py-1 px-3">
+              <div
+                className="rounded-circle d-flex align-items-center justify-content-center bg-primary-subtle text-primary"
+                style={{ width: 24, height: 24 }}
+              >
+                <FaUserFriends size={11} />
+              </div>
+              <span className="small text-secondary" style={{ fontSize: '0.8rem' }}>
+                Team: <strong className="text-dark">{teamMembersCount}</strong>
               </span>
             </div>
           )}

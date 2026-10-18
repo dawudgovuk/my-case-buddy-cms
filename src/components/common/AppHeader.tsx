@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navbar, Container, Nav, Dropdown, Badge } from 'react-bootstrap'
+import { Navbar, Container, Nav, Dropdown, Badge, Button } from 'react-bootstrap'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { useTranslation } from '../../hooks/useTranslation'
@@ -62,11 +62,26 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
     return user.role === 'LIP' ? '/dashboard' : '/professional-dashboard'
   }
 
-  const isActive = (path: string) => {
-    if (path === '/' && location.pathname === '/') return true
-    if (path !== '/' && location.pathname.startsWith(path)) return true
-    return false
-  }
+  const isDashboardActive =
+    location.pathname === '/dashboard' ||
+    location.pathname === '/professional-dashboard' ||
+    (location.pathname === '/' && Boolean(user?.isVerified))
+
+  const isCasesActive =
+    location.pathname.startsWith('/cases') && location.pathname !== '/cases/new'
+
+  const isDirectoryActive =
+    location.pathname.startsWith('/peer-directory')
+
+  const safeName = user?.name || user?.email?.split('@')[0] || 'User'
+  const userInitials = (user?.name || user?.email || 'U')
+    .trim()
+    .split(' ')
+    .filter(Boolean)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 
   return (
     <Navbar
@@ -101,75 +116,83 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                 {/* App navigation is available once the email is verified */}
                 {user.isVerified && (
                   <>
-                {/* Dashboard Nav Link */}
-                <Nav.Link
-                  active={isActive(user.role === 'LIP' ? '/dashboard' : '/professional-dashboard')}
-                  onClick={() => handleNavigate(getHomeRoute())}
-                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                >
-                  <FaHome size={15} />
-                  <span>{t('common.dashboard')}</span>
-                </Nav.Link>
-
-                {/* Litigant in Person specific links */}
-                {user.role === 'LIP' && (
-                  <>
+                    {/* Dashboard Nav Link */}
                     <Nav.Link
-                      active={location.pathname === '/cases' || location.pathname === '/'}
-                      onClick={() => handleNavigate('/cases')}
+                      active={isDashboardActive}
+                      onClick={() => handleNavigate(getHomeRoute())}
                       className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
                     >
-                      <FaGavel size={14} />
-                      <span>{t('common.cases')}</span>
+                      <FaHome size={15} />
+                      <span>{t('common.dashboard')}</span>
                     </Nav.Link>
 
-                    <Nav.Link
-                      active={isActive('/cases/new')}
-                      onClick={() => handleNavigate('/cases/new')}
-                      className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                    >
-                      <FaPlus size={13} />
-                      <span>{t('common.newCase')}</span>
-                    </Nav.Link>
+                    {/* Litigant in Person specific links */}
+                    {user.role === 'LIP' && (
+                      <>
+                        <Nav.Link
+                          active={isCasesActive}
+                          onClick={() => handleNavigate('/cases')}
+                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                        >
+                          <FaGavel size={14} />
+                          <span>{t('common.cases')}</span>
+                        </Nav.Link>
 
-                    <Nav.Link
-                      active={isActive('/peer-directory')}
-                      onClick={() => handleNavigate('/peer-directory')}
-                      className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                    >
-                      <FaHandshake size={15} />
-                      <span>{t('common.legalSupporters')}</span>
-                    </Nav.Link>
-                  </>
-                )}
+                        <Nav.Link
+                          active={isDirectoryActive}
+                          onClick={() => handleNavigate('/peer-directory')}
+                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                        >
+                          <FaHandshake size={15} />
+                          <span>{t('common.legalSupporters')}</span>
+                        </Nav.Link>
 
-                {/* Professional user specific links */}
-                {user.role !== 'LIP' && (
-                  <Nav.Link
-                    active={isActive('/peer-directory')}
-                    onClick={() => handleNavigate('/peer-directory')}
-                    className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                  >
-                    <FaHandshake size={15} />
-                    <span>{t('common.peerDirectory')}</span>
-                  </Nav.Link>
-                )}
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          onClick={() => handleNavigate('/cases/new')}
+                          className="d-none d-xl-inline-flex align-items-center gap-1.5 ms-xl-2 px-3 py-1.5 rounded-pill shadow-xs fw-semibold"
+                        >
+                          <FaPlus size={11} />
+                          <span>{t('common.newCase')}</span>
+                        </Button>
+                        <Nav.Link
+                          onClick={() => handleNavigate('/cases/new')}
+                          className="d-xl-none px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded text-primary fw-semibold"
+                        >
+                          <FaPlus size={13} />
+                          <span>{t('common.newCase')}</span>
+                        </Nav.Link>
+                      </>
+                    )}
 
-                {/* Component Explorer link */}
-                <Nav.Link
-                  active={isActive('/components')}
-                  onClick={() => handleNavigate('/components')}
-                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                >
-                  <FaPuzzlePiece size={14} className="text-muted" />
-                  <span>{t('common.components')}</span>
-                </Nav.Link>
+                    {/* Professional user specific links */}
+                    {user.role !== 'LIP' && (
+                      <>
+                        <Nav.Link
+                          active={isCasesActive}
+                          onClick={() => handleNavigate('/professional-dashboard')}
+                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                        >
+                          <FaGavel size={14} />
+                          <span>Assigned Cases</span>
+                        </Nav.Link>
+
+                        <Nav.Link
+                          active={isDirectoryActive}
+                          onClick={() => handleNavigate('/peer-directory')}
+                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                        >
+                          <FaHandshake size={15} />
+                          <span>{t('common.peerDirectory')}</span>
+                        </Nav.Link>
+                      </>
+                    )}
                   </>
                 )}
 
                 {/* Responsive Mobile / Desktop Controls (Language + User Profile) */}
                 <div className="d-flex align-items-center justify-content-between gap-2 ms-xl-2 pt-2 pt-xl-0 border-top border-top-xl-0">
-
                   {/* Language Switcher */}
                   <LanguageSwitcher className="my-1 my-xl-0" />
 
@@ -186,10 +209,10 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         style={{ width: 32, height: 32, background: 'var(--mcb-primary-soft)', color: 'var(--mcb-primary)', fontSize: '0.8rem' }}
                         aria-hidden="true"
                       >
-                        {user.name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase()}
+                        {userInitials}
                       </span>
                       <span className="fw-semibold text-dark text-truncate" style={{ maxWidth: '140px' }}>
-                        {user.name}
+                        {safeName}
                       </span>
                       <Badge bg={roleBadgeVariant[user.role] || 'secondary'} className="d-none d-sm-inline-flex">
                         {roleLabel[user.role]}
@@ -198,7 +221,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
 
                     <Dropdown.Menu className="shadow border-0 py-2" style={{ minWidth: 240 }}>
                       <div className="px-3 py-2 border-bottom">
-                        <div className="fw-bold text-dark">{user.name}</div>
+                        <div className="fw-bold text-dark">{safeName}</div>
                         <div className="small text-muted text-truncate">{user.email}</div>
                         <div className="small mt-1">{roleLabel[user.role]}</div>
                         <div className="mt-2 d-flex align-items-center gap-1">
@@ -243,6 +266,16 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                       <Dropdown.Divider />
 
                       <Dropdown.Item
+                        onClick={() => handleNavigate('/components')}
+                        className="d-flex align-items-center gap-2 py-1.5 text-muted small"
+                      >
+                        <FaPuzzlePiece size={12} />
+                        <span>Component Showcase</span>
+                      </Dropdown.Item>
+
+                      <Dropdown.Divider />
+
+                      <Dropdown.Item
                         onClick={handleLogout}
                         className="d-flex align-items-center gap-2 py-2 text-danger"
                       >
@@ -255,14 +288,6 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
               </>
             ) : (
               <>
-                <Nav.Link
-                  active={isActive('/components')}
-                  onClick={() => handleNavigate('/components')}
-                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
-                >
-                  <FaPuzzlePiece size={14} className="text-muted" />
-                  <span>{t('common.components')}</span>
-                </Nav.Link>
                 <Nav.Link
                   href="https://support.mycourtbuddy.com/"
                   target="_blank"

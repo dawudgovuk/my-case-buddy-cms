@@ -158,6 +158,11 @@ export interface CaseMember {
   userId: string;
   role: CaseMemberRole;
   email?: string;
+  name?: string;
+  username?: string;
+  documentId?: string;
+  firm?: string; // Law firm or Chambers
+  phone?: string;
   invitedAt?: string; // ISO date
   invitedBy?: string; // userId
 }
@@ -172,6 +177,7 @@ export interface InviteCaseSummary {
 
 export interface CaseInvite {
   id: string;
+  documentId?: string;
   caseId: string;
   token: string;
   role: 'McKenzieFriend' | 'Solicitor' | 'Barrister';

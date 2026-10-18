@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Container, Alert } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
@@ -19,10 +19,15 @@ import TabNav from '../components/common/TabNav'
 export default function ProfessionalDashboard() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const { cases, isStrapiMode, syncWithStrapi } = useCasesStore()
+  const { cases, isStrapiMode, syncWithStrapi, refresh } = useCasesStore()
   const [activeTab, setActiveTab] = useProfessionalDashboardTab()
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(!user?.isVerified)
   const [showFaqModal, setShowFaqModal] = useState(false)
+
+  useEffect(() => {
+    refresh()
+  }, [refresh])
+
   const { deadlines, pendingDeadlinesCount, toggleDeadline } = useProfessionalDeadlines({
     user,
     isStrapiMode,

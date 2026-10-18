@@ -18,9 +18,11 @@ export function isUserCaseMember(c: FamilyCase, user: User | null | undefined): 
 
   return members.some((m) => {
     const mId = String(m.userId)
+    const mDocId = m.documentId ? String(m.documentId) : ''
     const mEmail = m.email ? m.email.toLowerCase().trim() : ''
     return (
       mId === uId ||
+      (mDocId && mDocId === uId) ||
       (uEmail && mId.toLowerCase() === uEmail) ||
       (uEmail && mEmail && mEmail === uEmail)
     )
@@ -44,9 +46,11 @@ export function isUserCaseOwner(c: FamilyCase, user: User | null | undefined): b
   return members.some((m) => {
     if (m.role !== 'Owner') return false
     const mId = String(m.userId)
+    const mDocId = m.documentId ? String(m.documentId) : ''
     const mEmail = m.email ? m.email.toLowerCase().trim() : ''
     return (
       mId === uId ||
+      (mDocId && mDocId === uId) ||
       (uEmail && mId.toLowerCase() === uEmail) ||
       (uEmail && mEmail && mEmail === uEmail)
     )

@@ -107,6 +107,8 @@ export interface StrapiMemberRaw {
   username?: string;
   email?: string;
   userRole?: string;
+  firm?: string;
+  name?: string;
   attributes?: Record<string, unknown>;
 }
 
@@ -191,10 +193,18 @@ export function toDomainNote(raw: StrapiNoteRaw): CaseNote {
 export function toDomainMember(raw: StrapiMemberRaw): CaseMember {
   const data = unwrap(raw);
   const email = (data.email as string | undefined)?.toLowerCase();
+  const name =
+    (data.name as string | undefined) ||
+    (data.username as string | undefined) ||
+    (email ? email.split('@')[0] : undefined);
   return {
     userId: String(raw.documentId ?? data.documentId ?? data.id ?? raw.id ?? ''),
+    documentId: raw.documentId || (data.documentId as string | undefined),
     role: (data.userRole as CaseMember['role']) || 'Collaborator',
     email,
+    name,
+    username: data.username as string | undefined,
+    firm: (data.firm as string | undefined),
   };
 }
 
@@ -224,57 +234,48 @@ export function toDomainCase(raw: StrapiCaseRaw): FamilyCase {
   const rawMembers = Array.isArray(data.members) ? (data.members as StrapiMemberRaw[]) : [];
   const members = rawMembers.map(toDomainMember);
 
-  // Auto-link case owner as an Owner member across numeric ID, documentId, email, and clerkId
+  // Auto-link case owner as a single Owner member entry
   if (data.owner && typeof data.owner === 'object') {
     const ownerData = unwrap(data.owner as StrapiMemberRaw);
-    const ownerId = String(ownerData.id ?? (data.owner as { id?: unknown }).id ?? '');
-    const ownerDocId = String((data.owner as { documentId?: string }).documentId ?? ownerData.documentId ?? '');
+    const ownerId = String(
+      (data.owner as { documentId?: string }).documentId ??
+      ownerData.documentId ??
+      (data.owner as { id?: unknown }).id ??
+      ownerData.id ??
+      ''
+    );
     const ownerEmail = ((ownerData.email || (data.owner as { email?: string }).email) as string | undefined)?.toLowerCase();
-    const ownerClerkId = (ownerData.clerkId || (data.owner as { clerkId?: string }).clerkId) as string | undefined;
+    const ownerName = (
+      ownerData.name ||
+      (data.owner as { name?: string }).name ||
+      ownerData.username ||
+      (data.owner as { username?: string }).username ||
+      (ownerEmail ? ownerEmail.split('@')[0] : 'Owner')
+    ) as string | undefined;
 
-    if (ownerId && !members.some((m) => m.userId === ownerId)) {
+    const existingOwnerIndex = members.findIndex(
+      (m) => (ownerEmail && m.email === ownerEmail) || m.userId === ownerId
+    );
+
+    if (existingOwnerIndex === -1) {
       members.unshift({
         userId: ownerId,
+        documentId: (data.owner as { documentId?: string }).documentId ?? (ownerData.documentId as string | undefined),
         role: 'Owner',
         email: ownerEmail,
+        name: ownerName,
+        username: (ownerData.username || (data.owner as { username?: string }).username) as string | undefined,
       });
-    }
-    if (ownerDocId && ownerDocId !== ownerId && !members.some((m) => m.userId === ownerDocId)) {
-      members.push({
-        userId: ownerDocId,
-        role: 'Owner',
-        email: ownerEmail,
-      });
-    }
-    if (ownerEmail && !members.some((m) => m.userId.toLowerCase() === ownerEmail)) {
-      members.push({
-        userId: ownerEmail,
-        role: 'Owner',
-        email: ownerEmail,
-      });
-    }
-    if (ownerClerkId && !members.some((m) => m.userId === ownerClerkId)) {
-      members.push({
-        userId: ownerClerkId,
-        role: 'Owner',
-        email: ownerEmail,
-      });
+    } else {
+      members[existingOwnerIndex].role = 'Owner';
+      if (!members[existingOwnerIndex].name && ownerName) {
+        members[existingOwnerIndex].name = ownerName;
+      }
+      if (!members[existingOwnerIndex].email && ownerEmail) {
+        members[existingOwnerIndex].email = ownerEmail;
+      }
     }
   }
-
-  // Also include email & clerkId aliases for relational members
-  rawMembers.forEach((rm) => {
-    const d = unwrap(rm);
-    const email = (d.email as string | undefined)?.toLowerCase();
-    const clerkId = d.clerkId as string | undefined;
-    const role = (d.userRole as CaseMember['role']) || 'Collaborator';
-    if (email && !members.some((m) => m.userId.toLowerCase() === email)) {
-      members.push({ userId: email, role, email });
-    }
-    if (clerkId && !members.some((m) => m.userId === clerkId)) {
-      members.push({ userId: clerkId, role, email });
-    }
-  });
 
   return {
     id: String(data.caseNumber || raw.documentId || data.documentId || data.id || ''),

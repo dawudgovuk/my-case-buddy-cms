@@ -1,5 +1,5 @@
 import type { CaseInvite } from '../../types/domain';
-import { strapiGet, strapiPost } from './strapiClient';
+import { strapiGet, strapiPost, strapiDelete } from './strapiClient';
 import { fetchStrapiCaseById } from './casesApiService';
 import { unwrapEntry as unwrap, type StrapiListResponse, type StrapiSingleResponse } from './strapiTypes';
 
@@ -33,6 +33,7 @@ export function toDomainInvite(raw: StrapiInviteRaw, fallbackCaseId?: string): C
 
   return {
     id: String(data.id ?? raw.id ?? raw.documentId ?? ''),
+    documentId: raw.documentId || (data.documentId as string | undefined),
     caseId: caseRel?.caseNumber || (caseRel?.documentId ? String(caseRel.documentId) : fallbackCaseId || ''),
     token: String(data.token || ''),
     role: (data.role as CaseInvite['role']) || 'McKenzieFriend',
@@ -59,22 +60,52 @@ export function toDomainInvite(raw: StrapiInviteRaw, fallbackCaseId?: string): C
 export async function createStrapiInvite(
   caseIdOrNumber: string,
   role: 'McKenzieFriend' | 'Solicitor' | 'Barrister',
-  createdById?: string
+  _createdById?: string,
+  token?: string
 ): Promise<CaseInvite> {
   // Locate case to get documentId
   const existingCase = await fetchStrapiCaseById(caseIdOrNumber);
-  const targetCaseDocId = existingCase?.id || caseIdOrNumber;
+  const targetCaseDocId = existingCase?.documentId || existingCase?.id || caseIdOrNumber;
 
-  const payload = {
-    data: {
-      case: targetCaseDocId,
-      role,
-      createdBy: createdById || undefined,
-    },
+  const dataPayload: Record<string, unknown> = {
+    case: targetCaseDocId,
+    role,
   };
 
-  const response = await strapiPost<StrapiSingleResponse<StrapiInviteRaw>>('/api/case-invites', payload);
+  if (token) {
+    dataPayload.token = token;
+  }
+
+  const response = await strapiPost<StrapiSingleResponse<StrapiInviteRaw>>('/api/case-invites', {
+    data: dataPayload,
+  });
   return toDomainInvite(response.data, caseIdOrNumber);
+}
+
+/**
+ * Fetches all invites for a specific case from Strapi
+ */
+export async function fetchStrapiInvitesForCase(caseIdOrNumber: string): Promise<CaseInvite[]> {
+  try {
+    const existingCase = await fetchStrapiCaseById(caseIdOrNumber);
+    const targetCaseDocId = existingCase?.documentId || existingCase?.id || caseIdOrNumber;
+
+    const query = {
+      'filters[$or][0][case][documentId][$eq]': targetCaseDocId,
+      'filters[$or][1][case][caseNumber][$eq]': caseIdOrNumber,
+      'populate[case]': '*',
+      'sort': 'createdAt:desc',
+    };
+
+    const response = await strapiGet<StrapiListResponse<StrapiInviteRaw>>('/api/case-invites', query);
+    if (!response?.data || !Array.isArray(response.data)) {
+      return [];
+    }
+    return response.data.map((raw) => toDomainInvite(raw, caseIdOrNumber));
+  } catch (err) {
+    console.warn('Failed to fetch Strapi invites for case:', err);
+    return [];
+  }
 }
 
 /**
@@ -105,4 +136,17 @@ export async function acceptStrapiInvite(token: string): Promise<{ success: bool
     token,
   });
   return response;
+}
+
+/**
+ * Deletes / revokes an invitation from Strapi
+ */
+export async function deleteStrapiInvite(documentIdOrId: string): Promise<boolean> {
+  try {
+    await strapiDelete(`/api/case-invites/${encodeURIComponent(documentIdOrId)}`);
+    return true;
+  } catch (err) {
+    console.warn('Failed to delete invite from Strapi:', err);
+    return false;
+  }
 }

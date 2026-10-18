@@ -90,6 +90,7 @@ export default function CaseOverviewTab({ caseData, caseId }: CaseOverviewTabPro
       {/* Procedural Case Timeline */}
       <div className="mb-4">
         <CaseTimeline
+          caseData={resolvedCase}
           stages={stages}
           currentStageIndex={currentStageIndex}
           showProgressBar={true}
