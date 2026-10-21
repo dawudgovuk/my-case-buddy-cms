@@ -8,6 +8,7 @@ import { toast } from '../store/toastStore'
 import type { CaseMetadataFormValues } from '../components/forms/CaseMetadataForm'
 import { buildInitialCaseMembers, createEmptyCase } from '../utils/caseFormUtils'
 import { countChildren } from '../utils/partyUtils'
+import { validateCaseNumber, formatCaseNumberInput } from '../utils/caseNumberUtils'
 
 export interface CasePreset {
   title: string
@@ -104,14 +105,25 @@ export function useCaseForm(caseId: string | undefined): UseCaseFormReturn {
       return
     }
 
+    const caseIdValidation = validateCaseNumber(form.id)
+    if (!caseIdValidation.isValid) {
+      toast.warning(
+        caseIdValidation.error || 'Please enter a valid 16-digit Court Case Number or leave blank for auto-generated ID.',
+        'Invalid Case Number'
+      )
+      return
+    }
+
     setIsSubmitting(true)
     setErrorMessage(null)
 
     const trimmedJudge = form.allocatedJudge?.trim() || undefined
-    const id = existing?.id || form.id || generateId('CASE')
+    const cleanId = form.id ? formatCaseNumberInput(form.id) : undefined
+    const id = existing?.id || cleanId || generateId('CASE')
     const payload: FamilyCase = {
       ...form,
       id,
+      caseNumber: cleanId,
       title: trimmedTitle,
       allocatedJudge: trimmedJudge,
       startedAt: form.startedAt,

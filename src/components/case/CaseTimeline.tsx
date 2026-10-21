@@ -318,7 +318,8 @@ export default function CaseTimeline({
           caseData={caseData}
           initialStageId={selectedTargetStage}
           onSuccess={(updated) => {
-            const idx = stages.findIndex((s) => s.id === updated.currentStage)
+            const raw = (updated.currentStage || '').toLowerCase().trim()
+            const idx = stages.findIndex((s) => s.id.toLowerCase() === raw || s.name.toLowerCase() === raw)
             if (idx >= 0 && stages[idx]) {
               onStageChange?.(stages[idx], idx)
             }

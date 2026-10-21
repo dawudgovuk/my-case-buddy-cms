@@ -11,6 +11,7 @@ import CaseFormStepFooter from '../components/forms/CaseFormStepFooter'
 import { useCaseForm } from '../hooks/useCaseForm'
 import { useTranslation } from '../hooks/useTranslation'
 import { countAdults, countChildren } from '../utils/partyUtils'
+import { validateCaseNumber } from '../utils/caseNumberUtils'
 
 export default function CaseForm() {
   const navigate = useNavigate()
@@ -34,7 +35,8 @@ export default function CaseForm() {
 
   const childrenCount = countChildren(form.parties)
   const adultPartiesCount = countAdults(form.parties)
-  const isDetailsValid = Boolean(form.title.trim())
+  const isCaseNumberValid = validateCaseNumber(form.id).isValid
+  const isDetailsValid = Boolean(form.title.trim()) && isCaseNumberValid
   const exitToCaseOrHome = () => navigate(existing ? `/cases/${existing.id}` : '/')
 
   return (

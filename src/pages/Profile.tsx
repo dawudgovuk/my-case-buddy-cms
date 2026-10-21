@@ -14,6 +14,7 @@ import {
   FaHeart,
 } from 'react-icons/fa'
 import { useAuthStore } from '../store/authStore'
+import { useTranslation } from '../hooks/useTranslation'
 import { ProfileHero } from '../components/profile/ProfileHero'
 import { RoleSelectorCard } from '../components/profile/RoleSelectorCard'
 import { ProfessionalCredentialsForm } from '../components/profile/ProfessionalCredentialsForm'
@@ -22,6 +23,7 @@ import type { User, UserRole } from '../types/domain'
 export default function Profile() {
   const navigate = useNavigate()
   const { user, updateProfile } = useAuthStore()
+  const { t } = useTranslation()
 
   // Form state initialized from current user
   const [name, setName] = useState('')
@@ -93,7 +95,7 @@ export default function Profile() {
     e.preventDefault()
     if (!user) return
     if (!name.trim()) {
-      setErrorMessage('Full name cannot be blank.')
+      setErrorMessage(t('profile.nameRequired'))
       return
     }
 
@@ -116,9 +118,9 @@ export default function Profile() {
     setIsSaving(false)
 
     if (res.success) {
-      setSuccessMessage('Your profile changes have been successfully saved.')
+      setSuccessMessage(t('profile.successAlert'))
     } else {
-      setErrorMessage(res.error || 'Failed to update profile details.')
+      setErrorMessage(res.error || t('profile.errorAlert'))
     }
   }
 
@@ -127,7 +129,7 @@ export default function Profile() {
   if (!user) {
     return (
       <Container className="py-4">
-        <Alert variant="warning">Please sign in to view and update your profile.</Alert>
+        <Alert variant="warning">{t('profile.signInRequired')}</Alert>
       </Container>
     )
   }
@@ -142,10 +144,10 @@ export default function Profile() {
           onClick={() => navigate(homeRoute)}
         >
           <FaArrowLeft size={13} />
-          <span>Back to Dashboard</span>
+          <span>{t('profile.backToDashboard')}</span>
         </Button>
         <span className="badge bg-light text-muted border px-2.5 py-1.5 fs-8">
-          Family Court Profile & Identity
+          {t('profile.badgeTitle')}
         </span>
       </div>
 
@@ -155,12 +157,12 @@ export default function Profile() {
       {/* Feedback Alerts */}
       {successMessage && (
         <Alert variant="success" dismissible onClose={() => setSuccessMessage(null)} className="mb-4 shadow-sm border-0">
-          <strong>Success:</strong> {successMessage}
+          <strong>{t('common.verified')}:</strong> {successMessage}
         </Alert>
       )}
       {errorMessage && (
         <Alert variant="danger" dismissible onClose={() => setErrorMessage(null)} className="mb-4 shadow-sm border-0">
-          <strong>Notice:</strong> {errorMessage}
+          <strong>{t('common.error')}:</strong> {errorMessage}
         </Alert>
       )}
 
@@ -169,20 +171,20 @@ export default function Profile() {
           {/* Left Column: Personal Identity & Contact */}
           <Col xs={12} lg={6}>
             <Card className="premium-card p-3 p-md-4 mb-4 border h-100">
-              <h2 className="h5 fw-bold text-dark mb-1">Personal & Contact Information</h2>
+              <h2 className="h5 fw-bold text-dark mb-1">{t('profile.personalInfoTitle')}</h2>
               <p className="text-muted small mb-3">
-                Your primary contact information for court communications, case team invites, and notifications.
+                {t('profile.personalInfoDesc')}
               </p>
 
               <Form.Group className="mb-3" controlId="profile-name">
                 <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5">
                   <FaUser className="text-primary" size={13} />
-                  <span>Full Name</span>
+                  <span>{t('profile.fullName')}</span>
                 </Form.Label>
                 <Form.Control
                   type="text"
                   required
-                  placeholder="e.g. Parvez Khan"
+                  placeholder={t('profile.fullNamePlaceholder')}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="py-2"
@@ -193,45 +195,42 @@ export default function Profile() {
                 <Form.Label className="fw-semibold small text-dark d-flex align-items-center justify-content-between">
                   <span className="d-flex align-items-center gap-1.5">
                     <FaEnvelope className="text-primary" size={13} />
-                    <span>Email Address</span>
+                    <span>{t('profile.email')}</span>
                   </span>
                   <span className="badge bg-light text-muted border fs-8">
                     <FaLock size={9} className="me-1" />
-                    Auth Login
+                    {t('profile.authLoginBadge')}
                   </span>
                 </Form.Label>
                 <Form.Control type="email" disabled value={user.email} className="py-2 bg-light text-muted" />
-                <Form.Text className="text-muted small">
-                  Your email is linked to your Neon / Strapi authentication session and cannot be modified directly here.
-                </Form.Text>
               </Form.Group>
 
               <Form.Group className="mb-3" controlId="profile-phone">
                 <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5">
                   <FaPhone className="text-primary" size={13} />
-                  <span>Direct Phone / Mobile</span>
+                  <span>{t('profile.phone')}</span>
                 </Form.Label>
                 <Form.Control
                   type="tel"
-                  placeholder="e.g. +44 7700 900123"
+                  placeholder={t('profile.phonePlaceholder')}
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="py-2"
                 />
                 <Form.Text className="text-muted small">
-                  Shared only with members of cases you explicitly create or accept.
+                  {t('profile.phoneHelp')}
                 </Form.Text>
               </Form.Group>
 
               {role === 'LIP' && (
                 <Form.Group className="mt-3" controlId="profile-lip-bio">
                   <Form.Label className="fw-semibold small text-dark mb-1">
-                    About Yourself & Family Court Background
+                    {t('profile.bio')}
                   </Form.Label>
                   <Form.Control
                     as="textarea"
                     rows={4}
-                    placeholder="Briefly describe your situation, your children's welfare needs, or what assistance you are seeking from court supporters..."
+                    placeholder={t('profile.bioPlaceholder')}
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
                     className="py-2"
@@ -262,11 +261,14 @@ export default function Profile() {
             ) : (
               <Card className="premium-card p-3 p-md-4 mb-4 border bg-light bg-opacity-50">
                 <div className="d-flex align-items-start gap-2.5">
-                  <div className="p-2 rounded-2 bg-primary bg-opacity-10 text-primary">
+                  <div
+                    className="p-2 rounded-2"
+                    style={{ backgroundColor: 'var(--mcb-primary-soft)', color: 'var(--mcb-primary)' }}
+                  >
                     <FaHeart size={18} />
                   </div>
                   <div>
-                    <h3 className="h6 fw-bold text-dark mb-1">Litigant in Person Guidance</h3>
+                    <h3 className="h6 fw-bold text-dark mb-1">{t('caseTabs.legalHubMckenzie')}</h3>
                     <p className="text-muted small mb-2">
                       Under English Family Law and the <em>McKenzie v McKenzie</em> (1970) precedent, you have the right to have a McKenzie Friend accompany you to court hearings to take notes, organize files, and offer quiet support.
                     </p>
@@ -302,7 +304,7 @@ export default function Profile() {
             {isDirty ? (
               <span className="badge bg-warning text-dark px-2.5 py-1.5 d-inline-flex align-items-center gap-1.5 fs-7">
                 <FaExclamationTriangle size={12} />
-                <span>You have unsaved changes</span>
+                <span>Unsaved modifications</span>
               </span>
             ) : (
               <span className="text-muted small">All changes saved and synchronized.</span>
@@ -318,7 +320,7 @@ export default function Profile() {
               className="d-inline-flex align-items-center gap-1.5 px-3 py-2 btn-soft"
             >
               <FaUndo size={12} />
-              <span>Reset</span>
+              <span>{t('profile.resetChanges')}</span>
             </Button>
             <Button
               type="submit"
@@ -329,12 +331,12 @@ export default function Profile() {
               {isSaving ? (
                 <>
                   <Spinner size="sm" animation="border" />
-                  <span>Saving Changes…</span>
+                  <span>{t('profile.saving')}</span>
                 </>
               ) : (
                 <>
                   <FaSave size={13} />
-                  <span>Save Changes</span>
+                  <span>{t('profile.saveProfile')}</span>
                 </>
               )}
             </Button>

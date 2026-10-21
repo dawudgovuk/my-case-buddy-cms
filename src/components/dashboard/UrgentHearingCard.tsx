@@ -13,6 +13,7 @@ import {
 import { differenceInDays, parseISO } from 'date-fns'
 import type { FamilyCase, Hearing } from '../../types/domain'
 import { displayDate } from '../../utils/displayDate'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface UrgentHearingCardProps {
   cases: FamilyCase[]
@@ -24,16 +25,17 @@ interface UpcomingHearingItem {
   daysAway: number
 }
 
-const DEFAULT_READINESS_ITEMS = [
-  { id: 'cafcass', label: 'CAFCASS telephone safeguarding interview completed' },
-  { id: 'statement', label: 'Position Statement prepared with Statement of Truth & served' },
-  { id: 'bundle', label: 'FPR PD 27A Court Bundle paginated & indexed under 350 pages' },
-  { id: 'remote', label: 'Remote courtroom link (CVP / Teams) tested or travel planned' },
-]
-
 export default function UrgentHearingCard({ cases }: UrgentHearingCardProps) {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [completedItems, setCompletedItems] = useState<Record<string, boolean>>({})
+
+  const readinessItems = [
+    { id: 'cafcass', label: t('dashboard.readinessCafcass') },
+    { id: 'statement', label: t('dashboard.readinessStatement') },
+    { id: 'bundle', label: t('dashboard.readinessBundle') },
+    { id: 'remote', label: t('dashboard.readinessRemote') },
+  ]
 
   // Find all hearings in the future, sorted by date ascending
   const today = new Date()
@@ -78,9 +80,9 @@ export default function UrgentHearingCard({ cases }: UrgentHearingCardProps) {
   }
 
   const getCountdownLabel = (days: number) => {
-    if (days === 0) return 'Today!'
-    if (days === 1) return 'Tomorrow!'
-    return `In ${days} days`
+    if (days === 0) return t('dashboard.todayCountdown')
+    if (days === 1) return t('dashboard.tomorrowCountdown')
+    return t('dashboard.inDaysCountdown', { days })
   }
 
   return (
@@ -106,7 +108,7 @@ export default function UrgentHearingCard({ cases }: UrgentHearingCardProps) {
             <div>
               <div className="d-flex align-items-center gap-2">
                 <h6 className="fw-bold mb-0 text-dark">
-                  Next Critical Action: {hearing.type} Hearing
+                  {t('dashboard.urgentHearingTitle')}: {hearing.type}
                 </h6>
                 <Badge
                   bg={isVeryUrgent ? 'danger' : isUrgent ? 'warning' : 'primary'}
@@ -116,7 +118,7 @@ export default function UrgentHearingCard({ cases }: UrgentHearingCardProps) {
                 </Badge>
               </div>
               <div className="small text-secondary">
-                Case: <strong>{caseData.title}</strong> {caseData.caseNumber ? `(${caseData.caseNumber})` : ''}
+                {t('casesList.caseToBeDeleted')} <strong>{caseData.title}</strong> {caseData.caseNumber ? `(${caseData.caseNumber})` : ''}
               </div>
             </div>
           </div>
@@ -127,7 +129,7 @@ export default function UrgentHearingCard({ cases }: UrgentHearingCardProps) {
             onClick={() => navigate(`/cases/${caseData.id}`)}
             className="d-flex align-items-center gap-1.5 shadow-xs"
           >
-            <span>Open Case & Legal Hub</span>
+            <span>{t('dashboard.openCaseAndLegalHub')}</span>
             <FaArrowRight size={11} />
           </Button>
         </div>
@@ -159,17 +161,17 @@ export default function UrgentHearingCard({ cases }: UrgentHearingCardProps) {
                   className="text-primary text-decoration-none d-inline-flex align-items-center gap-1 fw-medium"
                 >
                   <FaVideo size={12} />
-                  <span>Join Remote Video Room</span>
+                  <span>{t('dashboard.joinRemoteVideo')}</span>
                 </a>
               ) : (
-                <span>Format: {hearing.remotePlatform || 'In-Person'}</span>
+                <span>{t('dashboard.formatInPerson')}</span>
               )}
             </Col>
 
             <Col sm={6} md={2} className="text-md-end">
               {hearing.judge && (
                 <span className="badge bg-light text-dark border">
-                  Judge: {hearing.judge}
+                  {t('dashboard.judgeLabel')} {hearing.judge}
                 </span>
               )}
             </Col>
@@ -180,11 +182,11 @@ export default function UrgentHearingCard({ cases }: UrgentHearingCardProps) {
         <div className="border-top pt-2 mt-2">
           <div className="d-flex align-items-center gap-1.5 mb-2 small fw-bold text-dark">
             <FaClipboardCheck className="text-success" size={14} />
-            <span>Self-Represented Litigant Pre-Hearing Readiness Checklist:</span>
+            <span>{t('dashboard.readinessChecklist')}:</span>
           </div>
 
           <Row className="g-2">
-            {DEFAULT_READINESS_ITEMS.map((item) => {
+            {readinessItems.map((item) => {
               const isDone = Boolean(completedItems[item.id])
               return (
                 <Col key={item.id} md={6}>

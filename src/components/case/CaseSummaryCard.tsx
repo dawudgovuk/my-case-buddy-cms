@@ -3,6 +3,7 @@ import { displayDate } from '../../utils/displayDate'
 import type { FamilyCase } from '../../types/domain'
 import CaseStatusBadge from '../common/CaseStatusBadge'
 import { getStagesForCase, getCurrentStageIndex } from '../../utils/caseStages'
+import { useCaseConfigStore } from '../../store/caseConfigStore'
 import {
   FaEdit,
   FaArrowLeft,
@@ -76,8 +77,9 @@ export default function CaseSummaryCard({
               </span>
               <CaseStatusBadge status={caseData.status} />
               {(() => {
-                const stages = getStagesForCase(caseData)
-                const currentStageIdx = getCurrentStageIndex(caseData)
+                const caseStagesMap = useCaseConfigStore.getState().caseStagesMap
+                const stages = getStagesForCase(caseData, caseStagesMap)
+                const currentStageIdx = getCurrentStageIndex(caseData, stages)
                 const stageObj = stages[currentStageIdx]
                 if (!stageObj) return null
                 return (
@@ -87,7 +89,7 @@ export default function CaseSummaryCard({
                     title={`Current Court Milestone: ${stageObj.description}`}
                   >
                     <FaTasks size={10} />
-                    <span>Stage {currentStageIdx + 1}/{stages.length}: {stageObj.name}</span>
+                    <span>{t('dashboard.stageOf')} {currentStageIdx + 1}/{stages.length}: {stageObj.name}</span>
                   </span>
                 )
               })()}
@@ -119,14 +121,14 @@ export default function CaseSummaryCard({
                 <>
                   <span className="text-muted">•</span>
                   <span>
-                    Judge: <strong className="text-dark">{caseData.allocatedJudge}</strong>
+                    {t('common.judge')}: <strong className="text-dark">{caseData.allocatedJudge}</strong>
                   </span>
                 </>
               )}
               {caseData.startedAt && (
                 <>
                   <span className="text-muted">•</span>
-                  <span className="text-muted">Started: {displayDate(caseData.startedAt)}</span>
+                  <span className="text-muted">{t('common.started')}: {displayDate(caseData.startedAt)}</span>
                 </>
               )}
             </div>
@@ -162,7 +164,7 @@ export default function CaseSummaryCard({
               <FaUsers size={11} />
             </div>
             <span className="small text-secondary" style={{ fontSize: '0.8rem' }}>
-              Parties: <strong className="text-dark">{nonChildrenCount}</strong>
+              {t('dashboard.partyPlural')}: <strong className="text-dark">{nonChildrenCount}</strong>
             </span>
           </div>
 
@@ -174,7 +176,7 @@ export default function CaseSummaryCard({
               <FaChild size={11} />
             </div>
             <span className="small text-secondary" style={{ fontSize: '0.8rem' }}>
-              Children: <strong className="text-dark">{childrenCount}</strong>
+              {t('dashboard.childPlural')}: <strong className="text-dark">{childrenCount}</strong>
             </span>
           </div>
 
@@ -186,7 +188,7 @@ export default function CaseSummaryCard({
               <FaCalendarAlt size={11} />
             </div>
             <span className="small text-secondary" style={{ fontSize: '0.8rem' }}>
-              Hearings: <strong className="text-dark">{hearingsCount}</strong>
+              {t('dashboard.hearings')}: <strong className="text-dark">{hearingsCount}</strong>
             </span>
           </div>
 
@@ -199,7 +201,7 @@ export default function CaseSummaryCard({
                 <FaBalanceScale size={11} />
               </div>
               <span className="small text-secondary" style={{ fontSize: '0.8rem' }}>
-                Orders: <strong className="text-dark">{ordersCount}</strong>
+                {t('dashboard.orders')}: <strong className="text-dark">{ordersCount}</strong>
               </span>
             </div>
           )}
@@ -213,7 +215,7 @@ export default function CaseSummaryCard({
                 <FaUserFriends size={11} />
               </div>
               <span className="small text-secondary" style={{ fontSize: '0.8rem' }}>
-                Team: <strong className="text-dark">{teamMembersCount}</strong>
+                {t('caseTabs.teamTitle')}: <strong className="text-dark">{teamMembersCount}</strong>
               </span>
             </div>
           )}

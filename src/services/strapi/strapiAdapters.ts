@@ -345,9 +345,12 @@ export function toDomainCase(raw: StrapiCaseRaw): FamilyCase {
 
 export function toStrapiCasePayload(
   fc: FamilyCase,
-  currentUser?: { id?: string; email?: string }
+  currentUser?: { id?: string; email?: string },
+  isUpdate = false
 ): { data: Record<string, unknown> } {
-  const ownerEmail = currentUser?.email || fc.members?.find((m) => m.email || m.userId?.includes('@'))?.email;
+  const ownerEmail = isUpdate
+    ? undefined
+    : currentUser?.email || fc.members?.find((m) => m.email || m.userId?.includes('@'))?.email;
   return {
     data: {
       caseNumber: fc.id,

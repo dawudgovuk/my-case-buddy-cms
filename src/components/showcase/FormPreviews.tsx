@@ -10,7 +10,7 @@ import { FaUser, FaLock } from 'react-icons/fa'
 export function CaseMetadataFormPreview({ onFeedback }: { onFeedback: (msg: string) => void }) {
   const [values, setValues] = useState<CaseMetadataFormValues>({
     title: 'Application for Child Arrangements and Prohibited Steps',
-    id: 'FC-23-00918',
+    id: '1792 1487 9533 6269',
     court: 'Family Court',
     caseType: 'Private Law (Child Arrangements)',
     status: 'Open',

@@ -4,6 +4,7 @@ import { FaTasks, FaCheckCircle, FaFileAlt, FaGavel } from 'react-icons/fa'
 import type { FamilyCase } from '../../types/domain'
 import { getStagesForCase, getCurrentStageIndex } from '../../utils/caseStages'
 import { useCasesStore } from '../../store/casesStore'
+import { useCaseConfigStore } from '../../store/caseConfigStore'
 import { useAuthStore } from '../../store/authStore'
 import { generateId } from '../../services/storage'
 import { toast } from '../../store/toastStore'
@@ -24,10 +25,11 @@ export default function UpdateCaseStageModal({
   onSuccess,
 }: UpdateCaseStageModalProps) {
   const store = useCasesStore()
+  const caseStagesMap = useCaseConfigStore((state) => state.caseStagesMap)
   const { user } = useAuthStore()
 
-  const stages = getStagesForCase(caseData)
-  const currentStageIndex = getCurrentStageIndex(caseData)
+  const stages = getStagesForCase(caseData, caseStagesMap)
+  const currentStageIndex = getCurrentStageIndex(caseData, stages)
   const activeStage = stages[currentStageIndex]
 
   const [selectedStageId, setSelectedStageId] = useState(initialStageId || caseData.currentStage || stages[0]?.id || 'application')
@@ -89,9 +91,9 @@ export default function UpdateCaseStageModal({
         lastUpdatedAt: new Date().toISOString(),
       }
 
-      await store.addOrUpdate(updatedCase)
+      const saved = await store.addOrUpdate(updatedCase)
       toast.success(`Case progress updated to Stage ${selectedIndex + 1}: ${stageName}.`, 'Stage Updated')
-      onSuccess?.(updatedCase)
+      onSuccess?.(saved || updatedCase)
       onHide()
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to update case stage'

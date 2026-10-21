@@ -1,6 +1,7 @@
 import { Badge, Button, InputGroup, Form } from 'react-bootstrap'
 import { FaCopy, FaCheck, FaUserFriends, FaTrashAlt, FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa'
 import { useState } from 'react'
+import { useTranslation } from '../../hooks/useTranslation'
 import { toast } from '../../store/toastStore'
 
 export interface InviteLinkCardProps {
@@ -28,6 +29,7 @@ export default function InviteLinkCard({
   onRevoke,
   className = '',
 }: InviteLinkCardProps) {
+  const { t } = useTranslation()
   const [copied, setCopied] = useState(false)
   const inviteUrl = `${baseUrl}/invite/${token}`
 
@@ -47,11 +49,11 @@ export default function InviteLinkCard({
 
   const roleLabel =
     role === 'McKenzieFriend'
-      ? 'McKenzie Friend'
+      ? t.roles.mckenzieFriend
       : role === 'Solicitor'
-      ? 'Solicitor'
+      ? t.roles.solicitor
       : role === 'Barrister'
-      ? 'Barrister'
+      ? t.roles.barrister
       : role
 
   const roleColors: Record<string, string> = {
@@ -82,23 +84,23 @@ export default function InviteLinkCard({
           {isUsed ? (
             <Badge bg="secondary" className="px-2 py-1 d-inline-flex align-items-center gap-1">
               <FaCheckCircle size={11} />
-              <span>Accepted</span>
+              <span>{t.caseTabs.usedInvitesTab}</span>
             </Badge>
           ) : isExpired ? (
             <Badge bg="danger" className="px-2 py-1 d-inline-flex align-items-center gap-1">
               <FaTimesCircle size={11} />
-              <span>Expired</span>
+              <span>{t.inviteAccept.hasExpired}</span>
             </Badge>
           ) : (
             <Badge bg="success" className="px-2 py-1 d-inline-flex align-items-center gap-1">
               <FaCheck size={10} />
-              <span>Active</span>
+              <span>{t.caseTabs.activeInvitesTab}</span>
             </Badge>
           )}
 
           <span className="small text-muted d-inline-flex align-items-center gap-1">
             <FaClock size={11} />
-            <span>Created {formattedCreated}</span>
+            <span>{t.common.started} {formattedCreated}</span>
           </span>
         </div>
 
@@ -111,7 +113,7 @@ export default function InviteLinkCard({
             title="Revoke this invite link"
           >
             <FaTrashAlt size={11} />
-            <span className="small">Revoke</span>
+            <span className="small">{t.caseTabs.revokeInvite}</span>
           </Button>
         )}
       </div>
@@ -131,7 +133,7 @@ export default function InviteLinkCard({
               className="d-flex align-items-center gap-1"
             >
               {copied ? <FaCheck size={12} /> : <FaCopy size={12} />}
-              <span>{copied ? 'Copied!' : 'Copy'}</span>
+              <span>{copied ? t.caseTabs.copied : t.caseTabs.copyLink}</span>
             </Button>
           )}
         </InputGroup>

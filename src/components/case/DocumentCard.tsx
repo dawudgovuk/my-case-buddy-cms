@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Card, Form, Row, Col, Button, Badge, Dropdown } from 'react-bootstrap'
+import { useTranslation } from '../../hooks/useTranslation'
 import type { DocumentRecord, DocumentFilingStatus } from '../../types/domain'
 import {
   FaFileAlt,
@@ -33,6 +34,7 @@ export default function DocumentCard({
   readOnly = false,
   className = '',
 }: DocumentCardProps) {
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<DocumentRecord>({ ...document })
 
@@ -50,7 +52,7 @@ export default function DocumentCard({
         <Form as={Row} className="g-2">
           <Col md={5}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Title</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.docTitle}</Form.Label>
               <Form.Control
                 size="sm"
                 value={form.title}
@@ -62,15 +64,15 @@ export default function DocumentCard({
 
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Type</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.docCategory}</Form.Label>
               <Form.Select
                 size="sm"
                 value={form.type}
                 onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as DocumentRecord['type'] }))}
               >
-                {['Application', 'Statement', 'Medical', 'Expert Report', 'Bundle', 'Order', 'Other'].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                {['Application', 'Statement', 'Medical', 'Expert Report', 'Bundle', 'Order', 'Other'].map((tVal) => (
+                  <option key={tVal} value={tVal}>
+                    {tVal}
                   </option>
                 ))}
               </Form.Select>
@@ -79,22 +81,22 @@ export default function DocumentCard({
 
           <Col md={2}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Filing Status</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.filingStatus}</Form.Label>
               <Form.Select
                 size="sm"
                 value={form.status || 'Draft'}
                 onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as DocumentFilingStatus }))}
               >
-                <option value="Draft">Draft</option>
-                <option value="Filed">Filed</option>
-                <option value="Served">Served</option>
+                <option value="Draft">{t.caseTabs.statusDraft}</option>
+                <option value="Filed">{t.caseTabs.statusFiled}</option>
+                <option value="Served">{t.caseTabs.statusServed}</option>
               </Form.Select>
             </Form.Group>
           </Col>
 
           <Col md={2}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Exhibit Ref</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.exhibit}</Form.Label>
               <Form.Control
                 size="sm"
                 value={form.exhibitRef || ''}
@@ -106,7 +108,7 @@ export default function DocumentCard({
 
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Page Count</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.docPages}</Form.Label>
               <Form.Control
                 size="sm"
                 type="number"
@@ -143,7 +145,7 @@ export default function DocumentCard({
 
           <Col xs={12}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Notes / Evidence Summary</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.docNotes}</Form.Label>
               <Form.Control
                 size="sm"
                 as="textarea"
@@ -165,7 +167,7 @@ export default function DocumentCard({
               }}
               disabled={!form.title.trim()}
             >
-              Save
+              {t.common.save}
             </Button>
             <Button
               variant="outline-secondary"
@@ -175,11 +177,11 @@ export default function DocumentCard({
                 setEditing(false)
               }}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             {onDelete && (
               <Button variant="danger" size="sm" onClick={() => onDelete(document.id)}>
-                Delete
+                {t.common.delete}
               </Button>
             )}
           </Col>
@@ -298,7 +300,7 @@ export default function DocumentCard({
                 style={{ fontSize: '0.78rem' }}
               >
                 <FaEdit size={11} />
-                <span>Edit</span>
+                <span>{t.common.edit}</span>
               </Button>
             )}
 

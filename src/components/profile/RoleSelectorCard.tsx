@@ -2,45 +2,7 @@ import React from 'react'
 import { Card, Row, Col } from 'react-bootstrap'
 import { FaUser, FaHandsHelping, FaBriefcase, FaGavel, FaCheck } from 'react-icons/fa'
 import type { UserRole } from '../../types/domain'
-
-interface RoleOption {
-  role: UserRole
-  title: string
-  subtitle: string
-  icon: React.ReactNode
-  badgeClass: string
-}
-
-const ROLE_OPTIONS: RoleOption[] = [
-  {
-    role: 'LIP',
-    title: 'Litigant in Person',
-    subtitle: 'Managing your own family court proceedings or representing yourself.',
-    icon: <FaUser size={18} />,
-    badgeClass: 'text-secondary',
-  },
-  {
-    role: 'McKenzieFriend',
-    title: 'McKenzie Friend',
-    subtitle: 'Lay court supporter providing case advice, file organization & note-taking.',
-    icon: <FaHandsHelping size={18} />,
-    badgeClass: 'text-info',
-  },
-  {
-    role: 'Solicitor',
-    title: 'Solicitor',
-    subtitle: 'Regulated legal practitioner (SRA) providing formal representation & advice.',
-    icon: <FaBriefcase size={18} />,
-    badgeClass: 'text-primary',
-  },
-  {
-    role: 'Barrister',
-    title: 'Barrister / Counsel',
-    subtitle: 'Regulated courtroom specialist (Bar Standards Board) for advocacy & opinions.',
-    icon: <FaGavel size={18} />,
-    badgeClass: 'text-dark',
-  },
-]
+import { useTranslation } from '../../hooks/useTranslation'
 
 interface RoleSelectorCardProps {
   selectedRole: UserRole
@@ -48,17 +10,56 @@ interface RoleSelectorCardProps {
 }
 
 export const RoleSelectorCard: React.FC<RoleSelectorCardProps> = ({ selectedRole, onChange }) => {
+  const { t } = useTranslation()
+
+  const roleOptions: Array<{
+    role: UserRole
+    title: string
+    subtitle: string
+    icon: React.ReactNode
+    badgeClass: string
+  }> = [
+    {
+      role: 'LIP',
+      title: t('roles.lip'),
+      subtitle: 'Managing your own family court proceedings or representing yourself.',
+      icon: <FaUser size={18} />,
+      badgeClass: 'text-secondary',
+    },
+    {
+      role: 'McKenzieFriend',
+      title: t('roles.mckenzieFriend'),
+      subtitle: 'Lay court supporter providing case advice, file organization & note-taking.',
+      icon: <FaHandsHelping size={18} />,
+      badgeClass: 'text-info',
+    },
+    {
+      role: 'Solicitor',
+      title: t('roles.solicitor'),
+      subtitle: 'Regulated legal practitioner (SRA) providing formal representation & advice.',
+      icon: <FaBriefcase size={18} />,
+      badgeClass: 'text-primary',
+    },
+    {
+      role: 'Barrister',
+      title: t('roles.barrister'),
+      subtitle: 'Regulated courtroom specialist (Bar Standards Board) for advocacy & opinions.',
+      icon: <FaGavel size={18} />,
+      badgeClass: 'text-dark',
+    },
+  ]
+
   return (
     <Card className="premium-card p-3 p-md-4 mb-4 border">
       <div className="mb-3">
-        <h2 className="h5 fw-bold text-dark mb-1">Account Role & Court Capacity</h2>
+        <h2 className="h5 fw-bold text-dark mb-1">{t('profile.roleTitle')}</h2>
         <p className="text-muted small mb-0">
-          Select your primary capacity within the My Case Buddy ecosystem. Changing to a professional role unlocks practitioner directories and case collaboration tools.
+          {t('profile.roleDesc')}
         </p>
       </div>
 
       <Row className="g-3">
-        {ROLE_OPTIONS.map((opt) => {
+        {roleOptions.map((opt) => {
           const isSelected = selectedRole === opt.role
           return (
             <Col xs={12} sm={6} key={opt.role}>

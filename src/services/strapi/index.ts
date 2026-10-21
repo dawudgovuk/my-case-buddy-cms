@@ -7,3 +7,4 @@ export * from './invitesApiService';
 export * from './deadlinesApiService';
 export * from './professionalsApiService';
 export * from './authApiService';
+export * from './guidanceApiService';

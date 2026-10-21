@@ -13,7 +13,9 @@ import {
   FaTrash,
   FaHandshake,
   FaCalendarCheck,
+  FaCompass,
 } from 'react-icons/fa'
+import { useGuidanceStore } from '../../store/guidanceStore'
 
 export interface CaseListItemCardProps {
   caseData: FamilyCase
@@ -38,6 +40,7 @@ export default function CaseListItemCard({
     caseData.parties?.filter((p) => p.role !== 'Child' || (p.role === 'Child' && p.solicitorFirm)).length || 0
   const hearingsCount = caseData.hearings?.length || 0
   const nextHearing = caseData.hearings && caseData.hearings.length > 0 ? caseData.hearings[0] : null
+  const linkedMapSlug = useGuidanceStore((s) => s.caseMapLinks[caseData.id])
 
   // Status styling colors
   const isOpen = caseData.status === 'Open'
@@ -89,6 +92,17 @@ export default function CaseListItemCard({
               <span className="badge bg-primary-subtle text-primary border border-primary-subtle d-inline-flex align-items-center gap-1 py-1 px-2" style={{ fontSize: '0.7rem' }}>
                 <FaHandshake size={10} />
                 <span>{t('lipDashboard.peerSupportBadge')}</span>
+              </span>
+            )}
+
+            {linkedMapSlug && (
+              <span
+                className="badge bg-info-subtle text-info-emphasis border border-info-subtle d-inline-flex align-items-center gap-1 py-1 px-2"
+                style={{ fontSize: '0.7rem' }}
+                title="Procedural Roadmap Connected"
+              >
+                <FaCompass size={10} />
+                <span>Roadmap Active</span>
               </span>
             )}
           </div>

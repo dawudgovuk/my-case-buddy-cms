@@ -113,6 +113,8 @@ h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
 .text-info { color: var(--mcb-info) !important; }
 .bg-light { background-color: var(--mcb-surface-2) !important; }
 .bg-primary { background-color: var(--mcb-primary) !important; }
+.bg-primary.bg-opacity-10, .bg-primary.bg-opacity-20, .bg-primary.bg-opacity-25, .bg-primary-subtle { background-color: var(--mcb-primary-soft) !important; }
+.border-primary-subtle { border-color: var(--mcb-primary-border) !important; }
 .border, .border-top, .border-bottom, .border-start, .border-end { border-color: var(--mcb-border) !important; }
 small, .small { font-size: 0.875rem; }
 ::selection { background: #dbe3ff; color: var(--mcb-ink); }

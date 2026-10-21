@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { displayDate } from '../../utils/displayDate'
 import { Card, Form, Row, Col, Button, Badge, Alert } from 'react-bootstrap'
+import { useTranslation } from '../../hooks/useTranslation'
 import type { OrderRecord, ComplianceDeadline } from '../../types/domain'
 import {
   FaBalanceScale,
@@ -31,6 +32,7 @@ export default function OrderCard({
   readOnly = false,
   className = '',
 }: OrderCardProps) {
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<OrderRecord>({ ...order })
 
@@ -86,7 +88,7 @@ export default function OrderCard({
         <Form as={Row} className="g-2 align-items-end">
           <Col md={5}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Order Type</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.orderType}</Form.Label>
               <Form.Select
                 size="sm"
                 value={form.type}
@@ -109,9 +111,9 @@ export default function OrderCard({
                   'Specific Issue Order',
                   'Financial Remedies Order',
                   'Other',
-                ].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                ].map((tVal) => (
+                  <option key={tVal} value={tVal}>
+                    {tVal}
                   </option>
                 ))}
               </Form.Select>
@@ -120,7 +122,7 @@ export default function OrderCard({
 
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Date Made</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.orderDate}</Form.Label>
               <Form.Control
                 size="sm"
                 type="date"
@@ -132,7 +134,7 @@ export default function OrderCard({
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Expires On (optional)</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.expiresOn}</Form.Label>
               <Form.Control
                 size="sm"
                 type="date"
@@ -146,7 +148,7 @@ export default function OrderCard({
             <Form.Check
               type="checkbox"
               id={`edit-penal-${order.id}`}
-              label="Attach Penal Notice Warning (Contempt of Court s.42A FLA 1996)"
+              label={t.caseTabs.penalNoticeFullWarning}
               checked={Boolean(form.hasPenalNotice)}
               onChange={(e) => setForm((f) => ({ ...f, hasPenalNotice: e.target.checked }))}
               className="small fw-semibold text-danger"
@@ -155,7 +157,7 @@ export default function OrderCard({
 
           <Col xs={12}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Summary & Key Directions</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.orderSummaryDirections}</Form.Label>
               <Form.Control
                 size="sm"
                 as="textarea"
@@ -177,7 +179,7 @@ export default function OrderCard({
               }}
               disabled={!form.summary.trim() || !form.dateMade}
             >
-              Save
+              {t.common.save}
             </Button>
             <Button
               variant="outline-secondary"
@@ -187,11 +189,11 @@ export default function OrderCard({
                 setEditing(false)
               }}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             {onDelete && (
               <Button variant="danger" size="sm" onClick={() => onDelete(order.id)}>
-                Delete
+                {t.common.delete}
               </Button>
             )}
           </Col>
@@ -214,19 +216,19 @@ export default function OrderCard({
             {order.hasPenalNotice && (
               <Badge bg="danger" className="d-flex align-items-center gap-1 font-monospace">
                 <FaExclamationTriangle size={10} />
-                <span>Penal Notice Warning</span>
+                <span>{t.caseTabs.penalNoticeWarning}</span>
               </Badge>
             )}
 
             <span className="small text-secondary d-flex align-items-center gap-1">
               <FaCalendarCheck className="text-success" />
-              <span>Made: {displayDate(order.dateMade)}</span>
+              <span>{t.caseTabs.orderDate}: {displayDate(order.dateMade)}</span>
             </span>
 
             {order.expiresOn && (
               <span className={`small d-flex align-items-center gap-1 ${isExpired ? 'text-danger fw-semibold' : 'text-muted'}`}>
                 <FaClock />
-                <span>Expires: {displayDate(order.expiresOn)} {isExpired ? '(Expired)' : ''}</span>
+                <span>{t.caseTabs.expiresOn}: {displayDate(order.expiresOn)} {isExpired ? `(${t.inviteAccept.hasExpired})` : ''}</span>
               </span>
             )}
           </div>
@@ -236,7 +238,7 @@ export default function OrderCard({
             <Alert variant="danger" className="d-flex gap-2 align-items-start small py-2 px-3 my-2 border border-danger">
               <FaExclamationTriangle className="mt-1 flex-shrink-0 text-danger" size={14} />
               <div>
-                <strong>WARNING (PENAL NOTICE):</strong> Take notice that if you fail to comply with the terms and
+                <strong>{t.caseTabs.penalNoticeWarning}:</strong> Take notice that if you fail to comply with the terms and
                 directions set out in this order, you may be held in contempt of court and may be imprisoned, fined, or
                 have your assets seized (s.42A Family Law Act 1996).
               </div>
@@ -253,7 +255,7 @@ export default function OrderCard({
             <div className="d-flex justify-content-between align-items-center mb-1.5">
               <div className="small fw-bold text-dark d-flex align-items-center gap-1.5">
                 <FaUserCheck className="text-primary" size={12} />
-                <span>Compliance Deadlines & Directions ({deadlines.filter((d) => d.isCompleted).length}/{deadlines.length})</span>
+                <span>{t.caseTabs.filingDeadlines} ({deadlines.filter((d) => d.isCompleted).length}/{deadlines.length})</span>
               </div>
               {!readOnly && (
                 <Button
@@ -263,7 +265,7 @@ export default function OrderCard({
                   onClick={() => setShowAddDeadline(!showAddDeadline)}
                 >
                   <FaPlus size={10} />
-                  <span>Add Direction</span>
+                  <span>{t.caseTabs.addDeadline}</span>
                 </Button>
               )}
             </div>
@@ -305,7 +307,7 @@ export default function OrderCard({
                         className="font-monospace"
                         style={{ fontSize: '0.68rem' }}
                       >
-                        Due: {d.dueDate}
+                        {t.caseTabs.duePrefix} {d.dueDate}
                       </Badge>
                     </div>
                   </div>
@@ -313,7 +315,7 @@ export default function OrderCard({
               </div>
             ) : (
               <div className="text-muted small py-1 fst-italic">
-                No compliance directions registered yet. Click &quot;Add Direction&quot; to track court-ordered deadlines.
+                {t.caseTabs.noDeadlinesRecorded}
               </div>
             )}
 
@@ -324,7 +326,7 @@ export default function OrderCard({
                   <Col md={5}>
                     <Form.Group>
                       <Form.Label className="small fw-semibold mb-0" style={{ fontSize: '0.72rem' }}>
-                        Direction / Task
+                        {t.caseTabs.initialDirectionOptional}
                       </Form.Label>
                       <Form.Control
                         size="sm"
@@ -338,7 +340,7 @@ export default function OrderCard({
                   <Col md={3}>
                     <Form.Group>
                       <Form.Label className="small fw-semibold mb-0" style={{ fontSize: '0.72rem' }}>
-                        Due Date
+                        {t.caseTabs.hearingDate}
                       </Form.Label>
                       <Form.Control
                         size="sm"
@@ -352,7 +354,7 @@ export default function OrderCard({
                   <Col md={2}>
                     <Form.Group>
                       <Form.Label className="small fw-semibold mb-0" style={{ fontSize: '0.72rem' }}>
-                        Party
+                        {t.caseTabs.partyRole}
                       </Form.Label>
                       <Form.Select
                         size="sm"
@@ -377,7 +379,7 @@ export default function OrderCard({
                       className="w-100 py-1"
                       style={{ fontSize: '0.75rem' }}
                     >
-                      Save
+                      {t.common.save}
                     </Button>
                     <Button
                       variant="outline-secondary"
@@ -406,7 +408,7 @@ export default function OrderCard({
                 style={{ fontSize: '0.78rem' }}
               >
                 <FaEdit size={11} />
-                <span>Edit</span>
+                <span>{t.common.edit}</span>
               </Button>
             )}
             {onDelete && (

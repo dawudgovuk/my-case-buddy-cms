@@ -8,6 +8,7 @@ import { useCasesStore } from '../../store/casesStore'
 import { useAuthStore } from '../../store/authStore'
 import { withAppendedNote } from '../../utils/caseNotes'
 import { toast } from '../../store/toastStore'
+import { useTranslation } from '../../hooks/useTranslation'
 
 type SortField = 'title' | 'caseId' | 'nextHearing' | 'deadline' | 'priority'
 type SortDirection = 'asc' | 'desc'
@@ -27,6 +28,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
   const navigate = useNavigate()
   const store = useCasesStore()
   const { user } = useAuthStore()
+  const { t } = useTranslation()
 
   const [sortField, setSortField] = useState<SortField>('priority')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
@@ -144,9 +146,9 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
     return (
       <Card className="shadow-sm border-0 p-4 text-center">
         <Card.Body>
-          <h5 className="text-secondary">No Assigned Cases</h5>
+          <h5 className="text-secondary">{t('professional.noAssignedCases')}</h5>
           <p className="text-muted small">
-            You are not currently assigned to any cases as a representative or collaborator.
+            {t('professional.noAssignedCasesDesc')}
           </p>
         </Card.Body>
       </Card>
@@ -158,13 +160,13 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
       <div className="mb-3 d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2">
         <div>
           <h4 className="fw-bold mb-1 d-flex align-items-center gap-2">
-            <span>My Assigned Family Cases</span>
+            <span>{t('professional.myAssignedCases')}</span>
             <Badge bg="secondary" className="fs-6 px-2 py-1">
               {cases.length} Total
             </Badge>
           </h4>
           <p className="text-secondary small mb-0">
-            Private court cases where you have been invited by a litigant as their McKenzie Friend, legal representative, or collaborator.
+            {t('professional.myAssignedCasesDesc')}
           </p>
         </div>
       </div>
@@ -181,7 +183,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
                 size="sm"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search assigned cases by title, case ID, or court..."
+                placeholder={t('professional.searchAssignedPlaceholder')}
                 className="border-start-0"
               />
             </div>
@@ -190,7 +192,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
           <Col md={6} className="d-flex justify-content-md-end align-items-center gap-2">
             <span className="small text-muted d-flex align-items-center gap-1">
               <FaFilter size={10} />
-              <span>Status:</span>
+              <span>{t('professional.statusFilterLabel')}</span>
             </span>
             <Form.Select
               size="sm"
@@ -198,7 +200,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
               onChange={(e) => setStatusFilter(e.target.value)}
               style={{ width: '140px' }}
             >
-              <option value="ALL">All Statuses</option>
+              <option value="ALL">{t('professional.allStatuses')}</option>
               <option value="Open">Open</option>
               <option value="Stayed">Stayed</option>
               <option value="Concluded">Concluded</option>
@@ -213,27 +215,27 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
             <thead className="table-light">
               <tr>
                 <th onClick={() => handleSort('caseId')} style={{ cursor: 'pointer' }}>
-                  Case ID {renderSortIcon('caseId')}
+                  {t('common.caseNumber')} {renderSortIcon('caseId')}
                 </th>
                 <th onClick={() => handleSort('title')} style={{ cursor: 'pointer' }}>
-                  Title {renderSortIcon('title')}
+                  {t('common.title')} {renderSortIcon('title')}
                 </th>
-                <th>Court / Type</th>
-                <th>Status</th>
+                <th>{t('dashboard.courtAndTrack')}</th>
+                <th>{t('dashboard.status')}</th>
                 <th onClick={() => handleSort('nextHearing')} style={{ cursor: 'pointer' }}>
-                  Next Hearing {renderSortIcon('nextHearing')}
+                  {t('dashboard.nextListing')} {renderSortIcon('nextHearing')}
                 </th>
                 <th onClick={() => handleSort('deadline')} style={{ cursor: 'pointer' }}>
-                  Next Deadline {renderSortIcon('deadline')}
+                  {t('dashboard.deadlines')} {renderSortIcon('deadline')}
                 </th>
-                <th className="text-end">Actions</th>
+                <th className="text-end">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {sortedCases.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="text-center py-4 text-muted">
-                    No assigned cases match your search criteria.
+                    {t('professional.noAssignedMatchingFilter')}
                   </td>
                 </tr>
               ) : (
@@ -272,7 +274,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
                             </Badge>
                           </div>
                         ) : (
-                          <span className="text-muted">None scheduled</span>
+                          <span className="text-muted">{t('professional.noneScheduled')}</span>
                         )}
                       </td>
                       <td className="small">
@@ -284,7 +286,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
                             </Badge>
                           </div>
                         ) : (
-                          <span className="text-muted">No deadlines</span>
+                          <span className="text-muted">{t('professional.noDeadlines')}</span>
                         )}
                       </td>
                       <td className="text-end">
@@ -293,12 +295,12 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
                             variant="outline-secondary"
                             size="sm"
                             onClick={() => handleOpenNoteModal(c)}
-                            title="Quick Attendance Note"
+                            title={t('professional.quickAttendanceNote')}
                             className="d-inline-flex align-items-center gap-1 py-1 px-2"
                             style={{ fontSize: '0.78rem' }}
                           >
                             <FaStickyNote size={11} className="text-warning" />
-                            <span>Note</span>
+                            <span>{t('caseTabs.noteTitle')}</span>
                           </Button>
                           <Button
                             variant="outline-primary"
@@ -308,7 +310,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
                             style={{ fontSize: '0.78rem' }}
                           >
                             <FaEye size={11} />
-                            <span>View</span>
+                            <span>{t('common.view')}</span>
                           </Button>
                         </div>
                       </td>
@@ -327,7 +329,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
           <Modal.Header closeButton>
             <Modal.Title className="h6 fw-bold mb-0 d-flex align-items-center gap-2">
               <FaStickyNote className="text-warning" />
-              <span>Record Contemporaneous Note</span>
+              <span>{t('professional.recordContemporaneousNote')}</span>
             </Modal.Title>
           </Modal.Header>
           <Modal.Body className="p-3">
@@ -336,7 +338,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
             </div>
 
             <Form.Group className="mb-2">
-              <Form.Label className="small fw-semibold">Attendance Category</Form.Label>
+              <Form.Label className="small fw-semibold">{t('professional.attendanceCategory')}</Form.Label>
               <Form.Select
                 size="sm"
                 value={noteCategory}
@@ -351,7 +353,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
             </Form.Group>
 
             <Form.Group className="mb-2">
-              <Form.Label className="small fw-semibold">Note Author</Form.Label>
+              <Form.Label className="small fw-semibold">{t('professional.noteAuthor')}</Form.Label>
               <Form.Control
                 size="sm"
                 value={noteAuthor}
@@ -360,20 +362,20 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
             </Form.Group>
 
             <Form.Group className="mb-2">
-              <Form.Label className="small fw-semibold">Contemporaneous Note</Form.Label>
+              <Form.Label className="small fw-semibold">{t('caseTabs.noteContent')}</Form.Label>
               <Form.Control
                 size="sm"
                 as="textarea"
                 rows={4}
                 value={noteContent}
                 onChange={(e) => setNoteContent(e.target.value)}
-                placeholder="Log notes, client instructions, submissions made, or directions given..."
+                placeholder={t('professional.noteContentPlaceholder')}
               />
             </Form.Group>
           </Modal.Body>
           <Modal.Footer className="d-flex justify-content-between py-2">
             <Button variant="outline-secondary" size="sm" onClick={() => setTargetCaseForNote(null)}>
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button
               variant="primary"
@@ -381,7 +383,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
               onClick={handleSaveAttendanceNote}
               disabled={!noteContent.trim()}
             >
-              Save Note to Case
+              {t('professional.saveNoteToCase')}
             </Button>
           </Modal.Footer>
         </Modal>

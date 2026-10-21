@@ -1,6 +1,7 @@
 export type CourtType =
   | 'Family Court'
-  | 'High Court Family Division';
+  | 'High Court Family Division'
+  | (string & {});
 
 export type CaseType =
   | 'Public Law (Care Proceedings)'
@@ -8,7 +9,8 @@ export type CaseType =
   | 'Domestic Abuse (Non-Molestation)'
   | 'Financial Remedies'
   | 'Adoption'
-  | 'Other';
+  | 'Other'
+  | (string & {});
 
 export type CaseStatus =
   | 'Open'

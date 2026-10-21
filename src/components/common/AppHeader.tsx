@@ -17,19 +17,13 @@ import {
   FaLifeRing,
   FaExternalLinkAlt,
   FaUserCog,
+  FaCompass,
 } from 'react-icons/fa'
 import type { UserRole } from '../../types/domain'
 import { WELCOME_ROUTE } from '../../utils/authConstants'
 
 export interface AppHeaderProps {
   className?: string
-}
-
-const roleLabel: Record<UserRole, string> = {
-  LIP: 'Litigant in person',
-  McKenzieFriend: 'McKenzie Friend',
-  Solicitor: 'Solicitor',
-  Barrister: 'Barrister',
 }
 
 const roleBadgeVariant: Record<UserRole, 'secondary' | 'success' | 'primary' | 'warning'> = {
@@ -45,6 +39,21 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
   const { user, logout } = useAuthStore()
   const { t } = useTranslation()
   const [expanded, setExpanded] = useState(false)
+
+  const getRoleLabel = (role: UserRole) => {
+    switch (role) {
+      case 'LIP':
+        return t('roles.lip')
+      case 'McKenzieFriend':
+        return t('roles.mckenzieFriend')
+      case 'Solicitor':
+        return t('roles.solicitor')
+      case 'Barrister':
+        return t('roles.barrister')
+      default:
+        return role
+    }
+  }
 
   const handleLogout = () => {
     setExpanded(false)
@@ -73,6 +82,9 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
 
   const isDirectoryActive =
     location.pathname.startsWith('/peer-directory')
+
+  const isGuidanceActive =
+    location.pathname.startsWith('/guidance')
 
   const isDev = import.meta.env.DEV
   const isComponentsActive = location.pathname.startsWith('/components')
@@ -143,6 +155,15 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         </Nav.Link>
 
                         <Nav.Link
+                          active={isGuidanceActive}
+                          onClick={() => handleNavigate('/guidance')}
+                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                        >
+                          <FaCompass size={14} />
+                          <span>{t('common.roadmaps')}</span>
+                        </Nav.Link>
+
+                        <Nav.Link
                           active={isDirectoryActive}
                           onClick={() => handleNavigate('/peer-directory')}
                           className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
@@ -179,7 +200,16 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                           className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
                         >
                           <FaGavel size={14} />
-                          <span>Assigned Cases</span>
+                          <span>{t('common.assignedCases')}</span>
+                        </Nav.Link>
+
+                        <Nav.Link
+                          active={isGuidanceActive}
+                          onClick={() => handleNavigate('/guidance')}
+                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                        >
+                          <FaCompass size={14} />
+                          <span>{t('common.roadmaps')}</span>
                         </Nav.Link>
 
                         <Nav.Link
@@ -202,7 +232,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         title="Component Showcase (Development Mode)"
                       >
                         <FaPuzzlePiece size={14} className="text-warning" />
-                        <span>Components</span>
+                        <span>{t('common.components')}</span>
                         <span
                           className="badge bg-warning text-dark px-1.5 py-0.5 rounded fw-bold"
                           style={{ fontSize: '0.62rem', letterSpacing: '0.5px' }}
@@ -238,7 +268,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         {safeName}
                       </span>
                       <Badge bg={roleBadgeVariant[user.role] || 'secondary'} className="d-none d-sm-inline-flex">
-                        {roleLabel[user.role]}
+                        {getRoleLabel(user.role)}
                       </Badge>
                     </Dropdown.Toggle>
 
@@ -246,7 +276,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                       <div className="px-3 py-2 border-bottom">
                         <div className="fw-bold text-dark">{safeName}</div>
                         <div className="small text-muted text-truncate">{user.email}</div>
-                        <div className="small mt-1">{roleLabel[user.role]}</div>
+                        <div className="small mt-1">{getRoleLabel(user.role)}</div>
                         <div className="mt-2 d-flex align-items-center gap-1">
                           {user.role !== 'LIP' && (
                             user.isVerified ? (
@@ -277,7 +307,15 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         className="d-flex align-items-center gap-2 py-2"
                       >
                         <FaUserCog className="text-muted" />
-                        <span>My Profile</span>
+                        <span>{t('common.myProfile')}</span>
+                      </Dropdown.Item>
+
+                      <Dropdown.Item
+                        onClick={() => handleNavigate('/guidance')}
+                        className="d-flex align-items-center gap-2 py-2"
+                      >
+                        <FaCompass className="text-muted" />
+                        <span>{t('common.legalRoadmaps')}</span>
                       </Dropdown.Item>
 
                       <Dropdown.Item
@@ -301,7 +339,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         className="d-flex align-items-center gap-2 py-1.5 text-muted small"
                       >
                         <FaPuzzlePiece size={12} />
-                        <span>Component Showcase</span>
+                        <span>{t('common.componentShowcase')}</span>
                       </Dropdown.Item>
 
                       <Dropdown.Divider />
@@ -319,6 +357,16 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
               </>
             ) : (
               <>
+                <Nav.Link
+                  active={isGuidanceActive}
+                  onClick={() => handleNavigate('/guidance')}
+                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded text-secondary"
+                  title="UK Family Court Procedural Roadmaps"
+                >
+                  <FaCompass size={14} className="text-primary" />
+                  <span>{t('common.roadmaps')}</span>
+                </Nav.Link>
+
                 {isDev && (
                   <Nav.Link
                     active={isComponentsActive}
@@ -327,7 +375,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                     title="Component Showcase (Development Mode)"
                   >
                     <FaPuzzlePiece size={14} className="text-warning" />
-                    <span>Components</span>
+                    <span>{t('common.components')}</span>
                     <span
                       className="badge bg-warning text-dark px-1.5 py-0.5 rounded fw-bold"
                       style={{ fontSize: '0.62rem', letterSpacing: '0.5px' }}

@@ -2,6 +2,7 @@ import React from 'react'
 import { Card, Badge } from 'react-bootstrap'
 import { FaCheckCircle, FaExclamationCircle, FaShieldAlt, FaIdBadge } from 'react-icons/fa'
 import type { User, UserRole } from '../../types/domain'
+import { useTranslation } from '../../hooks/useTranslation'
 
 interface ProfileHeroProps {
   user: User
@@ -16,14 +17,24 @@ const roleBadgeVariant: Record<UserRole, string> = {
   Barrister: 'dark',
 }
 
-const roleDisplayLabel: Record<UserRole, string> = {
-  LIP: 'Litigant in Person',
-  McKenzieFriend: 'McKenzie Friend',
-  Solicitor: 'Solicitor',
-  Barrister: 'Barrister (Counsel)',
-}
-
 export const ProfileHero: React.FC<ProfileHeroProps> = ({ user, safeName, userInitials }) => {
+  const { t } = useTranslation()
+
+  const getRoleLabel = (role: UserRole) => {
+    switch (role) {
+      case 'LIP':
+        return t('roles.lip')
+      case 'McKenzieFriend':
+        return t('roles.mckenzieFriend')
+      case 'Solicitor':
+        return t('roles.solicitor')
+      case 'Barrister':
+        return t('roles.barrister')
+      default:
+        return role
+    }
+  }
+
   return (
     <Card className="border-0 shadow-sm mb-4 overflow-hidden" style={{ borderRadius: 16 }}>
       <div
@@ -52,18 +63,18 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({ user, safeName, userIn
               <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
                 <h1 className="h3 fw-bold text-white mb-0">{safeName}</h1>
                 <Badge bg={roleBadgeVariant[user.role] || 'secondary'} className="px-2.5 py-1.5 fs-7">
-                  {roleDisplayLabel[user.role] || user.role}
+                  {getRoleLabel(user.role)}
                 </Badge>
                 {user.role !== 'LIP' && (
                   user.isVerified ? (
                     <Badge bg="success" className="px-2.5 py-1.5 fs-7 d-inline-flex align-items-center gap-1">
                       <FaCheckCircle size={11} />
-                      <span>Verified Practitioner</span>
+                      <span>{t('common.verified')}</span>
                     </Badge>
                   ) : (
                     <Badge bg="warning" className="text-dark px-2.5 py-1.5 fs-7 d-inline-flex align-items-center gap-1">
                       <FaExclamationCircle size={11} />
-                      <span>Verification Pending</span>
+                      <span>{t('common.unverified')}</span>
                     </Badge>
                   )
                 )}

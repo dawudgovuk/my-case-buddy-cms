@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card, Form, Row, Col, Button, Badge } from 'react-bootstrap'
 import { useCasesStore } from '../../../store/casesStore'
+import { useTranslation } from '../../../hooks/useTranslation'
 import { generateId } from '../../../services/storage'
 import { toast } from '../../../store/toastStore'
 import type { FamilyCase, Party, PartyRepresentation } from '../../../types/domain'
@@ -14,6 +15,7 @@ export interface PartiesTabProps {
 
 export default function PartiesTab({ caseId }: PartiesTabProps) {
   const store = useCasesStore()
+  const { t } = useTranslation()
   const [role, setRole] = useState<Party['role']>('Applicant')
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
@@ -89,9 +91,9 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
                 <FaUsers size={16} />
               </span>
               <div>
-                <h6 className="fw-bold mb-0 text-dark">Parties, Children & Representation</h6>
+                <h6 className="fw-bold mb-0 text-dark">{t.caseTabs.managePartiesAndChildren}</h6>
                 <div className="small text-muted">
-                  Register all applicants, respondents, children, and legal representatives under FPR rules.
+                  {t.caseTabs.partiesSubtitle}
                 </div>
               </div>
             </div>
@@ -99,18 +101,18 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
 
           <div className="d-flex gap-2 flex-wrap">
             <Badge bg="primary" className="py-1 px-2 font-monospace">
-              {nonChildren.length} Adult Parties
+              {nonChildren.length} {t.dashboard.partyPlural}
             </Badge>
             <Badge bg="info" className="py-1 px-2 font-monospace text-white">
-              {children.length} {children.length === 1 ? 'Child' : 'Children'}
+              {children.length} {children.length === 1 ? t.dashboard.childSingular : t.dashboard.childPlural}
             </Badge>
             <Badge bg="light" text="dark" className="border py-1 px-2 font-monospace">
-              {lipCount} Litigants in Person
+              {lipCount} {t.roles.lip}
             </Badge>
             {specialMeasuresCount > 0 && (
               <Badge bg="danger-subtle" text="danger" className="border border-danger-subtle py-1 px-2 font-monospace d-flex align-items-center gap-1">
                 <FaShieldAlt size={10} />
-                <span>{specialMeasuresCount} Special Measures</span>
+                <span>{specialMeasuresCount} {t.caseTabs.partySpecialMeasures}</span>
               </Badge>
             )}
           </div>
@@ -121,13 +123,13 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
       <Card className="p-3 shadow-sm border bg-white rounded-3">
         <Card.Title className="h6 fw-bold mb-3 d-flex align-items-center gap-2 text-dark">
           <FaUserPlus className="text-primary" />
-          <span>Register Party or Protected Child</span>
+          <span>{t.caseTabs.registerPartyOrChild}</span>
         </Card.Title>
 
         <Form as={Row} className="g-2 align-items-end">
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Role</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.partyRole}</Form.Label>
               <Form.Select value={role} onChange={(e) => setRole(e.target.value as Party['role'])} size="sm">
                 {['Applicant', 'Respondent', 'Child', 'Guardian', 'Intervener'].map((r) => (
                   <option key={r} value={r}>
@@ -140,7 +142,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">First Name</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.partyFirstName}</Form.Label>
               <Form.Control
                 size="sm"
                 value={firstName}
@@ -152,7 +154,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
 
           <Col md={5}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Last Name</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.partyLastName}</Form.Label>
               <Form.Control
                 size="sm"
                 value={lastName}
@@ -164,7 +166,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
 
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Date of Birth</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.partyDob}</Form.Label>
               <Form.Control
                 type="date"
                 size="sm"
@@ -179,7 +181,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
             <>
               <Col md={5}>
                 <Form.Group>
-                  <Form.Label className="small fw-semibold">School or Nursery (optional)</Form.Label>
+                  <Form.Label className="small fw-semibold">{t.caseTabs.partySchool}</Form.Label>
                   <Form.Control
                     size="sm"
                     value={schoolOrNursery}
@@ -193,7 +195,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
                 <Form.Check
                   type="checkbox"
                   id="add-child-pr"
-                  label="Parental Responsibility (PR) Active"
+                  label={t.caseTabs.parentalResponsibilityActive}
                   checked={parentalResponsibility}
                   onChange={(e) => setParentalResponsibility(e.target.checked)}
                   className="small fw-semibold text-secondary"
@@ -205,15 +207,15 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
             <>
               <Col md={4}>
                 <Form.Group>
-                  <Form.Label className="small fw-semibold">Legal Representation</Form.Label>
+                  <Form.Label className="small fw-semibold">{t.caseTabs.partyRepresentation}</Form.Label>
                   <Form.Select
                     size="sm"
                     value={representation}
                     onChange={(e) => setRepresentation(e.target.value as PartyRepresentation)}
                   >
-                    <option value="Litigant in Person">Litigant in Person (Self-Represented)</option>
-                    <option value="Instructed Solicitor">Instructed Solicitor</option>
-                    <option value="Direct Access Barrister">Direct Access Barrister</option>
+                    <option value="Litigant in Person">{t.roles.lip}</option>
+                    <option value="Instructed Solicitor">{t.roles.solicitor}</option>
+                    <option value="Direct Access Barrister">{t.roles.barrister}</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
@@ -221,7 +223,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
               {representation === 'Instructed Solicitor' && (
                 <Col md={5}>
                   <Form.Group>
-                    <Form.Label className="small fw-semibold">Solicitor Firm</Form.Label>
+                    <Form.Label className="small fw-semibold">{t.caseTabs.partySolicitor}</Form.Label>
                     <Form.Control
                       size="sm"
                       value={solicitorFirm}
@@ -236,7 +238,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
 
           <Col md={isChild ? 12 : representation === 'Instructed Solicitor' ? 7 : 8}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Address / Jurisdiction</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.partyAddress}</Form.Label>
               <Form.Control
                 size="sm"
                 value={address}
@@ -250,7 +252,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
             <>
               <Col md={4}>
                 <Form.Group>
-                  <Form.Label className="small fw-semibold">Contact Email</Form.Label>
+                  <Form.Label className="small fw-semibold">{t.caseTabs.partyEmail}</Form.Label>
                   <Form.Control
                     type="email"
                     size="sm"
@@ -263,7 +265,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
 
               <Col md={4}>
                 <Form.Group>
-                  <Form.Label className="small fw-semibold">Contact Phone</Form.Label>
+                  <Form.Label className="small fw-semibold">{t.caseTabs.partyPhone}</Form.Label>
                   <Form.Control
                     size="sm"
                     value={contactPhone}
@@ -275,7 +277,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
 
               <Col md={4}>
                 <Form.Group>
-                  <Form.Label className="small fw-semibold">FPR Part 3A Special Measures</Form.Label>
+                  <Form.Label className="small fw-semibold">{t.caseTabs.partySpecialMeasures}</Form.Label>
                   <Form.Control
                     size="sm"
                     value={specialMeasuresRequired}
@@ -295,7 +297,7 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
               disabled={!firstName.trim() || !lastName.trim()}
               className="px-4 fw-semibold"
             >
-              + Add {role}
+              + {t.common.save} {role}
             </Button>
           </Col>
         </Form>
@@ -305,11 +307,11 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
       <div>
         <h6 className="fw-bold mb-2 text-dark d-flex align-items-center gap-2">
           <FaUser className="text-primary" size={13} />
-          <span>Adult Parties & Legal Representatives ({nonChildren.length})</span>
+          <span>{t.caseTabs.adultPartiesTitle} ({nonChildren.length})</span>
         </h6>
         {nonChildren.length === 0 ? (
           <div className="text-muted p-3 bg-light rounded text-center border">
-            No adult parties registered yet.
+            {t.caseTabs.noAdultsRegistered}
           </div>
         ) : (
           <div className="d-flex flex-column gap-2">
@@ -343,11 +345,11 @@ export default function PartiesTab({ caseId }: PartiesTabProps) {
       <div>
         <h6 className="fw-bold mb-2 text-dark d-flex align-items-center gap-2">
           <FaChild className="text-info" size={14} />
-          <span>Children Subject to Proceedings ({children.length})</span>
+          <span>{t.caseTabs.childrenTitle} ({children.length})</span>
         </h6>
         {children.length === 0 ? (
           <div className="text-muted p-3 bg-light rounded text-center border">
-            No children registered under this case.
+            {t.caseTabs.noChildrenRegistered}
           </div>
         ) : (
           <div className="d-flex flex-column gap-2">

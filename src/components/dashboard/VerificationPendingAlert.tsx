@@ -1,5 +1,6 @@
 import { Alert, Button, Spinner } from 'react-bootstrap'
 import { FaEnvelope, FaCheckCircle } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface VerificationPendingAlertProps {
   email: string
@@ -23,29 +24,31 @@ export default function VerificationPendingAlert({
   onVerifyNow,
   onResend,
 }: VerificationPendingAlertProps) {
+  const { t } = useTranslation()
+
   return (
     <Alert variant="warning" className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-2 mb-3 shadow-xs border-warning-subtle">
       <div className="d-flex align-items-center gap-2">
         <FaEnvelope className="text-warning flex-shrink-0" />
         <div>
-          <strong>Account Pending Email Verification:</strong> Welcome emails and your verification link were dispatched to <code>{email}</code>.
+          <strong>{t('dashboard.verificationNoticeTitle')}:</strong> {t('auth.verificationSentNotice')} <code>{email}</code>.
           {notice && <div className="text-success small fw-semibold mt-1"><FaCheckCircle className="me-1" />{notice}</div>}
         </div>
       </div>
       <div className="d-flex gap-2 align-items-center">
         {verificationToken && (
           <Button variant="outline-dark" size="sm" onClick={onVerifyNow}>
-            Verify Now
+            {t('dashboard.verifyNowBtn')}
           </Button>
         )}
         <Button variant="warning" size="sm" disabled={isResending} onClick={onResend}>
           {isResending ? (
             <>
               <Spinner size="sm" animation="border" className="me-1" />
-              Sending...
+              {t('dashboard.resending')}
             </>
           ) : (
-            'Resend Verification Email'
+            t('dashboard.resendLink')
           )}
         </Button>
       </div>

@@ -93,7 +93,7 @@ export async function fetchStrapiInvitesForCase(caseIdOrNumber: string): Promise
     const query = {
       'filters[$or][0][case][documentId][$eq]': targetCaseDocId,
       'filters[$or][1][case][caseNumber][$eq]': caseIdOrNumber,
-      'populate[case]': '*',
+      'populate': '*',
       'sort': 'createdAt:desc',
     };
 
@@ -114,11 +114,7 @@ export async function fetchStrapiInvitesForCase(caseIdOrNumber: string): Promise
 export async function fetchStrapiInviteByToken(token: string): Promise<CaseInvite | null> {
   const query = {
     'filters[token][$eq]': token,
-    'populate[case][fields][0]': 'caseNumber',
-    'populate[case][fields][1]': 'title',
-    'populate[case][fields][2]': 'court',
-    'populate[case][fields][3]': 'caseType',
-    'populate[case][fields][4]': 'currentStage',
+    'populate': '*',
   };
 
   const response = await strapiGet<StrapiListResponse<StrapiInviteRaw>>('/api/case-invites', query);

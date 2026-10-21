@@ -54,14 +54,25 @@ export const CASE_STAGES: Record<CaseType, CaseStageInfo[]> = {
   ],
 }
 
-export function getCurrentStageIndex(caseData: FamilyCase): number {
-  const stages = CASE_STAGES[caseData.caseType] || CASE_STAGES['Other']
-  const currentStageId = caseData.currentStage || 'application'
-  const currentIndex = stages.findIndex(s => s.id === currentStageId)
-  return currentIndex >= 0 ? currentIndex : 0
+export function getStagesForCase(
+  caseData: FamilyCase,
+  dynamicStagesMap?: Record<string, CaseStageInfo[]>
+): CaseStageInfo[] {
+  if (dynamicStagesMap && dynamicStagesMap[caseData.caseType]) {
+    return dynamicStagesMap[caseData.caseType]
+  }
+  return CASE_STAGES[caseData.caseType] || CASE_STAGES['Other']
 }
 
-export function getStagesForCase(caseData: FamilyCase): CaseStageInfo[] {
-  return CASE_STAGES[caseData.caseType] || CASE_STAGES['Other']
+export function getCurrentStageIndex(
+  caseData: FamilyCase,
+  dynamicStages?: CaseStageInfo[]
+): number {
+  const stages = dynamicStages || getStagesForCase(caseData)
+  const rawStage = (caseData.currentStage || 'application').toLowerCase().trim()
+  const currentIndex = stages.findIndex(
+    (s) => s.id.toLowerCase() === rawStage || s.name.toLowerCase() === rawStage
+  )
+  return currentIndex >= 0 ? currentIndex : 0
 }
 

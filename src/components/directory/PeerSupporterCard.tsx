@@ -1,4 +1,5 @@
 import { Card } from 'react-bootstrap'
+import { useTranslation } from '../../hooks/useTranslation'
 import type { UserRole, User } from '../../types/domain'
 import {
   FaCheckCircle,
@@ -79,11 +80,20 @@ export default function PeerSupporterCard({
   professional,
   onRequestSupport,
   showRequestButton = true,
-  buttonLabel = 'Request Peer Support',
+  buttonLabel,
   className = '',
 }: PeerSupporterCardProps) {
+  const { t } = useTranslation()
   const visual = roleVisuals[professional.role] || roleVisuals.McKenzieFriend
   const initials = getInitials(professional.name)
+  const roleName =
+    professional.role === 'McKenzieFriend'
+      ? t.roles.mckenzieFriend
+      : professional.role === 'Solicitor'
+      ? t.roles.solicitor
+      : professional.role === 'Barrister'
+      ? t.roles.barrister
+      : t.roles.lip
   const tags =
     professional.specialisms && professional.specialisms.length > 0
       ? professional.specialisms
@@ -117,7 +127,7 @@ export default function PeerSupporterCard({
                   className={`badge rounded-pill px-2.5 py-0.5 small fw-semibold ${visual.badgeClass}`}
                   style={{ fontSize: '0.72rem' }}
                 >
-                  {visual.label}
+                  {roleName}
                 </span>
               </div>
             </div>
@@ -131,7 +141,7 @@ export default function PeerSupporterCard({
               title="Identity & Email Verified"
             >
               <FaCheckCircle size={10} />
-              <span>Verified</span>
+              <span>{t.common.verified}</span>
             </span>
           )}
         </div>
@@ -203,7 +213,7 @@ export default function PeerSupporterCard({
               onClick={() => onRequestSupport(professional.id)}
             >
               <FaHandshake size={14} />
-              <span>{buttonLabel}</span>
+              <span>{buttonLabel || t.peerDirectory.requestSupportBtn}</span>
               <FaArrowRight size={10} className="opacity-75 ms-1" />
             </button>
           </div>

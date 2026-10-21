@@ -6,6 +6,7 @@ export interface TextInputFieldProps {
   label?: string
   value: string
   onChange: (value: string, e: ChangeEvent<HTMLInputElement>) => void
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
   placeholder?: string
   required?: boolean
   disabled?: boolean
@@ -15,6 +16,7 @@ export interface TextInputFieldProps {
   icon?: ReactNode
   className?: string
   size?: 'sm' | 'lg'
+  maxLength?: number
 }
 
 export default function TextInputField({
@@ -22,6 +24,7 @@ export default function TextInputField({
   label,
   value,
   onChange,
+  onBlur,
   placeholder = '',
   required = false,
   disabled = false,
@@ -31,6 +34,7 @@ export default function TextInputField({
   icon,
   className = '',
   size,
+  maxLength,
 }: TextInputFieldProps) {
   const inputId = id || (label ? `input-${label.toLowerCase().replace(/[^a-z0-9]/g, '-')}` : undefined)
 
@@ -40,11 +44,13 @@ export default function TextInputField({
       type={type}
       value={value}
       onChange={(e) => onChange(e.target.value, e as ChangeEvent<HTMLInputElement>)}
+      onBlur={onBlur}
       placeholder={placeholder}
       required={required}
       disabled={disabled}
       isInvalid={Boolean(error)}
       size={size}
+      maxLength={maxLength}
     />
   )
 

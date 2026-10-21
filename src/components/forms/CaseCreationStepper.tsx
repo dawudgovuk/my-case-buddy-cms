@@ -1,5 +1,6 @@
 import { Card, ProgressBar } from 'react-bootstrap'
 import { FaFolderOpen, FaUsers, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface StepperStatus {
   detailsValid: boolean
@@ -15,40 +16,35 @@ export interface CaseCreationStepperProps {
   className?: string
 }
 
-interface StepConfig {
-  step: number
-  title: string
-  subtitle: string
-  icon: typeof FaFolderOpen
-}
-
-const STEPS: StepConfig[] = [
-  {
-    step: 0,
-    title: '1. Case Details',
-    subtitle: 'Jurisdiction & Court',
-    icon: FaFolderOpen,
-  },
-  {
-    step: 1,
-    title: '2. Parties & Children',
-    subtitle: 'People Involved',
-    icon: FaUsers,
-  },
-  {
-    step: 2,
-    title: '3. Review & Launch',
-    subtitle: 'Verify & Confirm',
-    icon: FaCheckCircle,
-  },
-]
-
 export default function CaseCreationStepper({
   currentStep,
   onSelectStep,
   status,
   className = '',
 }: CaseCreationStepperProps) {
+  const { t } = useTranslation()
+
+  const steps = [
+    {
+      step: 0,
+      title: `1. ${t('caseForm.stepDetails')}`,
+      subtitle: 'Jurisdiction & Court',
+      icon: FaFolderOpen,
+    },
+    {
+      step: 1,
+      title: `2. ${t('caseForm.stepParties')}`,
+      subtitle: 'People Involved',
+      icon: FaUsers,
+    },
+    {
+      step: 2,
+      title: `3. ${t('caseForm.stepReview')}`,
+      subtitle: 'Verify & Confirm',
+      icon: FaCheckCircle,
+    },
+  ]
+
   // Calculate completion percentage:
   let completion = 15
   if (status.detailsValid) completion += 35
@@ -62,7 +58,7 @@ export default function CaseCreationStepper({
       <Card.Body className="p-3 p-md-4">
         {/* Stepper Tabs Bar */}
         <div className="d-flex flex-row align-items-stretch justify-content-between gap-2">
-          {STEPS.map((s) => {
+          {steps.map((s) => {
             const isActive = currentStep === s.step
             const isCompleted =
               (s.step === 0 && status.detailsValid) ||

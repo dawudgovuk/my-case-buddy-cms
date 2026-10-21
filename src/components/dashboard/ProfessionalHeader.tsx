@@ -12,6 +12,7 @@ import {
   FaLock,
   FaCheck,
 } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface ProfessionalHeaderProps {
   user: User
@@ -38,16 +39,18 @@ export default function ProfessionalHeader({
   onVerifyClick,
   onSelectTab,
 }: ProfessionalHeaderProps) {
+  const { t } = useTranslation()
+
   const getRoleDisplayName = (role: string) => {
     switch (role) {
       case 'McKenzieFriend':
-        return 'McKenzie Friend (Court Lay Supporter)'
+        return `${t('roles.mckenzieFriend')} (Court Lay Supporter)`
       case 'Solicitor':
-        return 'Family Law Solicitor'
+        return `${t('roles.solicitor')}`
       case 'Barrister':
-        return 'Family Law Barrister'
+        return `${t('roles.barrister')}`
       case 'LIP':
-        return 'Litigant in Person'
+        return t('roles.lipFull')
       default:
         return role
     }
@@ -60,7 +63,7 @@ export default function ProfessionalHeader({
         <div>
           <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
             <h1 className="h3 fw-bold mb-0 text-dark" style={{ letterSpacing: '-0.3px' }}>
-              Professional Dashboard
+              {t('professional.dashboardTitle')}
             </h1>
             <Badge bg="primary-subtle" className="text-primary border border-primary-subtle px-2 py-1 small">
               {getRoleDisplayName(user.role)}
@@ -72,8 +75,7 @@ export default function ProfessionalHeader({
             )}
           </div>
           <p className="text-muted mb-0 small" style={{ maxWidth: '680px', lineHeight: 1.5 }}>
-            Welcome back, <strong className="text-dark">{user.name}</strong>. Manage your assigned family court cases,
-            review court hearings and deadlines, and connect with litigants seeking experienced guidance.
+            {t('professional.welcomeBack')} <strong className="text-dark">{user.name}</strong>. {t('professional.welcomeBackDesc')}
           </p>
         </div>
 
@@ -82,7 +84,7 @@ export default function ProfessionalHeader({
           {user.isVerified ? (
             <Badge bg="success" className="px-3 py-2 fs-6 d-inline-flex align-items-center gap-2 rounded-3 shadow-xs">
               <FaUserCheck />
-              <span>Verified Account</span>
+              <span>{t('professional.verifiedBadge')}</span>
             </Badge>
           ) : (
             <div className="d-flex align-items-center gap-2 flex-wrap">
@@ -92,7 +94,7 @@ export default function ProfessionalHeader({
                 className="px-3 py-2 fs-6 d-inline-flex align-items-center gap-2 rounded-3 shadow-xs border border-warning-subtle"
               >
                 <FaExclamationCircle className="text-warning-emphasis" />
-                <span>Pending Verification</span>
+                <span>{t('professional.pendingVerificationBadge')}</span>
               </Badge>
               {onVerifyClick && (
                 <Button
@@ -102,7 +104,7 @@ export default function ProfessionalHeader({
                   onClick={onVerifyClick}
                 >
                   <FaCheck size={12} />
-                  <span>Verify Now</span>
+                  <span>{t('professional.verifyNow')}</span>
                 </Button>
               )}
             </div>
@@ -116,7 +118,7 @@ export default function ProfessionalHeader({
             onClick={onToggleGuide}
           >
             <FaInfoCircle size={13} />
-            <span>{isGuideOpen ? 'Hide Quick Guide' : 'How It Works'}</span>
+            <span>{isGuideOpen ? t('professional.hideGuideBtn') : t('professional.howItWorksBtn')}</span>
           </Button>
 
           <Button
@@ -126,7 +128,7 @@ export default function ProfessionalHeader({
             onClick={onOpenFaq}
           >
             <FaQuestionCircle size={13} />
-            <span>Role & FAQ</span>
+            <span>{t('professional.roleAndFaqBtn')}</span>
           </Button>
         </div>
       </div>
@@ -143,8 +145,8 @@ export default function ProfessionalHeader({
               <FaGavel size={14} />
             </div>
             <div className="overflow-hidden">
-              <div className="small text-muted text-truncate" style={{ lineHeight: 1.1 }}>Assigned</div>
-              <div className="fw-bold text-dark fs-6 text-truncate">{assignedCasesCount} Active</div>
+              <div className="small text-muted text-truncate" style={{ lineHeight: 1.1 }}>{t('professional.assignedCasesStat')}</div>
+              <div className="fw-bold text-dark fs-6 text-truncate">{assignedCasesCount} {t('professional.activeBadge')}</div>
             </div>
           </button>
         </Col>
@@ -160,11 +162,11 @@ export default function ProfessionalHeader({
             </div>
             <div className="overflow-hidden">
               <div className="small text-muted d-flex align-items-center gap-1 text-truncate" style={{ lineHeight: 1.1 }}>
-                <span>Peer Requests</span>
+                <span>{t('professional.peerRequestsStat')}</span>
                 {!user.isVerified && <FaLock size={10} className="text-warning flex-shrink-0" />}
               </div>
               <div className="fw-bold text-dark fs-6 text-truncate">
-                {user.isVerified ? `${peerSupportCasesCount} Available` : 'Locked'}
+                {user.isVerified ? `${peerSupportCasesCount} ${t('professional.availableBadge')}` : t('professional.lockedBadge')}
               </div>
             </div>
           </button>
@@ -180,8 +182,8 @@ export default function ProfessionalHeader({
               <FaCalendarAlt size={14} />
             </div>
             <div className="overflow-hidden">
-              <div className="small text-muted text-truncate" style={{ lineHeight: 1.1 }}>Hearings</div>
-              <div className="fw-bold text-dark fs-6 text-truncate">{upcomingHearingsCount} Upcoming</div>
+              <div className="small text-muted text-truncate" style={{ lineHeight: 1.1 }}>{t('professional.hearingsStat')}</div>
+              <div className="fw-bold text-dark fs-6 text-truncate">{upcomingHearingsCount} {t('professional.upcomingBadge')}</div>
             </div>
           </button>
         </Col>
@@ -196,8 +198,8 @@ export default function ProfessionalHeader({
               <FaClock size={14} />
             </div>
             <div className="overflow-hidden">
-              <div className="small text-muted text-truncate" style={{ lineHeight: 1.1 }}>Deadlines</div>
-              <div className="fw-bold text-dark fs-6 text-truncate">{pendingDeadlinesCount} Required</div>
+              <div className="small text-muted text-truncate" style={{ lineHeight: 1.1 }}>{t('professional.deadlinesStat')}</div>
+              <div className="fw-bold text-dark fs-6 text-truncate">{pendingDeadlinesCount} {t('professional.requiredBadge')}</div>
             </div>
           </button>
         </Col>

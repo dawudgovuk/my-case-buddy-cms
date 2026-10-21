@@ -1,0 +1,1641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Case Buddy — Complete Process & Architecture Blueprint</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-card: #111827;
+      --bg-card-hover: #1f2937;
+      --bg-glass: rgba(17, 24, 39, 0.75);
+      --border-subtle: #1e293b;
+      --border-accent: #3b82f6;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --indigo: #6366f1;
+      --indigo-glow: rgba(99, 102, 241, 0.25);
+      --blue: #3b82f6;
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.2);
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --purple: #a855f7;
+      --cyan: #06b6d4;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Ambient background glows */
+    .ambient-glow {
+      position: fixed;
+      top: -200px;
+      left: 20%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(11, 15, 25, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .ambient-glow-2 {
+      position: fixed;
+      top: 40%;
+      right: -150px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(11, 15, 25, 0) 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1380px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      padding: 48px 0 32px;
+      border-bottom: 1px solid var(--border-subtle);
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.8) 0%, rgba(11, 15, 25, 0.4) 100%);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--indigo) 0%, var(--blue) 100%);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 20px var(--indigo-glow);
+      font-size: 22px;
+    }
+
+    .brand h1 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 30%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .badge-bar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-card);
+      color: var(--text-muted);
+    }
+    .badge.indigo { border-color: rgba(99, 102, 241, 0.4); color: #818cf8; background: rgba(99, 102, 241, 0.1); }
+    .badge.emerald { border-color: rgba(16, 185, 129, 0.4); color: #34d399; background: rgba(16, 185, 129, 0.1); }
+    .badge.amber { border-color: rgba(245, 158, 11, 0.4); color: #fbbf24; background: rgba(245, 158, 11, 0.1); }
+
+    /* Nav Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 6px;
+      margin-top: 24px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .tabs-nav::-webkit-scrollbar { display: none; }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-main);
+      background: var(--bg-card);
+    }
+
+    .tab-btn.active {
+      color: #ffffff;
+      background: var(--indigo);
+      box-shadow: 0 4px 14px var(--indigo-glow);
+    }
+
+    /* Main Section Content */
+    main {
+      padding: 36px 0 80px;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero Banner within Tabs */
+    .section-hero {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .section-hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--indigo);
+    }
+
+    .section-hero h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-hero p {
+      color: var(--text-muted);
+      font-size: 14px;
+      max-width: 900px;
+    }
+
+    /* Diagram Card Containers */
+    .diagram-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-lg);
+      position: relative;
+      overflow-x: auto;
+    }
+
+    .diagram-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 14px;
+    }
+
+    .diagram-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .diagram-tag {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+
+    /* Mermaid Canvas Tweaks */
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      padding: 16px 0;
+      background: rgba(11, 15, 25, 0.6);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      overflow-x: auto;
+    }
+
+    /* Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+
+    /* Feature & Stage Cards */
+    .info-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 22px;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info-card:hover {
+      border-color: var(--border-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .info-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+    .card-icon.blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .card-icon.emerald { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .card-icon.amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+    .card-icon.rose { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
+    .card-icon.purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+
+    .info-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .info-card p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      flex-grow: 1;
+    }
+
+    .info-card ul {
+      list-style: none;
+      padding: 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      padding-top: 12px;
+    }
+
+    .info-card li {
+      margin-bottom: 6px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .info-card li::before {
+      content: '•';
+      color: var(--indigo);
+      font-weight: bold;
+    }
+
+    /* Table Explorer & Interactive Filter */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+      background: var(--bg-card);
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .filter-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--indigo);
+      border-color: var(--indigo);
+      color: #ffffff;
+    }
+
+    .search-box {
+      position: relative;
+      min-width: 260px;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: rgba(11, 15, 25, 0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px 8px 34px;
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      outline: none;
+    }
+
+    .search-box input:focus {
+      border-color: var(--indigo);
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-dim);
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Table Card */
+    .table-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 20px;
+      transition: all 0.2s ease;
+    }
+
+    .table-card:hover {
+      border-color: var(--indigo);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .table-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .table-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .table-uid {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .cluster-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .cluster-case { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .cluster-guidance { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .cluster-user { background: rgba(99, 102, 241, 0.15); color: #a5b4fc; border: 1px solid rgba(99, 102, 241, 0.3); }
+
+    .table-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      min-height: 38px;
+    }
+
+    .relation-list {
+      background: rgba(11, 15, 25, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 12px;
+    }
+
+    .relation-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 4px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .relation-row:last-child { border-bottom: none; }
+
+    .rel-name {
+      color: var(--text-main);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rel-type {
+      font-family: var(--font-mono);
+      font-size: 10.5px;
+      color: var(--indigo);
+      background: rgba(99, 102, 241, 0.1);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    /* Comparison & Spec Table */
+    .spec-table-container {
+      overflow-x: auto;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      margin-bottom: 28px;
+    }
+
+    .spec-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13.5px;
+    }
+
+    .spec-table th {
+      background: rgba(30, 41, 59, 0.6);
+      color: var(--text-main);
+      font-weight: 600;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .spec-table td {
+      padding: 14px 18px;
+      color: var(--text-muted);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .spec-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-main);
+    }
+
+    .code-tag {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #93c5fd;
+      background: rgba(59, 130, 246, 0.12);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--border-subtle);
+      padding: 32px 0;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    footer a {
+      color: var(--indigo);
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="header-top">
+        <div class="brand">
+          <div class="brand-icon">⚖️</div>
+          <div>
+            <h1>My Case Buddy — Process & Architecture Design</h1>
+            <div class="brand-subtitle">Interactive Full-Stack Architecture, UK Family Court Workflows & Relational Database Model</div>
+          </div>
+        </div>
+        <div class="badge-bar">
+          <span class="badge indigo">Strapi v5 Headless</span>
+          <span class="badge emerald">React 19 & Zustand</span>
+          <span class="badge amber">Neon Lakebase PostgreSQL</span>
+          <span class="badge">14 Collection Types</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="tabs-nav" id="tabsNav">
+        <button class="tab-btn active" data-tab="tab-master">
+          <span>🌟</span> Master Process Flow
+        </button>
+        <button class="tab-btn" data-tab="tab-database">
+          <span>🗄️</span> 14 Table ERD & Links
+        </button>
+        <button class="tab-btn" data-tab="tab-auth">
+          <span>🔐</span> Auth & Security Lifecycle
+        </button>
+        <button class="tab-btn" data-tab="tab-guidance">
+          <span>🧭</span> Legal Guidance GPS Engine
+        </button>
+        <button class="tab-btn" data-tab="tab-collab">
+          <span>🤝</span> Peer Support & Confidentiality
+        </button>
+        <button class="tab-btn" data-tab="tab-arch">
+          <span>⚙️</span> System Topology & Migrations
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container">
+
+    <!-- TAB 1: MASTER PROCESS FLOW -->
+    <section id="tab-master" class="tab-content active">
+      <div class="section-hero">
+        <h2><span>🌟</span> End-to-End User & Legal Court Journey</h2>
+        <p>This master workflow charts how Litigants in Person (LIPs) and authorized legal supporters (McKenzie Friends, Solicitors, Barristers) navigate from onboarding, through procedural legal roadmap guidance, active court case management, evidence bundling, to final judicial orders.</p>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div class="diagram-title">
+            <span>🗺️</span> Complete High-Level Process Blueprint
+          </div>
+          <span class="diagram-tag">Mermaid Flowchart</span>
+        </div>
+        <div class="mermaid">
+flowchart TD
+    %% Styling
+    classDef auth fill:#1e1b4b,stroke:#6366f1,stroke-width:2px,color:#e0e7ff;
+    classDef guidance fill:#064e3b,stroke:#10b981,stroke-width:2px,color:#d1fae5;
+    classDef caseMgmt fill:#78350f,stroke:#f59e0b,stroke-width:2px,color:#fef3c7;
+    classDef collab fill:#831843,stroke:#ec4899,stroke-width:2px,color:#fce7f3;
+    classDef court fill:#1e293b,stroke:#94a3b8,stroke-width:2px,color:#f8fafc;
+
+    subgraph P1["1. Identity & Verification"]
+        UserStart([User Arrives]) --> Reg[Register Account<br/>Select LIP / Supporter Role]
+        Reg --> SendEmail[Issue Signed Token<br/>SMTP Dispatches Welcome Email]
+        SendEmail --> ClickVerify[User Verifies Email Link<br/>confirmed = true]
+        ClickVerify --> SessionToken[Issue 10-Min JWT +<br/>HttpOnly Refresh Cookie]
+    end
+    class Reg,SendEmail,ClickVerify,SessionToken auth;
+
+    subgraph P2["2. Legal Guidance GPS"]
+        SessionToken --> GuidanceGate{Explore Legal Route?}
+        GuidanceGate -- Yes --> Maps[Guidance Catalog<br/>C100 Child Arrangements, C79, Divorce]
+        Maps --> Journeys[Milestone Journeys<br/>MIAM -> Application -> FHDRA]
+        Journeys --> ConditionalSteps[Dynamic Conditional Steps<br/>e.g. C1A Abuse, C4 Whereabouts]
+        ConditionalSteps --> ReadArticles[Plain-English Articles<br/>Court Forms & Tribunal Finders]
+        ReadArticles --> LinkToCase[Link Guidance to Active Case]
+    end
+    class Maps,Journeys,ConditionalSteps,ReadArticles,LinkToCase guidance;
+
+    subgraph P3["3. Case Workspace"]
+        GuidanceGate -- Direct / Existing --> CreateCase[Create Case Record<br/>Reference, Venue, Case Type]
+        LinkToCase --> CreateCase
+        CreateCase --> AddParties[Add Case People<br/>Applicant, Respondent, Children, Cafcass]
+        AddParties --> ScheduleHearings[Schedule Hearings<br/>FHDRA, Dispute Resolution, Final]
+        ScheduleHearings --> DocumentsOrders[Log Documents, Deadlines & Orders<br/>Bundles, Position Statements, Timelines]
+        DocumentsOrders --> JournalNotes[Append-Only Notes<br/>Tamper-Resistant Journal]
+    end
+    class CreateCase,AddParties,ScheduleHearings,DocumentsOrders,JournalNotes caseMgmt;
+
+    subgraph P4["4. Collaboration & Support"]
+        JournalNotes --> HelpNeeded{Need Legal Buddy?}
+        HelpNeeded -- Direct Link --> DirectInvite[Generate 30-Day Invite Link<br/>24 Cryptographic Bytes]
+        HelpNeeded -- Peer Directory --> PeerRequest[Flag 'Seeking Peer Support'<br/>Broadcasts to Verified Supporters]
+        
+        DirectInvite --> RedactedGate[Supporter Opens Preview Link]
+        PeerRequest --> RedactedGate
+        RedactedGate --> RedactedView[FPR Safeguarded Preview<br/>Safe Metadata Only: No Children / Notes / Docs]
+        RedactedView --> AcceptCase[Verified Supporter Accepts Case]
+        AcceptCase --> TeamJoined[Joined to cases_members_lnk<br/>Audit Note & Notification Sent]
+    end
+    class DirectInvite,PeerRequest,RedactedGate,RedactedView,AcceptCase,TeamJoined collab;
+
+    subgraph P5["5. Court Hearings & Outcome"]
+        TeamJoined --> HearingPrep[Joint Hearing Preparation<br/>Bundle Review & Legal Strategy]
+        HearingPrep --> AttendHearing[Attend Court Hearing<br/>McKenzie Friend / Solicitor]
+        AttendHearing --> FinalOrder[Record Sealed Court Order<br/>Live With / Spend Time With Orders]
+        FinalOrder --> CaseCompleted([Case Resolved / Closed])
+    end
+    class HearingPrep,AttendHearing,FinalOrder,CaseCompleted court;
+        </div>
+      </div>
+
+      <!-- 5-Phase Walkthrough Cards -->
+      <div class="grid-3">
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon blue">1</div>
+            <h3>Onboarding & Verification</h3>
+          </div>
+          <p>Every user registers with a specified role (LIP, McKenzie Friend, Solicitor, Barrister). Strapi enforces email confirmation using HMAC-SHA256 signed links before critical actions can be taken.</p>
+          <ul>
+            <li>Single source of truth in <code>up_users</code></li>
+            <li>10-minute short-lived JWT for high security</li>
+            <li>HttpOnly rotation cookie (<code>strapi_up_refresh</code>)</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon emerald">2</div>
+            <h3>Legal Roadmap GPS</h3>
+          </div>
+          <p>LIPs avoid procedural panic by following a 5-tier guidance tree. Common requirements like MIAM mediation, fee remission (EX160), and Cafcass interviews are dynamically organized into ordered journeys.</p>
+          <ul>
+            <li>Guidance Maps ➔ Journeys ➔ Steps</li>
+            <li>Conditional branching (C1A harm thresholds)</li>
+            <li>Directly attached to active case tracker</li>
+          </ul>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon amber">3</div>
+            <h3>Case Workspace Hub</h3>
+          </div>
+          <p>All sensitive family court entities are strictly scoped to the parent case. Parties, hearings, court orders, documents, and append-only case notes cannot be manipulated out-of-context.</p>
+          <ul>
+            <li>Strict FPR cross-tenant data isolation</li>
+            <li>Append-only timestamped notes audit log</li>
+            <li>HTTP(S) validated document links</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: 14 TABLE ERD & LINKS -->
+    <section id="tab-database" class="tab-content">
+      <div class="section-hero">
+        <h2><span>🗄️</span> 14 Collection Types & Relational Database Architecture</h2>
+        <p>The database persistence tier runs on <strong>Neon Lakebase PostgreSQL</strong>. Strapi v5 models these 14 collection types into two interconnected clusters: the <strong>Case Management Hub</strong> (8 satellite tables) and the <strong>Guidance Hierarchy</strong> (5 relational layers).</p>
+      </div>
+
+      <!-- Mermaid ERD -->
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div class="diagram-title">
+            <span>🔗</span> Complete Entity-Relationship Diagram (14 Tables)
+          </div>
+          <span class="diagram-tag">PostgreSQL Relational Schema</span>
+        </div>
+        <div class="mermaid">
+erDiagram
+    %% Core Hub 1: Users & Cases
+    USER ||--o{ CASES_OWNER_LNK : "owns (1:N)"
+    FAMILY_CASE ||--o{ CASES_OWNER_LNK : "has owner"
+
+    USER ||--o{ CASES_MEMBERS_LNK : "collaborates (N:M)"
+    FAMILY_CASE ||--o{ CASES_MEMBERS_LNK : "has members"
+
+    FAMILY_CASE ||--o{ PARTY : "has parties (1:N)"
+    FAMILY_CASE ||--o{ COURT_HEARING : "schedules (1:N)"
+    FAMILY_CASE ||--o{ COURT_ORDER : "records (1:N)"
+    FAMILY_CASE ||--o{ CASE_DOCUMENT : "contains (1:N)"
+    FAMILY_CASE ||--o{ CASE_NOTE : "logs journal (1:N)"
+    FAMILY_CASE ||--o{ DOCUMENT_DEADLINE : "tracks (1:N)"
+    FAMILY_CASE ||--o{ CASE_INVITE : "generates (1:N)"
+
+    USER ||--o{ CASE_INVITE : "createdBy / usedBy"
+    USER ||--o{ DOCUMENT_DEADLINE : "assignedTo"
+
+    %% Core Hub 2: Guidance Knowledge Hierarchy
+    GUIDANCE_MAP ||--o{ GUIDANCE_MAPS_JOURNEYS_LNK : "contains"
+    GUIDANCE_JOURNEY ||--o{ GUIDANCE_MAPS_JOURNEYS_LNK : "belongs to (N:M)"
+
+    GUIDANCE_JOURNEY ||--o{ GUIDANCE_JOURNEYS_STEPS_LNK : "contains"
+    GUIDANCE_STEP ||--o{ GUIDANCE_JOURNEYS_STEPS_LNK : "belongs to (N:M)"
+
+    GUIDANCE_STEP ||--o{ GUIDANCE_STEPS_ARTICLES_LNK : "links to"
+    GUIDANCE_ARTICLE ||--o{ GUIDANCE_STEPS_ARTICLES_LNK : "explains (N:M)"
+
+    GUIDANCE_ARTICLE ||--o{ GUIDANCE_ARTICLES_REFERENCES_LNK : "cites"
+    GUIDANCE_REFERENCE ||--o{ GUIDANCE_ARTICLES_REFERENCES_LNK : "sourced by (N:M)"
+        </div>
+      </div>
+
+      <!-- Filter & Search Bar -->
+      <div class="filter-bar">
+        <div class="filter-pills" id="clusterFilter">
+          <button class="filter-btn active" data-filter="all">All (14 Tables)</button>
+          <button class="filter-btn" data-filter="case">Case Management Hub (8)</button>
+          <button class="filter-btn" data-filter="guidance">Guidance Hierarchy (5)</button>
+          <button class="filter-btn" data-filter="user">User & Identity (1)</button>
+        </div>
+        <div class="search-box">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <input type="text" id="tableSearch" placeholder="Search tables, fields, or links...">
+        </div>
+      </div>
+
+      <!-- Interactive 14 Table Cards Grid -->
+      <div class="grid-4" id="tableCardsGrid">
+        
+        <!-- Table 1: User -->
+        <div class="table-card" data-cluster="user">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">User</div>
+              <span class="table-uid">plugin::users-permissions.user</span>
+            </div>
+            <span class="cluster-tag cluster-user">Identity</span>
+          </div>
+          <div class="table-desc">Authentication principal, role authority, subscription level, and professional directory profile.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Owned Cases</span>
+              <span class="rel-type">1:N ➔ Family Case</span>
+            </div>
+            <div class="relation-row">
+              <span class="rel-name">Team Memberships</span>
+              <span class="rel-type">N:M ➔ Family Case</span>
+            </div>
+            <div class="relation-row">
+              <span class="rel-name">Invites Created</span>
+              <span class="rel-type">1:N ➔ Case Invite</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 2: Family Case -->
+        <div class="table-card" data-cluster="case">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Family Case</div>
+              <span class="table-uid">api::case.case</span>
+            </div>
+            <span class="cluster-tag cluster-case">Core Hub</span>
+          </div>
+          <div class="table-desc">Central anchor for UK Family Court litigation proceedings, ownership, and collaborative access.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Owner</span>
+              <span class="rel-type">N:1 ➔ User (Owner)</span>
+            </div>
+            <div class="relation-row">
+              <span class="rel-name">Members</span>
+              <span class="rel-type">N:M ➔ User (Supporters)</span>
+            </div>
+            <div class="relation-row">
+              <span class="rel-name">Child Entities</span>
+              <span class="rel-type">1:N ➔ 7 Satellite Tables</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 3: Party -->
+        <div class="table-card" data-cluster="case">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Party</div>
+              <span class="table-uid">api::party.party</span>
+            </div>
+            <span class="cluster-tag cluster-case">Satellite</span>
+          </div>
+          <div class="table-desc">Individuals involved in proceedings: Applicant, Respondent, Subject Children, and CAFCASS Officers.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Parent Case</span>
+              <span class="rel-type">N:1 ➔ Family Case</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 4: Court Hearing -->
+        <div class="table-card" data-cluster="case">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Court Hearing</div>
+              <span class="table-uid">api::hearing.hearing</span>
+            </div>
+            <span class="cluster-tag cluster-case">Satellite</span>
+          </div>
+          <div class="table-desc">Scheduled family court appearances (FHDRA, DRA, Fact-Finding, Final Hearing) and judicial directions.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Parent Case</span>
+              <span class="rel-type">N:1 ➔ Family Case</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 5: Court Order -->
+        <div class="table-card" data-cluster="case">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Court Order</div>
+              <span class="table-uid">api::order.order</span>
+            </div>
+            <span class="cluster-tag cluster-case">Satellite</span>
+          </div>
+          <div class="table-desc">Sealed judicial rulings (Child Arrangements, Prohibited Steps, Specific Issue, Non-Molestation).</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Parent Case</span>
+              <span class="rel-type">N:1 ➔ Family Case</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 6: Case Document -->
+        <div class="table-card" data-cluster="case">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Case Document</div>
+              <span class="table-uid">api::document.document</span>
+            </div>
+            <span class="cluster-tag cluster-case">Satellite</span>
+          </div>
+          <div class="table-desc">Filing bundles, witness statements, position statements, and official court correspondence links.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Parent Case</span>
+              <span class="rel-type">N:1 ➔ Family Case</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 7: Case Note -->
+        <div class="table-card" data-cluster="case">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Case Note</div>
+              <span class="table-uid">api::case-note.case-note</span>
+            </div>
+            <span class="cluster-tag cluster-case">Satellite</span>
+          </div>
+          <div class="table-desc">Append-only, immutable litigation journal entries and automated security audit logs.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Parent Case</span>
+              <span class="rel-type">N:1 ➔ Family Case</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 8: Document Deadline -->
+        <div class="table-card" data-cluster="case">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Document Deadline</div>
+              <span class="table-uid">api::document-deadline.document-deadline</span>
+            </div>
+            <span class="cluster-tag cluster-case">Satellite</span>
+          </div>
+          <div class="table-desc">Court direction filing deadlines, compliance milestones, and responsible assignee tracking.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Parent Case</span>
+              <span class="rel-type">N:1 ➔ Family Case</span>
+            </div>
+            <div class="relation-row">
+              <span class="rel-name">Assigned User</span>
+              <span class="rel-type">N:1 ➔ User</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 9: Case Invite -->
+        <div class="table-card" data-cluster="case">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Case Invite</div>
+              <span class="table-uid">api::case-invite.case-invite</span>
+            </div>
+            <span class="cluster-tag cluster-case">Security Gate</span>
+          </div>
+          <div class="table-desc">Single-use 24-byte cryptographic tokens enabling 30-day secure supporter onboarding.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Parent Case</span>
+              <span class="rel-type">N:1 ➔ Family Case</span>
+            </div>
+            <div class="relation-row">
+              <span class="rel-name">Created By</span>
+              <span class="rel-type">N:1 ➔ User</span>
+            </div>
+            <div class="relation-row">
+              <span class="rel-name">Claimed By</span>
+              <span class="rel-type">N:1 ➔ User</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 10: Guidance Map -->
+        <div class="table-card" data-cluster="guidance">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Guidance Map</div>
+              <span class="table-uid">api::guidance-map.guidance-map</span>
+            </div>
+            <span class="cluster-tag cluster-guidance">Tier 1 Roadmap</span>
+          </div>
+          <div class="table-desc">Macro legal route definitions (e.g. Child Arrangements Order C100, Enforcement C79).</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Journeys (N:M)</span>
+              <span class="rel-type">via guidance_maps_journeys_lnk</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 11: Guidance Journey -->
+        <div class="table-card" data-cluster="guidance">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Guidance Journey</div>
+              <span class="table-uid">api::guidance-journey.guidance-journey</span>
+            </div>
+            <span class="cluster-tag cluster-guidance">Tier 2 Phase</span>
+          </div>
+          <div class="table-desc">Sequential milestone phases: MIAM Mediation, Applying to Court, Cafcass, and FHDRA Hearing.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Maps (N:M)</span>
+              <span class="rel-type">via guidance_maps_journeys_lnk</span>
+            </div>
+            <div class="relation-row">
+              <span class="rel-name">Steps (N:M)</span>
+              <span class="rel-type">via guidance_journeys_steps_lnk</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 12: Guidance Step -->
+        <div class="table-card" data-cluster="guidance">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Guidance Step</div>
+              <span class="table-uid">api::guidance-step.guidance-step</span>
+            </div>
+            <span class="cluster-tag cluster-guidance">Tier 3 Checkpoint</span>
+          </div>
+          <div class="table-desc">Actionable checkpoints with conditional logic (e.g. C1A abuse disclosure, C4 child search).</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Journeys (N:M)</span>
+              <span class="rel-type">via guidance_journeys_steps_lnk</span>
+            </div>
+            <div class="relation-row">
+              <span class="rel-name">Articles (N:M)</span>
+              <span class="rel-type">via guidance_steps_articles_lnk</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 13: Guidance Article -->
+        <div class="table-card" data-cluster="guidance">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Guidance Article</div>
+              <span class="table-uid">api::guidance-article.guidance-article</span>
+            </div>
+            <span class="cluster-tag cluster-guidance">Tier 4 Content</span>
+          </div>
+          <div class="table-desc">In-depth plain-English instructional content, section-by-section breakdown of legal procedures.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Steps (N:M)</span>
+              <span class="rel-type">via guidance_steps_articles_lnk</span>
+            </div>
+            <div class="relation-row">
+              <span class="rel-name">References (N:M)</span>
+              <span class="rel-type">via guidance_articles_references_lnk</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table 14: Guidance Reference -->
+        <div class="table-card" data-cluster="guidance">
+          <div class="table-card-top">
+            <div>
+              <div class="table-name">Guidance Reference</div>
+              <span class="table-uid">api::guidance-reference.guidance-reference</span>
+            </div>
+            <span class="cluster-tag cluster-guidance">Tier 5 Asset</span>
+          </div>
+          <div class="table-desc">Official external court forms (C100, EX160), GOV.UK court finders, and statutory references.</div>
+          <div class="relation-list">
+            <div class="relation-row">
+              <span class="rel-name">Articles (N:M)</span>
+              <span class="rel-type">via guidance_articles_references_lnk</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Relational Schema Link Tables Reference -->
+      <div class="spec-table-container">
+        <table class="spec-table">
+          <thead>
+            <tr>
+              <th>Relational Link Table (Neon PostgreSQL)</th>
+              <th>Primary Key / Foreign Keys</th>
+              <th>Ordering Column</th>
+              <th>Strapi Schema Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="code-tag">cases_owner_lnk</span></td>
+              <td><code>case_id</code> ➔ <code>user_id</code></td>
+              <td>—</td>
+              <td>Binds single owner (LIP) to case with full administrative rights.</td>
+            </tr>
+            <tr>
+              <td><span class="code-tag">cases_members_lnk</span></td>
+              <td><code>case_id</code> ➔ <code>user_id</code></td>
+              <td>—</td>
+              <td>Multi-tenant collaboration link for authorized legal supporters.</td>
+            </tr>
+            <tr>
+              <td><span class="code-tag">guidance_maps_journeys_lnk</span></td>
+              <td><code>guidance_map_id</code> ➔ <code>guidance_journey_id</code></td>
+              <td><code>guidance_journey_ord</code></td>
+              <td>Allows common journeys (e.g. MIAM) to be shared across legal maps.</td>
+            </tr>
+            <tr>
+              <td><span class="code-tag">guidance_journeys_steps_lnk</span></td>
+              <td><code>guidance_journey_id</code> ➔ <code>guidance_step_id</code></td>
+              <td><code>guidance_step_ord</code></td>
+              <td>Maintains sequential step progression within a court milestone.</td>
+            </tr>
+            <tr>
+              <td><span class="code-tag">guidance_steps_articles_lnk</span></td>
+              <td><code>guidance_step_id</code> ➔ <code>guidance_article_id</code></td>
+              <td><code>guidance_article_ord</code></td>
+              <td>Attaches explanatory how-to guides to concrete procedural actions.</td>
+            </tr>
+            <tr>
+              <td><span class="code-tag">guidance_articles_references_lnk</span></td>
+              <td><code>guidance_article_id</code> ➔ <code>guidance_reference_id</code></td>
+              <td><code>guidance_reference_ord</code></td>
+              <td>Links articles to downloadable official court forms and statutory links.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 3: AUTH & SECURITY LIFECYCLE -->
+    <section id="tab-auth" class="tab-content">
+      <div class="section-hero">
+        <h2><span>🔐</span> Authentication, Identity & Session Security</h2>
+        <p>Strapi <code>users-permissions</code> operates as the single source of truth. Security mechanisms include cryptographic HMAC-SHA256 email verification, short-lived JWTs (10 min), HttpOnly refresh cookies, and strict absence of browser localStorage secrets.</p>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div class="diagram-title">
+            <span>🛡️</span> Dual-Gate Identity & Token Refresh Sequence
+          </div>
+          <span class="diagram-tag">Sequence Diagram</span>
+        </div>
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor User as Litigant / Supporter
+    participant Client as Frontend (CMS Client)
+    participant AuthStore as Zustand Auth Store
+    participant Strapi as Strapi API (users-permissions)
+    participant SMTP as Nodemailer SMTP Relay
+    participant DB as Neon PostgreSQL (up_users)
+
+    %% Registration
+    rect rgb(30, 41, 59)
+    Note over User,DB: 1. Registration & Verification Link Generation
+    User->>Client: Register: Name, Email, Password, Role (LIP / Supporter)
+    Client->>Strapi: POST /api/auth/local/register (userRole, name, firm, regNumber)
+    Strapi->>DB: INSERT up_users (confirmed = false)
+    Strapi->>Strapi: Create HMAC-SHA256 Signed Token (24h validity)
+    Strapi->>SMTP: Dispatch Welcome Email with Verification URL
+    SMTP-->>User: Delivers Verification Link
+    Strapi-->>Client: 200 OK (Registration accepted)
+    Client->>AuthStore: Update State: Unverified Account
+    end
+
+    %% Email Confirmation
+    rect rgb(6, 78, 59)
+    Note over User,DB: 2. Server-Side Signature Verification
+    User->>Client: Opens /verify-email/:token
+    Client->>Strapi: POST /api/auth-notification/verify-email { token }
+    Strapi->>Strapi: Verify HMAC Signature & Expiry
+    Strapi->>DB: UPDATE up_users SET confirmed = true
+    Strapi-->>Client: 200 OK (Account Confirmed)
+    end
+
+    %% Login & Session Refresh
+    rect rgb(120, 53, 15)
+    Note over User,DB: 3. Session Issuance & Token Rotation
+    User->>Client: Log In (Email & Password)
+    Client->>Strapi: POST /api/auth/local
+    Strapi->>DB: Verify credentials & confirmed status
+    Strapi-->>Client: 200 OK + JWT (10 min expiry) & Set-Cookie: strapi_up_refresh (HttpOnly)
+    Client->>AuthStore: Store JWT in memory
+    
+    Note over Client,Strapi: At 10 minutes (JWT Expiry):
+    Client->>Strapi: GET /api/cases (401 Unauthorized)
+    Client->>Strapi: POST /api/auth/refresh (Sends HttpOnly Cookie)
+    Strapi-->>Client: 200 OK + New 10-Minute Access JWT
+    Client->>Strapi: Retry GET /api/cases (200 OK)
+    end
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon emerald">✓</div>
+            <h3>Zero LocalStorage Leaks</h3>
+          </div>
+          <p>Sensitive family court records, child identities, and case notes are strictly held in memory. Refresh cookies are marked <code>HttpOnly</code> and cannot be accessed via XSS.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon blue">⚡</div>
+            <h3>Self-Healing Neon Auth</h3>
+          </div>
+          <p>If an older account exists only in Neon Auth (Better Auth), sign-in automatically provisions a corresponding Strapi account on-the-fly, synchronizing credentials.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon rose">🛡️</div>
+            <h3>FPR Role Authorization</h3>
+          </div>
+          <p>Verified legal professionals (McKenzie Friends, Solicitors, Barristers) undergo email confirmation checks before they are permitted to browse open case support requests.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: LEGAL GUIDANCE GPS -->
+    <section id="tab-guidance" class="tab-content">
+      <div class="section-hero">
+        <h2><span>🧭</span> Legal Guidance GPS Engine (5-Tier Knowledge Tree)</h2>
+        <p>Litigants in Person are empowered with an interactive procedural GPS. The system connects legal blueprints directly to the user's active case workspace, turning overwhelming legal jargon into structured, actionable checklists.</p>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div class="diagram-title">
+            <span>🌲</span> 5-Tier Procedural Hierarchy & Child Arrangements (C100)
+          </div>
+          <span class="diagram-tag">Hierarchical Knowledge Graph</span>
+        </div>
+        <div class="mermaid">
+graph TD
+    classDef mapNode fill:#1e3a8a,stroke:#3b82f6,stroke-width:2px,color:#ffffff;
+    classDef journeyNode fill:#065f46,stroke:#10b981,stroke-width:2px,color:#ffffff;
+    classDef stepNode fill:#854d0e,stroke:#f59e0b,stroke-width:2px,color:#ffffff;
+    classDef artNode fill:#581c87,stroke:#a855f7,stroke-width:2px,color:#ffffff;
+    classDef refNode fill:#831843,stroke:#ec4899,stroke-width:2px,color:#ffffff;
+
+    Map["<b>Guidance Map</b> (Macro Roadmap)<br/>Child Arrangements Order (C100)"]:::mapNode
+
+    J1["<b>Journey 1</b>: Pre-Court & Mediation (MIAM)"]:::journeyNode
+    J2["<b>Journey 2</b>: Applying to Court"]:::journeyNode
+    J3["<b>Journey 3</b>: First Hearing (FHDRA)"]:::journeyNode
+    J4["<b>Journey 4</b>: Dispute Resolution & Final Orders"]:::journeyNode
+
+    Map --> J1
+    Map --> J2
+    Map --> J3
+    Map --> J4
+
+    S1["<b>Step 2.1</b>: Complete Form C100<br/>(Core Application)"]:::stepNode
+    S2["<b>Step 2.2</b> (Conditional): Complete Form C1A<br/>(Harm / Domestic Abuse Allegations)"]:::stepNode
+    S3["<b>Step 2.3</b> (Conditional): Complete Form C4<br/>(Child Whereabouts Unknown)"]:::stepNode
+    S4["<b>Step 2.4</b>: Serve Sealed Application to Respondent"]:::stepNode
+
+    J2 --> S1
+    J2 --> S2
+    J2 --> S3
+    J2 --> S4
+
+    A1["<b>Article</b>: How to Complete Form C100 Section by Section"]:::artNode
+    A2["<b>Article</b>: Explaining Domestic Abuse Thresholds in C1A"]:::artNode
+
+    S1 --> A1
+    S2 --> A2
+
+    R1["<b>Reference</b>: Form C100 Official PDF (GOV.UK)"]:::refNode
+    R2["<b>Reference</b>: HMCTS Court & Tribunal Finder"]:::refNode
+    R3["<b>Reference</b>: Practice Direction 12J (Domestic Abuse)"]:::refNode
+
+    A1 --> R1
+    A1 --> R2
+    A2 --> R3
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon purple">💡</div>
+            <h3>Conditional Step Evaluation</h3>
+          </div>
+          <p>Not all legal steps apply to all families. When a litigant indicates domestic abuse concerns, the engine dynamically activates <code>Step 2.2 (Form C1A)</code> and references Practice Direction 12J. If the child's address is withheld, <code>Form C4</code> is flagged.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon emerald">📌</div>
+            <h3>Embedded Case Roadmap Tracker</h3>
+          </div>
+          <p>The guidance engine isn't a static wiki — it embeds directly into the active case view (<code>CaseOverviewTab.tsx</code> and <code>LegalHubTab.tsx</code>). Users can tick off completed milestones and share progress with their McKenzie Friend.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: COLLABORATION & CONFIDENTIALITY -->
+    <section id="tab-collab" class="tab-content">
+      <div class="section-hero">
+        <h2><span>🤝</span> Peer Collaboration & Family Court Confidentiality</h2>
+        <p>Under the UK Family Procedure Rules (FPR Section 12), proceedings involving children are strictly confidential. My Case Buddy implements cryptographic isolation, redacted previews, and atomic joining safeguards.</p>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div class="diagram-title">
+            <span>🛡️</span> Peer Support Request & Redacted Preview Sequence
+          </div>
+          <span class="diagram-tag">Safeguarded Collaboration Protocol</span>
+        </div>
+        <div class="mermaid">
+sequenceDiagram
+    autonumber
+    actor Owner as Litigant in Person (Owner)
+    participant Client as Frontend (CMS)
+    participant API as Strapi API (/api/cases)
+    actor Supporter as McKenzie Friend / Solicitor
+    participant DB as Neon Database
+
+    %% Creating and Seeking Support
+    rect rgb(30, 41, 59)
+    Note over Owner,DB: 1. Requesting Support
+    Owner->>Client: Clicks 'Ask for Support' (Case Overview)
+    Client->>API: POST /api/cases/:id/request-peer-support { targetSupporterId? }
+    API->>DB: UPDATE cases SET seeking_peer_support = true
+    API->>DB: INSERT case_notes (Audit: 'Support requested')
+    API-->>Client: 200 OK (Case flagged for support)
+    end
+
+    %% Directory Browsing & Redacted Preview
+    rect rgb(120, 53, 15)
+    Note over Supporter,DB: 2. Safeguarded Redacted Preview (FPR Compliance)
+    Supporter->>Client: Browses Open Support Requests
+    Client->>API: GET /api/cases/:id
+    API->>API: Evaluate Access Control (case-access.ts):<br/>Caller is NOT owner and NOT member,<br/>BUT case has seeking_peer_support = true<br/>AND Supporter has confirmed = true
+    API->>API: Strip Sensitive Data: Remove Children, Parties, Notes, Documents, Court Ref
+    API-->>Client: Return Redacted Preview (Title, Court Venue, Stage, Hearing Dates only)
+    Client-->>Supporter: Renders Redacted Case Card
+    end
+
+    %% Acceptance & Joining
+    rect rgb(6, 78, 59)
+    Note over Supporter,DB: 3. Supporter Joins Case
+    Supporter->>Client: Clicks 'Accept Case & Join Team'
+    Client->>API: POST /api/cases/:id/accept-peer-support
+    API->>DB: INSERT INTO cases_members_lnk (case_id, user_id)
+    API->>DB: UPDATE cases SET seeking_peer_support = false
+    API->>DB: INSERT case_notes (Audit: 'Supporter joined team')
+    API-->>Client: 200 OK (Full Access Granted)
+    Supporter->>Client: Refresh Case Workspace (Full Access to Documents, People, Hearings)
+    end
+        </div>
+      </div>
+
+      <div class="spec-table-container">
+        <table class="spec-table">
+          <thead>
+            <tr>
+              <th>Entity / Field</th>
+              <th>Redacted Preview (Unverified Supporter)</th>
+              <th>Full Workspace (Joined Case Member)</th>
+              <th>Safeguarding Compliance Basis</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Children & Parties</strong></td>
+              <td><span class="code-tag" style="color: #f87171; background: rgba(248, 113, 113, 0.1);">COMPLETELY STRIPPED</span></td>
+              <td>Full names, DOBs, solicitors visible</td>
+              <td>Children Act 1989 / Section 12 AJA 1960</td>
+            </tr>
+            <tr>
+              <td><strong>Case Documents & Bundles</strong></td>
+              <td><span class="code-tag" style="color: #f87171; background: rgba(248, 113, 113, 0.1);">COMPLETELY STRIPPED</span></td>
+              <td>Full download & review access</td>
+              <td>Prevents unauthorized evidence leakage</td>
+            </tr>
+            <tr>
+              <td><strong>Case Notes & Journal</strong></td>
+              <td><span class="code-tag" style="color: #f87171; background: rgba(248, 113, 113, 0.1);">COMPLETELY STRIPPED</span></td>
+              <td>Append-only shared legal journal</td>
+              <td>Protects litigant's inner litigation thoughts</td>
+            </tr>
+            <tr>
+              <td><strong>Court Venue & Hearing Dates</strong></td>
+              <td><span class="code-tag" style="color: #34d399; background: rgba(16, 185, 129, 0.1);">VISIBLE</span></td>
+              <td>Full hearing agenda & directions</td>
+              <td>Allows supporter to check calendar availability</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 6: INFRASTRUCTURE & TOPOLOGY -->
+    <section id="tab-arch" class="tab-content">
+      <div class="section-hero">
+        <h2><span>⚙️</span> Full-Stack Infrastructure Topology & Neon Migrations</h2>
+        <p>The platform pairs a responsive <strong>React 19 Vite SPA</strong> with a <strong>Strapi v5 Headless API</strong>, backed by serverless <strong>Neon Lakebase PostgreSQL</strong> and automated ACID transactional schema migrations.</p>
+      </div>
+
+      <div class="diagram-card">
+        <div class="diagram-header">
+          <div class="diagram-title">
+            <span>🏗️</span> Multi-Tier Technical Architecture & Data Topology
+          </div>
+          <span class="diagram-tag">Component Architecture</span>
+        </div>
+        <div class="mermaid">
+graph TB
+    subgraph ClientTier["Frontend Client Tier (my-case-buddy-cms)"]
+        UI["React 19 SPA (Vite Dev / Nginx Prod)<br/>React-Bootstrap • CSS Design System"]
+        State["Zustand Store Adapters<br/>authStore • caseStore • guidanceStore"]
+        Router["React Router v7<br/>Protected Routes • Role Gates"]
+        UI <--> State
+        State <--> Router
+    end
+
+    subgraph BackendTier["Headless Backend Tier (my-case-buddy-api)"]
+        direction TB
+        StrapiServer["Strapi v5 Core API Server (Node.js 20)<br/>REST Endpoints • Port 1337"]
+        AccessCtrl["Case Access Engine (case-access.ts)<br/>Pure RBAC Rules & Redaction"]
+        Mailer["Nodemailer Engine (mailer.ts)<br/>SMTP Gmail Relay • TLS Port 465"]
+        Migrator["Knex Migration Runner (cli.js)<br/>ACID Transactions • Versioned DDL"]
+        
+        StrapiServer --> AccessCtrl
+        StrapiServer --> Mailer
+    end
+
+    subgraph CloudDatabase["Neon Lakebase PostgreSQL Tier"]
+        Pooled["PgBouncer Pooled Host (-pooler)<br/>High Concurrency OLTP Web Traffic<br/>DATABASE_URL"]
+        Direct["Direct Compute Host (Unpooled)<br/>Mandatory DDL Locks & Migrations<br/>DATABASE_URL_UNPOOLED"]
+        
+        subgraph PostgresTables["14 Relational Tables"]
+            T_Users["up_users / up_roles / up_permissions"]
+            T_Cases["cases / cases_owner_lnk / cases_members_lnk"]
+            T_Child["parties / hearings / orders / documents / case_notes"]
+            T_Guidance["guidance_maps / guidance_journeys / guidance_steps / articles / refs"]
+        end
+    end
+
+    %% Network Connections
+    Router -->|Bearer JWT + Refresh Cookie| StrapiServer
+    StrapiServer -->|Queries / Mutations| Pooled
+    Migrator -->|DDL Migrations| Direct
+    Pooled --> PostgresTables
+    Direct --> PostgresTables
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon amber">⚡</div>
+            <h3>Pooled vs Direct DB</h3>
+          </div>
+          <p>Neon provides PgBouncer connection pooling for sub-millisecond web API queries, while direct unpooled endpoints are strictly used for DDL migrations to avoid transaction lock failures.</p>
+        </div>
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon blue">📦</div>
+            <h3>Dual Verification Gate</h3>
+          </div>
+          <p>Both projects enforce strict zero-regression TypeScript checks:</p>
+          <ul>
+            <li>CMS: <code>npm run lint && npm run build</code></li>
+            <li>API: <code>npm run build && npm test</code></li>
+          </ul>
+        </div>
+        <div class="info-card">
+          <div class="info-card-header">
+            <div class="card-icon emerald">🔒</div>
+            <h3>Mandatory Migrations</h3>
+          </div>
+          <p>Zero ad-hoc live schema edits. Every change to columns, enums, or link tables requires versioned Knex migrations in <code>database/migrations/</code> with both <code>up()</code> and <code>down()</code>.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>My Case Buddy — Confidential UK Family Court Platform Architecture Blueprint • Verified October 2026</p>
+    </div>
+  </footer>
+
+  <script>
+    // Initialize Mermaid
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'dark',
+      themeVariables: {
+        darkMode: true,
+        background: '#0b0f19',
+        mainBkg: '#111827',
+        textColor: '#f8fafc',
+        lineColor: '#6366f1',
+        nodeBorder: '#3b82f6',
+        clusterBkg: '#111827',
+        clusterBorder: '#1e293b'
+      },
+      fontFamily: 'Inter, sans-serif'
+    });
+
+    // Tab Switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+
+        btn.classList.add('active');
+        const targetTab = document.getElementById(btn.getAttribute('data-tab'));
+        if (targetTab) {
+          targetTab.classList.add('active');
+          // Re-render any mermaid diagrams if needed
+          window.dispatchEvent(new Event('resize'));
+        }
+      });
+    });
+
+    // Table Filter and Search
+    const filterBtns = document.querySelectorAll('#clusterFilter .filter-btn');
+    const tableCards = document.querySelectorAll('#tableCardsGrid .table-card');
+    const searchInput = document.getElementById('tableSearch');
+
+    function applyTableFilters() {
+      const activeFilterBtn = document.querySelector('#clusterFilter .filter-btn.active');
+      const cluster = activeFilterBtn ? activeFilterBtn.getAttribute('data-filter') : 'all';
+      const query = (searchInput.value || '').toLowerCase().trim();
+
+      tableCards.forEach(card => {
+        const cardCluster = card.getAttribute('data-cluster');
+        const cardText = card.textContent.toLowerCase();
+
+        const matchesCluster = (cluster === 'all' || cardCluster === cluster);
+        const matchesQuery = (!query || cardText.includes(query));
+
+        if (matchesCluster && matchesQuery) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        applyTableFilters();
+      });
+    });
+
+    if (searchInput) {
+      searchInput.addEventListener('input', applyTableFilters);
+    }
+  </script>
+</body>
+</html>

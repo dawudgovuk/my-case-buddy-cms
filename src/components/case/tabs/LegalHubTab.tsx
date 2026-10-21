@@ -1,21 +1,24 @@
 import { useState } from 'react'
 import { Nav, Card } from 'react-bootstrap'
-import { FaUserFriends, FaBook } from 'react-icons/fa'
+import { FaUserFriends, FaBook, FaCompass } from 'react-icons/fa'
+import { useTranslation } from '../../../hooks/useTranslation'
 import type { FamilyCase } from '../../../types/domain'
 import { useAuthStore } from '../../../store/authStore'
 import McKenzieFriendToolkit from './legal/McKenzieFriendToolkit'
 import FamilyLawKnowledgeBase from './legal/FamilyLawKnowledgeBase'
+import CaseRoadmapLegalView from './legal/CaseRoadmapLegalView'
 
 export interface LegalHubTabProps {
   caseData: FamilyCase
 }
 
-export type LegalHubSubView = 'knowledge' | 'mckenzie'
+export type LegalHubSubView = 'roadmap' | 'knowledge' | 'mckenzie'
 
 export default function LegalHubTab({ caseData }: LegalHubTabProps) {
+  const { t } = useTranslation()
   const { user } = useAuthStore()
   const isMcKenzie = user?.role === 'McKenzieFriend'
-  const [activeView, setActiveView] = useState<LegalHubSubView>(isMcKenzie ? 'mckenzie' : 'knowledge')
+  const [activeView, setActiveView] = useState<LegalHubSubView>(isMcKenzie ? 'mckenzie' : 'roadmap')
 
   return (
     <div className="d-flex flex-column gap-3">
@@ -23,10 +26,22 @@ export default function LegalHubTab({ caseData }: LegalHubTabProps) {
       <Card className="border shadow-none bg-light p-2">
         <Nav
           variant="pills"
-          className="gap-2"
+          className="gap-2 flex-wrap"
           activeKey={activeView}
           onSelect={(k) => k && setActiveView(k as LegalHubSubView)}
         >
+          <Nav.Item>
+            <Nav.Link
+              eventKey="roadmap"
+              className={`d-flex align-items-center gap-2 py-2 px-3 fw-medium ${
+                activeView === 'roadmap' ? 'bg-primary text-white shadow-xs' : 'text-secondary bg-white border'
+              }`}
+            >
+              <FaCompass size={14} />
+              <span>{t.caseTabs.legalHubRoadmap}</span>
+            </Nav.Link>
+          </Nav.Item>
+
           <Nav.Item>
             <Nav.Link
               eventKey="knowledge"
@@ -35,7 +50,7 @@ export default function LegalHubTab({ caseData }: LegalHubTabProps) {
               }`}
             >
               <FaBook size={14} />
-              <span>Statutory Knowledge Base & Precedents</span>
+              <span>{t.caseTabs.legalHubKnowledge}</span>
             </Nav.Link>
           </Nav.Item>
 
@@ -47,14 +62,16 @@ export default function LegalHubTab({ caseData }: LegalHubTabProps) {
               }`}
             >
               <FaUserFriends size={14} />
-              <span>McKenzie Friend / Lay Support Toolkit</span>
+              <span>{t.caseTabs.legalHubMckenzie}</span>
             </Nav.Link>
           </Nav.Item>
         </Nav>
       </Card>
 
       {/* Render active sub-view */}
-      {activeView === 'knowledge' ? (
+      {activeView === 'roadmap' ? (
+        <CaseRoadmapLegalView caseData={caseData} />
+      ) : activeView === 'knowledge' ? (
         <FamilyLawKnowledgeBase caseData={caseData} />
       ) : (
         <McKenzieFriendToolkit caseData={caseData} />

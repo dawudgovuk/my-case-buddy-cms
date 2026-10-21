@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Card, Button, Badge } from 'react-bootstrap'
 import { FaEdit, FaUsers, FaChild } from 'react-icons/fa'
 import type { PartiesByRole } from '../../utils/caseFormUtils'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface CasePartiesReviewCardProps {
   totalParties: number
@@ -40,6 +41,7 @@ export default function CasePartiesReviewCard({
   partiesByRole,
   onEditParties,
 }: CasePartiesReviewCardProps) {
+  const { t } = useTranslation()
   const { applicants, respondents, children, otherParties } = partiesByRole
 
   return (
@@ -47,7 +49,9 @@ export default function CasePartiesReviewCard({
       <Card.Header className="bg-white border-bottom py-3 px-3 d-flex justify-content-between align-items-center">
         <div className="d-flex align-items-center gap-2">
           <FaUsers className="text-primary" />
-          <h6 className="fw-bold mb-0 text-dark">Parties & Children ({totalParties})</h6>
+          <h6 className="fw-bold mb-0 text-dark">
+            {t('caseForm.partiesAndChildren')} ({totalParties})
+          </h6>
         </div>
         <Button
           variant="outline-primary"
@@ -57,15 +61,15 @@ export default function CasePartiesReviewCard({
           onClick={onEditParties}
         >
           <FaEdit className="me-1" size={10} />
-          Edit
+          {t('common.edit')}
         </Button>
       </Card.Header>
       <Card.Body className="p-3">
         <PartyGroup
-          heading={`Applicants (${applicants.length})`}
+          heading={`${t('caseForm.applicantsGroup')} (${applicants.length})`}
           className="mb-3"
           isEmpty={applicants.length === 0}
-          emptyText="None added"
+          emptyText={t('caseForm.noneAdded')}
         >
           {applicants.map((a) => (
             <Badge key={a.id} bg="primary" className="fw-normal p-2">
@@ -75,10 +79,10 @@ export default function CasePartiesReviewCard({
         </PartyGroup>
 
         <PartyGroup
-          heading={`Respondents (${respondents.length})`}
+          heading={`${t('caseForm.respondentsGroup')} (${respondents.length})`}
           className="mb-3"
           isEmpty={respondents.length === 0}
-          emptyText="None added"
+          emptyText={t('caseForm.noneAdded')}
         >
           {respondents.map((r) => (
             <Badge key={r.id} bg="secondary" className="fw-normal p-2">
@@ -88,10 +92,10 @@ export default function CasePartiesReviewCard({
         </PartyGroup>
 
         <PartyGroup
-          heading={`Children Subject of Application (${children.length})`}
+          heading={`${t('caseForm.childrenGroup')} (${children.length})`}
           className="mb-2"
           isEmpty={children.length === 0}
-          emptyText="No children registered"
+          emptyText={t('caseForm.noChildrenRegistered')}
         >
           {children.map((c) => (
             <Badge key={c.id} bg="warning" text="dark" className="fw-normal p-2 d-inline-flex align-items-center gap-1">
@@ -102,7 +106,7 @@ export default function CasePartiesReviewCard({
         </PartyGroup>
 
         {otherParties.length > 0 && (
-          <PartyGroup heading={`Other Parties (${otherParties.length})`} isEmpty={false}>
+          <PartyGroup heading={`${t('caseForm.otherPartiesGroup')} (${otherParties.length})`} isEmpty={false}>
             {otherParties.map((o) => (
               <Badge key={o.id} bg="dark" className="fw-normal p-2">
                 {o.role}: {o.firstName} {o.lastName}

@@ -1,5 +1,6 @@
 import { Card, Badge } from 'react-bootstrap'
 import { FaBolt, FaChild, FaShieldAlt, FaBalanceScale, FaFileAlt } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 import type { CaseType, CourtType } from '../../types/domain'
 
 export interface CasePreset {
@@ -71,17 +72,18 @@ export default function CaseQuickPresets({
   currentTitle = '',
   className = '',
 }: CaseQuickPresetsProps) {
+  const { t } = useTranslation()
+
   return (
     <Card className={`p-3 mb-4 ${className}`} style={{ background: 'linear-gradient(135deg, #f3f6ff 0%, #ffffff 70%)', borderColor: 'var(--mcb-primary-border)' }}>
       <div className="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-1 mb-2">
         <div className="d-flex align-items-center gap-2">
           <Badge bg="primary" className="d-inline-flex align-items-center gap-1">
             <FaBolt size={10} />
-            <span>Quick start</span>
+            <span>{t('caseForm.quickPresetsTitle')}</span>
           </Badge>
-          <span className="small fw-bold text-dark">Common case types</span>
+          <span className="small fw-bold text-dark">{t('caseForm.quickPresetsDesc')}</span>
         </div>
-        <span className="text-muted small">Pick one to fill in the title and court for you</span>
       </div>
 
       <div className="d-flex flex-wrap gap-2 pt-1">

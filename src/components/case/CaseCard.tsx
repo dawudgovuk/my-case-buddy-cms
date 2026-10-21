@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Card } from 'react-bootstrap'
 import type { FamilyCase } from '../../types/domain'
 import { getStagesForCase, getCurrentStageIndex } from '../../utils/caseStages'
+import { useCaseConfigStore } from '../../store/caseConfigStore'
 import CaseSteps from './CaseSteps'
 import CaseTimeline from './CaseTimeline'
 import NextHearingBanner from './NextHearingBanner'
@@ -46,8 +47,9 @@ export default function CaseCard({
   timelineDefaultExpanded = false,
   className = '',
 }: CaseCardProps) {
-  const stages = getStagesForCase(caseData)
-  const currentStageIndex = getCurrentStageIndex(caseData)
+  const caseStagesMap = useCaseConfigStore((state) => state.caseStagesMap)
+  const stages = getStagesForCase(caseData, caseStagesMap)
+  const currentStageIndex = getCurrentStageIndex(caseData, stages)
   const nextHearing =
     caseData.hearings && caseData.hearings.length > 0 ? caseData.hearings[0] : null
   const isSeekingSupport = Boolean(caseData.seekingPeerSupport)

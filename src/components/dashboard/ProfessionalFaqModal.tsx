@@ -9,6 +9,7 @@ import {
   FaLifeRing,
   FaExternalLinkAlt,
 } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface ProfessionalFaqModalProps {
   show: boolean
@@ -16,18 +17,19 @@ export interface ProfessionalFaqModalProps {
 }
 
 export default function ProfessionalFaqModal({ show, onHide }: ProfessionalFaqModalProps) {
+  const { t } = useTranslation()
+
   return (
     <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header closeButton className="border-bottom pb-3">
         <Modal.Title className="d-flex align-items-center gap-2 text-primary fs-5">
           <FaQuestionCircle />
-          <span>My Case Buddy — System & Role Guide</span>
+          <span>{t('professional.faqSystemGuideTitle')}</span>
         </Modal.Title>
       </Modal.Header>
       <Modal.Body className="p-4">
         <p className="text-secondary small mb-4">
-          New to the platform or UK Family Court terminology? Here is a simple guide explaining how the system works,
-          the roles involved, and how case collaboration is safeguarded.
+          {t('professional.faqIntro')}
         </p>
 
         <Accordion defaultActiveKey="0" flush className="faq-accordion">
@@ -35,7 +37,7 @@ export default function ProfessionalFaqModal({ show, onHide }: ProfessionalFaqMo
             <Accordion.Header>
               <div className="d-flex align-items-center gap-2">
                 <FaUserFriends className="text-primary" />
-                <span className="fw-semibold">What is a McKenzie Friend?</span>
+                <span className="fw-semibold">{t('professional.whatIsMckenzieFriend')}</span>
               </div>
             </Accordion.Header>
             <Accordion.Body className="text-secondary small">
@@ -56,7 +58,7 @@ export default function ProfessionalFaqModal({ show, onHide }: ProfessionalFaqMo
             <Accordion.Header>
               <div className="d-flex align-items-center gap-2">
                 <FaBalanceScale className="text-primary" />
-                <span className="fw-semibold">What is a Litigant in Person (LIP)?</span>
+                <span className="fw-semibold">{t('professional.whatIsLip')}</span>
               </div>
             </Accordion.Header>
             <Accordion.Body className="text-secondary small">
@@ -70,7 +72,7 @@ export default function ProfessionalFaqModal({ show, onHide }: ProfessionalFaqMo
             <Accordion.Header>
               <div className="d-flex align-items-center gap-2">
                 <FaShieldAlt className="text-warning" />
-                <span className="fw-semibold">Why is Email Verification required?</span>
+                <span className="fw-semibold">{t('professional.whyVerificationRequired')}</span>
               </div>
             </Accordion.Header>
             <Accordion.Body className="text-secondary small">
@@ -89,17 +91,17 @@ export default function ProfessionalFaqModal({ show, onHide }: ProfessionalFaqMo
             <Accordion.Header>
               <div className="d-flex align-items-center gap-2">
                 <FaCheckCircle className="text-success" />
-                <span className="fw-semibold">What is the difference between Assigned Cases and Peer Support Cases?</span>
+                <span className="fw-semibold">{t('professional.diffAssignedPeer')}</span>
               </div>
             </Accordion.Header>
             <Accordion.Body className="text-secondary small">
               <div className="mb-2">
-                <Badge bg="primary" className="me-2">My Assigned Cases</Badge>
+                <Badge bg="primary" className="me-2">{t('professional.assignedCasesTitle')}</Badge>
                 Private cases where a litigant has directly added you as a case collaborator or legal representative.
                 You can access and work on these at any time.
               </div>
               <div>
-                <Badge bg="info" className="me-2">Peer Support Cases</Badge>
+                <Badge bg="info" className="me-2">{t('dashboard.peerRequest')}</Badge>
                 Community requests posted by litigants who are seeking experienced help or document review. Access is
                 unlocked once your email verification is complete.
               </div>
@@ -110,7 +112,7 @@ export default function ProfessionalFaqModal({ show, onHide }: ProfessionalFaqMo
             <Accordion.Header>
               <div className="d-flex align-items-center gap-2">
                 <FaCalendarAlt className="text-info" />
-                <span className="fw-semibold">What are Hearings & Deadlines?</span>
+                <span className="fw-semibold">{t('professional.whatAreHearingsDeadlines')}</span>
               </div>
             </Accordion.Header>
             <Accordion.Body className="text-secondary small">
@@ -124,7 +126,7 @@ export default function ProfessionalFaqModal({ show, onHide }: ProfessionalFaqMo
             <Accordion.Header>
               <div className="d-flex align-items-center gap-2">
                 <FaLifeRing className="text-primary" />
-                <span className="fw-semibold">Where can I find guidance on Children Case Law, Appeal Grounds & Video Calls?</span>
+                <span className="fw-semibold">{t('professional.whereFindGuidance')}</span>
               </div>
             </Accordion.Header>
             <Accordion.Body className="text-secondary small">
@@ -144,7 +146,7 @@ export default function ProfessionalFaqModal({ show, onHide }: ProfessionalFaqMo
                 className="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3 py-1 fw-semibold"
               >
                 <FaLifeRing size={12} />
-                <span>Visit MyCourtBuddy Support Centre</span>
+                <span>{t('professional.visitSupportCentre')}</span>
                 <FaExternalLinkAlt size={10} className="text-muted" />
               </a>
             </Accordion.Body>
@@ -159,11 +161,11 @@ export default function ProfessionalFaqModal({ show, onHide }: ProfessionalFaqMo
           className="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2 rounded-pill px-3 shadow-xs"
         >
           <FaLifeRing size={12} className="text-primary" />
-          <span>Knowledge Base & Articles</span>
+          <span>{t('professional.knowledgeBaseArticles')}</span>
           <FaExternalLinkAlt size={10} className="text-muted" />
         </a>
         <Button variant="primary" onClick={onHide} className="px-4">
-          Understood, Close
+          {t('professional.understoodClose')}
         </Button>
       </Modal.Footer>
     </Modal>

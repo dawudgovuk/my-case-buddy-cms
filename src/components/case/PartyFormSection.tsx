@@ -4,6 +4,7 @@ import type { Party } from '../../types/domain'
 import PartyCard from './PartyCard'
 import PartyInlineEditor from './PartyInlineEditor'
 import { FaUsers, FaChild, FaPlus, FaUserTie, FaUserFriends } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface PartyFormSectionProps {
   parties: Party[]
@@ -22,6 +23,7 @@ export default function PartyFormSection({
   isChildSection = false,
   className = '',
 }: PartyFormSectionProps) {
+  const { t } = useTranslation()
   const [isAdding, setIsAdding] = useState(false)
   const [defaultRole, setDefaultRole] = useState<Party['role']>(isChildSection ? 'Child' : 'Applicant')
 
@@ -55,7 +57,7 @@ export default function PartyFormSection({
           <div>
             <div className="d-flex align-items-center gap-2">
               <h6 className="fw-bold mb-0 text-dark">
-                {isChildSection ? 'Children Subject to Proceedings' : 'Parties to Proceedings'}
+                {isChildSection ? t('caseForm.childrenReviewTitle') : t('caseTabs.partiesTitle')}
               </h6>
               <Badge
                 bg={isChildSection ? 'warning' : 'primary'}
@@ -86,7 +88,7 @@ export default function PartyFormSection({
                 onClick={() => handleOpenAdd('Child')}
               >
                 <FaPlus size={11} />
-                <span>Add Child</span>
+                <span>{t('caseTabs.addChild')}</span>
               </Button>
             ) : (
               <>
@@ -97,7 +99,7 @@ export default function PartyFormSection({
                   onClick={() => handleOpenAdd('Applicant')}
                 >
                   <FaPlus size={11} />
-                  <span>Applicant</span>
+                  <span>{t('roles.applicant')}</span>
                 </Button>
                 <Button
                   variant="outline-secondary"
@@ -106,7 +108,7 @@ export default function PartyFormSection({
                   onClick={() => handleOpenAdd('Respondent')}
                 >
                   <FaPlus size={11} />
-                  <span>Respondent</span>
+                  <span>{t('roles.respondent')}</span>
                 </Button>
                 <Button
                   variant="light"
@@ -115,7 +117,7 @@ export default function PartyFormSection({
                   onClick={() => handleOpenAdd('Guardian')}
                 >
                   <FaUserFriends size={11} />
-                  <span>Other</span>
+                  <span>{t('roles.guardian')}</span>
                 </Button>
               </>
             )}
@@ -159,7 +161,7 @@ export default function PartyFormSection({
               {isChildSection ? <FaChild size={20} /> : <FaUserTie size={20} />}
             </div>
             <h6 className="fw-semibold text-dark mb-1">
-              {isChildSection ? 'No children registered yet' : 'No adult parties registered yet'}
+              {isChildSection ? t('caseDetails.noChildren') : t('caseDetails.noAdultParties')}
             </h6>
             <p className="text-muted small mb-3" style={{ maxWidth: '420px', margin: '0 auto', fontSize: '0.825rem' }}>
               {isChildSection
@@ -173,7 +175,7 @@ export default function PartyFormSection({
               onClick={() => handleOpenAdd(isChildSection ? 'Child' : 'Applicant')}
             >
               <FaPlus className="me-1" size={11} />
-              {isChildSection ? 'Register First Child' : 'Add First Party'}
+              {isChildSection ? t('caseTabs.addChild') : t('caseTabs.addParty')}
             </Button>
           </div>
         ) : null}

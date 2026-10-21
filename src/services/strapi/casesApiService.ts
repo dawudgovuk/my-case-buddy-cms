@@ -93,7 +93,10 @@ export async function updateStrapiCase(
   const existing = await fetchStrapiCaseById(fc.id);
   const targetId = existing?.documentId || existing?.id || fc.documentId || fc.id;
 
-  const payload = toStrapiCasePayload(fc, currentUser);
+  const payload = toStrapiCasePayload(fc, currentUser, true);
+  delete (payload.data as Record<string, unknown>).ownerEmail;
+  delete (payload.data as Record<string, unknown>).userRole;
+
   const response = await strapiPut<StrapiSingleResponse<StrapiCaseRaw>>(
     `/api/cases/${encodeURIComponent(targetId)}`,
     payload

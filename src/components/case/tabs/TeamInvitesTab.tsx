@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Card, Form, Row, Col, Button, Badge, Spinner, Nav } from 'react-bootstrap'
+import { useTranslation } from '../../../hooks/useTranslation'
 import { useCasesStore } from '../../../store/casesStore'
 import { useAuthStore } from '../../../store/authStore'
 import { generateId, createInvite, getAllInvites, deleteInvite } from '../../../services/storage'
@@ -46,6 +47,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
   const [barristerEmail, setBarristerEmail] = useState('')
   const [barristerPhone, setBarristerPhone] = useState('')
   const [isAddingBarrister, setIsAddingBarrister] = useState(false)
+  const { t } = useTranslation()
 
   // Invites filter: 'all' | 'active' | 'used'
   const [inviteFilter, setInviteFilter] = useState<'all' | 'active' | 'used'>('all')
@@ -297,23 +299,23 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
       <Card className="mb-3 p-3 shadow-sm border bg-white">
         <Card.Title className="h5 fw-bold mb-2 d-flex align-items-center gap-2">
           <FaUserPlus className="text-primary" />
-          <span>Generate Invite Link</span>
+          <span>{t.caseTabs.generateInviteLink}</span>
         </Card.Title>
         <p className="text-muted small mb-3">
-          Create a secure, 30-day invitation link allowing a supporter or legal professional to join this case team.
+          {t.caseTabs.inviteDesc}
         </p>
 
         <Form.Group className="mb-3">
-          <Form.Label className="small fw-semibold">Invite Role</Form.Label>
+          <Form.Label className="small fw-semibold">{t.caseTabs.inviteRole}</Form.Label>
           <Form.Select
             size="sm"
             value={inviteRole}
             disabled={isGenerating}
             onChange={(e) => setInviteRole(e.target.value as 'McKenzieFriend' | 'Solicitor' | 'Barrister')}
           >
-            <option value="McKenzieFriend">McKenzie Friend</option>
-            <option value="Solicitor">Solicitor (Instructing Legal Representative)</option>
-            <option value="Barrister">Barrister (Counsel)</option>
+            <option value="McKenzieFriend">{t.roles.mckenzieFriend}</option>
+            <option value="Solicitor">{t.roles.solicitor}</option>
+            <option value="Barrister">{t.roles.barrister}</option>
           </Form.Select>
         </Form.Group>
 
@@ -333,13 +335,13 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
               aria-hidden="true"
             />
           )}
-          <span>{isGenerating ? 'Generating Link...' : 'Generate Invite Link'}</span>
+          <span>{isGenerating ? t.caseTabs.generatingLink : t.caseTabs.generateInviteLink}</span>
         </Button>
 
         {generatedInvite && (
           <div className="p-3 bg-light rounded-3 mt-3 border">
             <div className="d-flex justify-content-between align-items-center mb-2">
-              <span className="small text-muted fw-semibold">Generated Invitation Link:</span>
+              <span className="small text-muted fw-semibold">{t.caseTabs.generateInviteLink}:</span>
               <Button
                 variant={copied ? 'success' : 'outline-primary'}
                 size="sm"
@@ -347,14 +349,14 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
                 onClick={copyToClipboard}
               >
                 {copied ? <FaCheck size={12} /> : <FaCopy size={12} />}
-                <span className="small">{copied ? 'Copied!' : 'Copy Link'}</span>
+                <span className="small">{copied ? t.caseTabs.copied : t.caseTabs.copyLink}</span>
               </Button>
             </div>
             <code className="small text-break bg-white p-2 rounded border d-block font-monospace">
               {generatedInvite}
             </code>
             <div className="small text-muted mt-2">
-              Share this secure link with your {inviteRole === 'McKenzieFriend' ? 'McKenzie Friend' : inviteRole}. They will automatically be admitted to this case once opened.
+              Share this secure link with your {inviteRole === 'McKenzieFriend' ? t.roles.mckenzieFriend : inviteRole === 'Solicitor' ? t.roles.solicitor : t.roles.barrister}. They will automatically be admitted to this case once opened.
             </div>
           </div>
         )}
@@ -364,10 +366,10 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
       <Card className="mb-3 p-3 shadow-sm border bg-white">
         <div className="d-flex align-items-center gap-2 mb-2">
           <FaBriefcase className="text-primary" size={18} />
-          <Card.Title className="h5 fw-bold mb-0">Add Legal Representative (Solicitor)</Card.Title>
+          <Card.Title className="h5 fw-bold mb-0">{t.caseTabs.addSolicitorTitle}</Card.Title>
         </div>
         <p className="text-muted small mb-3">
-          Directly record your instructing solicitor on the case team and link them to court filings.
+          {t.caseTabs.addSolicitorDesc}
         </p>
 
         <Form onSubmit={(e) => { e.preventDefault(); void addSolicitor(); }}>
@@ -375,7 +377,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             <Col md={6}>
               <Form.Group>
                 <Form.Label className="small fw-semibold">
-                  Solicitor Name <span className="text-danger">*</span>
+                  {t.roles.solicitor} <span className="text-danger">*</span>
                 </Form.Label>
                 <Form.Control
                   size="sm"
@@ -390,7 +392,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             <Col md={6}>
               <Form.Group>
                 <Form.Label className="small fw-semibold">
-                  Firm Name <span className="text-danger">*</span>
+                  {t.profile.firmOrChambers} <span className="text-danger">*</span>
                 </Form.Label>
                 <Form.Control
                   size="sm"
@@ -404,7 +406,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             </Col>
             <Col md={6}>
               <Form.Group>
-                <Form.Label className="small fw-semibold">Email Address (optional)</Form.Label>
+                <Form.Label className="small fw-semibold">{t.caseTabs.partyEmail}</Form.Label>
                 <Form.Control
                   size="sm"
                   type="email"
@@ -417,7 +419,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             </Col>
             <Col md={6}>
               <Form.Group>
-                <Form.Label className="small fw-semibold">Phone / Direct Line (optional)</Form.Label>
+                <Form.Label className="small fw-semibold">{t.caseTabs.partyPhone}</Form.Label>
                 <Form.Control
                   size="sm"
                   value={solicitorPhone}
@@ -437,7 +439,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             className="d-inline-flex align-items-center gap-2"
           >
             {isAddingSolicitor && <Spinner as="span" animation="border" size="sm" />}
-            <span>+ Add Solicitor to Case Team</span>
+            <span>+ {t.caseTabs.addSolicitorTitle}</span>
           </Button>
         </Form>
       </Card>
@@ -446,10 +448,10 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
       <Card className="mb-3 p-3 shadow-sm border bg-white">
         <div className="d-flex align-items-center gap-2 mb-2">
           <FaGavel className="text-warning" size={18} />
-          <Card.Title className="h5 fw-bold mb-0">Add Counsel (Barrister)</Card.Title>
+          <Card.Title className="h5 fw-bold mb-0">{t.caseTabs.addBarristerTitle}</Card.Title>
         </div>
         <p className="text-muted small mb-3">
-          Directly record instructed counsel / barrister representing you in hearings.
+          {t.caseTabs.addBarristerDesc}
         </p>
 
         <Form onSubmit={(e) => { e.preventDefault(); void addBarrister(); }}>
@@ -457,7 +459,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             <Col md={6}>
               <Form.Group>
                 <Form.Label className="small fw-semibold">
-                  Barrister Name <span className="text-danger">*</span>
+                  {t.roles.barrister} <span className="text-danger">*</span>
                 </Form.Label>
                 <Form.Control
                   size="sm"
@@ -472,7 +474,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             <Col md={6}>
               <Form.Group>
                 <Form.Label className="small fw-semibold">
-                  Chambers <span className="text-danger">*</span>
+                  {t.profile.firmOrChambers} <span className="text-danger">*</span>
                 </Form.Label>
                 <Form.Control
                   size="sm"
@@ -486,7 +488,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             </Col>
             <Col md={6}>
               <Form.Group>
-                <Form.Label className="small fw-semibold">Email / Clerks Room (optional)</Form.Label>
+                <Form.Label className="small fw-semibold">{t.caseTabs.partyEmail}</Form.Label>
                 <Form.Control
                   size="sm"
                   type="email"
@@ -499,7 +501,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             </Col>
             <Col md={6}>
               <Form.Group>
-                <Form.Label className="small fw-semibold">Phone / Chambers Line (optional)</Form.Label>
+                <Form.Label className="small fw-semibold">{t.caseTabs.partyPhone}</Form.Label>
                 <Form.Control
                   size="sm"
                   value={barristerPhone}
@@ -519,7 +521,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             disabled={!barristerName.trim() || !barristerChambers.trim() || isAddingBarrister}
           >
             {isAddingBarrister && <Spinner as="span" animation="border" size="sm" />}
-            <span>+ Add Barrister to Case Team</span>
+            <span>+ {t.caseTabs.addBarristerTitle}</span>
           </Button>
         </Form>
       </Card>
@@ -529,7 +531,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
         <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
           <div className="d-flex align-items-center gap-2">
             <FaLink className="text-primary" />
-            <Card.Title className="h5 fw-bold mb-0">Active Case Invites</Card.Title>
+            <Card.Title className="h5 fw-bold mb-0">{t.caseTabs.activeCaseInvites}</Card.Title>
             <Badge bg="primary" pill>
               {invites.length}
             </Badge>
@@ -544,17 +546,17 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
             >
               <Nav.Item>
                 <Nav.Link eventKey="all" className="py-1 px-2 small">
-                  All ({invites.length})
+                  {t.caseTabs.allInvitesTab} ({invites.length})
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="active" className="py-1 px-2 small">
-                  Active ({activeInvites.length})
+                  {t.caseTabs.activeInvitesTab} ({activeInvites.length})
                 </Nav.Link>
               </Nav.Item>
               <Nav.Item>
                 <Nav.Link eventKey="used" className="py-1 px-2 small">
-                  Accepted ({usedInvites.length})
+                  {t.caseTabs.usedInvitesTab} ({usedInvites.length})
                 </Nav.Link>
               </Nav.Item>
             </Nav>
@@ -564,7 +566,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
         {filteredInvites.length === 0 ? (
           <div className="text-muted p-3 bg-light rounded text-center small">
             {invites.length === 0
-              ? 'No invitation links generated yet. Generate a secure link above to share with a McKenzie Friend, Solicitor, or Barrister.'
+              ? t.caseTabs.noInvitesFound
               : `No invites match the "${inviteFilter}" filter.`}
           </div>
         ) : (
@@ -588,7 +590,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
         <Card className="mb-3 p-3 shadow-sm border bg-white">
           <Card.Title className="h5 fw-bold mb-3 d-flex align-items-center gap-2">
             <FaUsers className="text-primary" />
-            <span>Case Team Members</span>
+            <span>{t.caseTabs.caseTeamMembers}</span>
             <Badge bg="secondary" pill className="ms-1">
               {fc.members.length}
             </Badge>
@@ -682,7 +684,7 @@ export default function TeamInvitesTab({ caseId }: TeamInvitesTabProps) {
 
                   <div className="d-flex align-items-center gap-2">
                     <Badge bg={roleBadgeVariant} className="px-2 py-1 text-white">
-                      {member.role === 'McKenzieFriend' ? 'McKenzie Friend' : member.role}
+                      {member.role === 'McKenzieFriend' ? t.roles.mckenzieFriend : member.role === 'Solicitor' ? t.roles.solicitor : member.role === 'Barrister' ? t.roles.barrister : member.role}
                     </Badge>
 
                     {member.role !== 'Owner' && !isCurrentUser && (

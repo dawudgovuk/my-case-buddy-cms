@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card, Form, Row, Col, Button, Badge } from 'react-bootstrap'
 import { parseISO, differenceInYears, differenceInMonths } from 'date-fns'
+import { useTranslation } from '../../hooks/useTranslation'
 import type { Party, PartyRepresentation } from '../../types/domain'
 import {
   FaUser,
@@ -47,6 +48,7 @@ export default function PartyCard({
   readOnly = false,
   className = '',
 }: PartyCardProps) {
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<Party>({ ...party })
 
@@ -61,7 +63,7 @@ export default function PartyCard({
         <Form as={Row} className="g-2">
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Role</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.partyRole}</Form.Label>
               <Form.Select
                 size="sm"
                 value={form.role}
@@ -78,7 +80,7 @@ export default function PartyCard({
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">First Name</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.partyFirstName}</Form.Label>
               <Form.Control
                 size="sm"
                 value={form.firstName}
@@ -89,7 +91,7 @@ export default function PartyCard({
 
           <Col md={5}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Last Name</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.partyLastName}</Form.Label>
               <Form.Control
                 size="sm"
                 value={form.lastName}
@@ -100,7 +102,7 @@ export default function PartyCard({
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Date of Birth</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.partyDob}</Form.Label>
               <Form.Control
                 size="sm"
                 type="date"
@@ -115,7 +117,7 @@ export default function PartyCard({
             <>
               <Col md={5}>
                 <Form.Group>
-                  <Form.Label className="small fw-semibold">School or Nursery</Form.Label>
+                  <Form.Label className="small fw-semibold">{t.caseTabs.partySchool}</Form.Label>
                   <Form.Control
                     size="sm"
                     value={form.schoolOrNursery || ''}
@@ -128,7 +130,7 @@ export default function PartyCard({
                 <Form.Check
                   type="checkbox"
                   id={`edit-pr-${party.id}`}
-                  label="Parental Responsibility (PR) Active"
+                  label={t.caseTabs.parentalResponsibilityActive}
                   checked={form.parentalResponsibility ?? true}
                   onChange={(e) => setForm((f) => ({ ...f, parentalResponsibility: e.target.checked }))}
                   className="small fw-semibold text-secondary"
@@ -140,21 +142,21 @@ export default function PartyCard({
             <>
               <Col md={4}>
                 <Form.Group>
-                  <Form.Label className="small fw-semibold">Legal Representation</Form.Label>
+                  <Form.Label className="small fw-semibold">{t.caseTabs.partyRepresentation}</Form.Label>
                   <Form.Select
                     size="sm"
                     value={form.representation || 'Litigant in Person'}
                     onChange={(e) => setForm((f) => ({ ...f, representation: e.target.value as PartyRepresentation }))}
                   >
-                    <option value="Litigant in Person">Litigant in Person (Self-Represented)</option>
-                    <option value="Instructed Solicitor">Instructed Solicitor</option>
-                    <option value="Direct Access Barrister">Direct Access Barrister</option>
+                    <option value="Litigant in Person">{t.roles.lip}</option>
+                    <option value="Instructed Solicitor">{t.roles.solicitor}</option>
+                    <option value="Direct Access Barrister">{t.roles.barrister}</option>
                   </Form.Select>
                 </Form.Group>
               </Col>
               <Col md={4}>
                 <Form.Group>
-                  <Form.Label className="small fw-semibold">Solicitor Firm / Chambers</Form.Label>
+                  <Form.Label className="small fw-semibold">{t.caseTabs.partySolicitor}</Form.Label>
                   <Form.Control
                     size="sm"
                     value={form.solicitorFirm || ''}
@@ -168,7 +170,7 @@ export default function PartyCard({
 
           <Col md={formIsChild ? 12 : 8}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Address</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.partyAddress}</Form.Label>
               <Form.Control
                 size="sm"
                 value={form.address || ''}
@@ -180,7 +182,7 @@ export default function PartyCard({
           {!formIsChild && (
             <Col md={4}>
               <Form.Group>
-                <Form.Label className="small fw-semibold">Special Measures (FPR Part 3A)</Form.Label>
+                <Form.Label className="small fw-semibold">{t.caseTabs.partySpecialMeasures}</Form.Label>
                 <Form.Control
                   size="sm"
                   value={form.specialMeasuresRequired || ''}
@@ -195,7 +197,7 @@ export default function PartyCard({
             <>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="small fw-semibold">Contact Email</Form.Label>
+                  <Form.Label className="small fw-semibold">{t.caseTabs.partyEmail}</Form.Label>
                   <Form.Control
                     size="sm"
                     type="email"
@@ -206,7 +208,7 @@ export default function PartyCard({
               </Col>
               <Col md={6}>
                 <Form.Group>
-                  <Form.Label className="small fw-semibold">Contact Phone</Form.Label>
+                  <Form.Label className="small fw-semibold">{t.caseTabs.partyPhone}</Form.Label>
                   <Form.Control
                     size="sm"
                     value={form.contactPhone || ''}
@@ -227,7 +229,7 @@ export default function PartyCard({
               }}
               disabled={!form.firstName.trim() || !form.lastName.trim()}
             >
-              Save
+              {t.common.save}
             </Button>
             <Button
               variant="outline-secondary"
@@ -237,11 +239,11 @@ export default function PartyCard({
                 setEditing(false)
               }}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             {onDelete && (
               <Button variant="danger" size="sm" onClick={() => onDelete(party.id)}>
-                Delete
+                {t.common.delete}
               </Button>
             )}
           </Col>
@@ -290,7 +292,13 @@ export default function PartyCard({
                 ) : (
                   <FaBriefcase size={9} />
                 )}
-                <span>{representation}</span>
+                <span>
+                  {representation === 'Litigant in Person'
+                    ? t.roles.lip
+                    : representation === 'Direct Access Barrister'
+                    ? t.roles.barrister
+                    : t.roles.solicitor}
+                </span>
               </Badge>
             )}
 
@@ -298,14 +306,14 @@ export default function PartyCard({
             {party.specialMeasuresRequired && (
               <Badge bg="danger-subtle" text="danger" className="border border-danger-subtle d-inline-flex align-items-center gap-1">
                 <FaShieldAlt size={9} />
-                <span>Special Measures</span>
+                <span>{t.caseTabs.partySpecialMeasures}</span>
               </Badge>
             )}
           </div>
 
           {/* Details Row */}
           <div className="small text-secondary mt-1 d-flex flex-wrap align-items-center gap-3">
-            {party.dateOfBirth && <span>DOB: {party.dateOfBirth}</span>}
+            {party.dateOfBirth && <span>{t.caseTabs.partyDob}: {party.dateOfBirth}</span>}
 
             {isChild && party.schoolOrNursery && (
               <span className="d-inline-flex align-items-center gap-1">
@@ -317,7 +325,7 @@ export default function PartyCard({
             {!isChild && party.solicitorFirm && (
               <span className="d-inline-flex align-items-center gap-1">
                 <FaBriefcase size={11} className="text-primary" />
-                <span>Firm: {party.solicitorFirm}</span>
+                <span>{party.solicitorFirm}</span>
               </span>
             )}
 
@@ -348,7 +356,7 @@ export default function PartyCard({
             <div className="small mt-2 p-1.5 px-2 rounded bg-danger-subtle border border-danger-subtle text-danger-emphasis d-inline-flex align-items-center gap-1.5">
               <FaShieldAlt size={11} className="flex-shrink-0" />
               <span>
-                <strong>Part 3A Safeguarding:</strong> {party.specialMeasuresRequired}
+                <strong>{t.caseTabs.partySpecialMeasures}:</strong> {party.specialMeasuresRequired}
               </span>
             </div>
           )}
@@ -365,7 +373,7 @@ export default function PartyCard({
                 style={{ fontSize: '0.78rem' }}
               >
                 <FaEdit size={11} />
-                <span>Edit</span>
+                <span>{t.common.edit}</span>
               </Button>
             )}
             {onDelete && (

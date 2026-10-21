@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Card, Form, Row, Col, Button, Badge, Collapse } from 'react-bootstrap'
 import { useCasesStore } from '../../../store/casesStore'
+import { useTranslation } from '../../../hooks/useTranslation'
 import { generateId } from '../../../services/storage'
 import { toast } from '../../../store/toastStore'
 import type { FamilyCase, Hearing, RemotePlatform, HearingOutcome } from '../../../types/domain'
@@ -13,6 +14,7 @@ export interface HearingsTabProps {
 
 export default function HearingsTab({ caseId }: HearingsTabProps) {
   const store = useCasesStore()
+  const { t } = useTranslation()
   const [type, setType] = useState<Hearing['type']>('Case Management')
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10))
   const [time, setTime] = useState<string>('10:00')
@@ -89,17 +91,17 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
       <Card className="border shadow-sm bg-white p-3 rounded-3">
         <div className="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
           <div>
-            <h6 className="fw-bold mb-1 text-dark">Court Listings & Hearing Log</h6>
+            <h6 className="fw-bold mb-1 text-dark">{t.caseTabs.hearingsTitle}</h6>
             <div className="small text-muted">
-              Record upcoming court listings, Cloud Video Platform (CVP) links, FPR Part 3A special measures, and judicial outcomes.
+              {t.caseTabs.hearingsSubtitle}
             </div>
           </div>
           <div className="d-flex gap-2">
             <Badge bg="primary" className="py-1 px-2 font-monospace">
-              {upcomingCount} Upcoming
+              {upcomingCount} {t.caseTabs.filterUpcomingListings}
             </Badge>
             <Badge bg="secondary" className="py-1 px-2 font-monospace">
-              {pastCount} Concluded
+              {pastCount} {t.common.concluded}
             </Badge>
           </div>
         </div>
@@ -109,17 +111,17 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
       <Card className="p-3 shadow-sm border bg-white rounded-3">
         <Card.Title className="h6 fw-bold mb-3 d-flex align-items-center gap-2 text-dark">
           <FaCalendarPlus className="text-primary" />
-          <span>Schedule New Court Listing</span>
+          <span>{t.caseTabs.scheduleNewListing}</span>
         </Card.Title>
 
         <Form as={Row} className="g-2 align-items-end">
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Hearing Type</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingType}</Form.Label>
               <Form.Select value={type} onChange={(e) => setType(e.target.value as Hearing['type'])} size="sm">
-                {['Case Management', 'Directions', 'Fact-Finding', 'Final', 'Other'].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                {['Case Management', 'Directions', 'Fact-Finding', 'Final', 'Other'].map((tVal) => (
+                  <option key={tVal} value={tVal}>
+                    {tVal}
                   </option>
                 ))}
               </Form.Select>
@@ -128,21 +130,21 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
 
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Date</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingDate}</Form.Label>
               <Form.Control type="date" value={date} onChange={(e) => setDate(e.target.value)} size="sm" />
             </Form.Group>
           </Col>
 
           <Col md={2}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Time</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingTime}</Form.Label>
               <Form.Control type="time" value={time} onChange={(e) => setTime(e.target.value)} size="sm" />
             </Form.Group>
           </Col>
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Court Location / Venue</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingLocation}</Form.Label>
               <Form.Control
                 type="text"
                 size="sm"
@@ -162,7 +164,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Allocated Judge / Magistrates</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingJudge}</Form.Label>
               <Form.Control
                 type="text"
                 size="sm"
@@ -175,7 +177,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Hearing Format / Platform</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingPlatform}</Form.Label>
               <Form.Select
                 size="sm"
                 value={remotePlatform}
@@ -192,7 +194,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
 
           <Col md={4} className="text-end">
             <Button variant="primary" size="sm" onClick={addHearing} disabled={!date} className="w-100 fw-semibold">
-              + Schedule Hearing
+              + {t.caseTabs.scheduleHearing}
             </Button>
           </Col>
 
@@ -205,7 +207,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
               onClick={() => setShowAdvanced(!showAdvanced)}
             >
               {showAdvanced ? <FaChevronUp size={10} /> : <FaChevronDown size={10} />}
-              <span>{showAdvanced ? 'Hide logistics & special measures' : 'Add remote video link & special measures (FPR Part 3A)'}</span>
+              <span>{showAdvanced ? t.caseTabs.hideLogistics : t.caseTabs.showLogistics}</span>
             </Button>
           </Col>
 
@@ -217,7 +219,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
                     <Form.Group>
                       <Form.Label className="small fw-semibold d-flex align-items-center gap-1">
                         <FaVideo size={11} className="text-primary" />
-                        <span>Remote Joining Link (CVP / Teams)</span>
+                        <span>{t.caseTabs.hearingRemoteLink}</span>
                       </Form.Label>
                       <Form.Control
                         size="sm"
@@ -233,7 +235,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
                   <Form.Group>
                     <Form.Label className="small fw-semibold d-flex align-items-center gap-1">
                       <FaShieldAlt size={11} className="text-danger" />
-                      <span>Special Measures / Vulnerability Directions (FPR Part 3A)</span>
+                      <span>{t.caseTabs.hearingSpecialMeasures}</span>
                     </Form.Label>
                     <Form.Control
                       size="sm"
@@ -246,7 +248,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
 
                 <Col xs={12}>
                   <Form.Group>
-                    <Form.Label className="small fw-semibold">Preparation Notes / Skeleton Argument Deadlines</Form.Label>
+                    <Form.Label className="small fw-semibold">{t.caseTabs.prepNotes}</Form.Label>
                     <Form.Control
                       size="sm"
                       value={notes}
@@ -264,12 +266,12 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
       {/* Filter Bar */}
       <div className="d-flex justify-content-between align-items-center gap-2">
         <div className="small text-muted fw-semibold">
-          Listing Records ({filteredHearings.length})
+          {t.caseTabs.hearingsTitle} ({filteredHearings.length})
         </div>
         <div className="d-flex align-items-center gap-2">
           <span className="small text-muted d-flex align-items-center gap-1">
             <FaFilter size={10} />
-            <span>Filter:</span>
+            <span>{t.common.filter}:</span>
           </span>
           <Form.Select
             size="sm"
@@ -277,10 +279,10 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
             onChange={(e) => setFilterType(e.target.value)}
             style={{ width: '170px' }}
           >
-            <option value="ALL">All Hearings</option>
-            <option value="UPCOMING">Upcoming Listings</option>
-            <option value="PAST">Past Hearings</option>
-            <option value="ORDER_MADE">Order Made Hearings</option>
+            <option value="ALL">{t.caseTabs.filterAllHearings}</option>
+            <option value="UPCOMING">{t.caseTabs.filterUpcomingListings}</option>
+            <option value="PAST">{t.caseTabs.filterPastHearings}</option>
+            <option value="ORDER_MADE">{t.caseTabs.filterOrderMade}</option>
           </Form.Select>
         </div>
       </div>
@@ -288,7 +290,7 @@ export default function HearingsTab({ caseId }: HearingsTabProps) {
       {/* Hearings List */}
       {filteredHearings.length === 0 ? (
         <div className="text-muted p-4 bg-light rounded text-center border">
-          No hearing records found matching filter criteria.
+          {t.caseTabs.noHearingsFound}
         </div>
       ) : (
         <div className="d-flex flex-column gap-2">

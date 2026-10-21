@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Card, Form, Row, Col, Button, Badge } from 'react-bootstrap'
 import { useCasesStore } from '../../../store/casesStore'
+import { useTranslation } from '../../../hooks/useTranslation'
 import { generateId } from '../../../services/storage'
 import { toast } from '../../../store/toastStore'
 import type { FamilyCase, OrderRecord, ComplianceDeadline } from '../../../types/domain'
@@ -13,6 +14,7 @@ export interface OrdersTabProps {
 
 export default function OrdersTab({ caseId }: OrdersTabProps) {
   const store = useCasesStore()
+  const { t } = useTranslation()
   const [type, setType] = useState<OrderRecord['type']>('Child Arrangements Order')
   const [dateMade, setDateMade] = useState<string>(new Date().toISOString().slice(0, 10))
   const [summary, setSummary] = useState<string>('')
@@ -98,21 +100,21 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
                 <FaBalanceScale size={16} />
               </span>
               <div>
-                <h6 className="fw-bold mb-0 text-dark">Court Orders & Compliance Directions</h6>
+                <h6 className="fw-bold mb-0 text-dark">{t.caseTabs.courtOrdersAndDirections}</h6>
                 <div className="small text-muted">
-                  Log formal court orders, track penal notice contempt warnings, and audit party compliance deadlines.
+                  {t.caseTabs.ordersSubtitle}
                 </div>
               </div>
             </div>
           </div>
           <div className="d-flex gap-2 flex-wrap">
             <Badge bg="primary" className="py-1 px-2 font-monospace">
-              {allOrders.length} Orders
+              {allOrders.length} {t.common.orders}
             </Badge>
             {penalNoticeOrdersCount > 0 && (
               <Badge bg="danger" className="py-1 px-2 font-monospace d-flex align-items-center gap-1">
                 <FaExclamationTriangle size={10} />
-                <span>{penalNoticeOrdersCount} Penal Notices</span>
+                <span>{penalNoticeOrdersCount} {t.caseTabs.penalNotices}</span>
               </Badge>
             )}
             <Badge bg="info" className="py-1 px-2 font-monospace d-flex align-items-center gap-1 text-white">
@@ -127,13 +129,13 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
       <Card className="p-3 shadow-sm border bg-white rounded-3">
         <Card.Title className="h6 fw-bold mb-3 d-flex align-items-center gap-2 text-dark">
           <FaCalendarCheck className="text-primary" />
-          <span>Record New Court Order</span>
+          <span>{t.caseTabs.recordNewOrder}</span>
         </Card.Title>
 
         <Form as={Row} className="g-2 align-items-end">
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Order Type</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.orderType}</Form.Label>
               <Form.Select
                 value={type}
                 onChange={(e) => handleTypeChange(e.target.value as OrderRecord['type'])}
@@ -148,9 +150,9 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
                   'Specific Issue Order',
                   'Financial Remedies Order',
                   'Other',
-                ].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                ].map((tVal) => (
+                  <option key={tVal} value={tVal}>
+                    {tVal}
                   </option>
                 ))}
               </Form.Select>
@@ -159,14 +161,14 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
 
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Date Made</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.orderDate}</Form.Label>
               <Form.Control type="date" value={dateMade} onChange={(e) => setDateMade(e.target.value)} size="sm" />
             </Form.Group>
           </Col>
 
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Expires On (optional)</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.expiresOn}</Form.Label>
               <Form.Control type="date" value={expiresOn} onChange={(e) => setExpiresOn(e.target.value)} size="sm" />
             </Form.Group>
           </Col>
@@ -179,7 +181,7 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
               disabled={!summary.trim() || !dateMade}
               className="w-100 fw-semibold"
             >
-              + Record Order
+              + {t.caseTabs.recordOrder}
             </Button>
           </Col>
 
@@ -188,7 +190,7 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
             <Form.Check
               type="checkbox"
               id="new-order-penal-notice"
-              label="Attach Penal Notice Warning (Criminal Contempt under s.42A Family Law Act 1996)"
+              label={t.caseTabs.penalNoticeFullWarning}
               checked={hasPenalNotice}
               onChange={(e) => setHasPenalNotice(e.target.checked)}
               className="small fw-semibold text-danger"
@@ -197,7 +199,7 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
 
           <Col xs={12} className="mt-1">
             <Form.Group>
-              <Form.Label className="small fw-semibold">Order Summary & Key Directions</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.orderSummaryDirections}</Form.Label>
               <Form.Control
                 size="sm"
                 as="textarea"
@@ -212,7 +214,7 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
           {/* Optional First Compliance Direction */}
           <Col xs={12} className="mt-2 pt-2 border-top">
             <div className="small fw-bold text-secondary mb-1">
-              Add Initial Compliance Direction (Optional):
+              {t.caseTabs.initialDirectionOptional}
             </div>
             <Row className="g-2">
               <Col md={6}>
@@ -252,7 +254,7 @@ export default function OrdersTab({ caseId }: OrdersTabProps) {
       {/* Orders List */}
       {allOrders.length === 0 ? (
         <div className="text-muted p-4 bg-light rounded text-center border">
-          No court orders recorded for this case yet.
+          {t.caseTabs.noOrdersRecorded}
         </div>
       ) : (
         <div className="d-flex flex-column gap-2">

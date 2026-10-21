@@ -20,7 +20,11 @@ import ComponentShowcase from './pages/ComponentShowcase'
 import Profile from './pages/Profile'
 import AppHeader from './components/common/AppHeader'
 import ToastContainer from './components/common/ToastContainer'
+import GuidanceCatalog from './pages/guidance/GuidanceCatalog'
+import GuidanceRoadmapView from './pages/guidance/GuidanceRoadmapView'
+import GuidanceReferencesPage from './pages/guidance/GuidanceReferencesPage'
 import { useCasesStore } from './store/casesStore'
+import { useCaseConfigStore } from './store/caseConfigStore'
 import { useTranslation } from './hooks/useTranslation'
 import { FaLifeRing, FaExternalLinkAlt, FaCompass } from 'react-icons/fa'
 import { Link } from 'react-router-dom'
@@ -32,11 +36,13 @@ purgeLegacyDemoData()
 function Shell() {
   const { user, initNeonAuth, isLoadingSession } = useAuthStore()
   const { isStrapiMode, syncWithStrapi } = useCasesStore()
+  const { loadCaseConfig } = useCaseConfigStore()
   const { t } = useTranslation()
   const isLip = user?.role === 'LIP'
 
   useEffect(() => {
     void initNeonAuth()
+    void loadCaseConfig()
     if (isStrapiMode) {
       void syncWithStrapi()
     }
@@ -105,6 +111,9 @@ function Shell() {
           <Route path="/cases/:caseId" element={<RequireVerified><CaseDetails /></RequireVerified>} />
           <Route path="/cases/:caseId/edit" element={<RequireVerified><CaseForm /></RequireVerified>} />
           <Route path="/profile" element={<RequireVerified><Profile /></RequireVerified>} />
+          <Route path="/guidance" element={<GuidanceCatalog />} />
+          <Route path="/guidance/references" element={<GuidanceReferencesPage />} />
+          <Route path="/guidance/:mapSlug" element={<GuidanceRoadmapView />} />
           <Route path="/components" element={<ComponentShowcase />} />
           <Route
             path="*"

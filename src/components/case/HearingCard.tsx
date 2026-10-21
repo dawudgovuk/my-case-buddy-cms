@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { displayDate } from '../../utils/displayDate'
 import { Card, Form, Row, Col, Button, Badge, Dropdown } from 'react-bootstrap'
+import { useTranslation } from '../../hooks/useTranslation'
 import type { Hearing, HearingOutcome, RemotePlatform } from '../../types/domain'
 import {
   FaCalendarAlt,
@@ -32,6 +33,7 @@ export default function HearingCard({
   courtLocations = [],
   className = '',
 }: HearingCardProps) {
+  const { t } = useTranslation()
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState<Hearing>({ ...hearing })
 
@@ -69,15 +71,15 @@ export default function HearingCard({
         <Form as={Row} className="g-2">
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Hearing Type</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingType}</Form.Label>
               <Form.Select
                 size="sm"
                 value={form.type}
                 onChange={(e) => setForm((f) => ({ ...f, type: e.target.value as Hearing['type'] }))}
               >
-                {['Case Management', 'Directions', 'Fact-Finding', 'Final', 'Other'].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                {['Case Management', 'Directions', 'Fact-Finding', 'Final', 'Other'].map((tVal) => (
+                  <option key={tVal} value={tVal}>
+                    {tVal}
                   </option>
                 ))}
               </Form.Select>
@@ -86,7 +88,7 @@ export default function HearingCard({
 
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Date</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingDate}</Form.Label>
               <Form.Control
                 size="sm"
                 type="date"
@@ -98,7 +100,7 @@ export default function HearingCard({
 
           <Col md={2}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Time</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingTime}</Form.Label>
               <Form.Control
                 size="sm"
                 type="time"
@@ -110,7 +112,7 @@ export default function HearingCard({
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Court Location / Venue</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingLocation}</Form.Label>
               <Form.Control
                 size="sm"
                 value={form.location || ''}
@@ -130,7 +132,7 @@ export default function HearingCard({
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Allocated Judge</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingJudge}</Form.Label>
               <Form.Control
                 size="sm"
                 value={form.judge || ''}
@@ -142,7 +144,7 @@ export default function HearingCard({
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Remote Platform</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingPlatform}</Form.Label>
               <Form.Select
                 size="sm"
                 value={form.remotePlatform || 'In-Person'}
@@ -159,7 +161,7 @@ export default function HearingCard({
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Remote Video Link</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingRemoteLink}</Form.Label>
               <Form.Control
                 size="sm"
                 value={form.remoteLink || ''}
@@ -171,7 +173,7 @@ export default function HearingCard({
 
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Hearing Outcome</Form.Label>
+              <Form.Label className="small fw-semibold">{t.common.status}</Form.Label>
               <Form.Select
                 size="sm"
                 value={form.outcome || 'Pending'}
@@ -188,7 +190,7 @@ export default function HearingCard({
 
           <Col md={8}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Special Measures (FPR Part 3A)</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.hearingSpecialMeasures}</Form.Label>
               <Form.Control
                 size="sm"
                 value={form.specialMeasures || ''}
@@ -200,7 +202,7 @@ export default function HearingCard({
 
           <Col xs={12}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Outcome Summary / Decisions Recorded</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.orderSummaryDirections}</Form.Label>
               <Form.Control
                 size="sm"
                 as="textarea"
@@ -214,7 +216,7 @@ export default function HearingCard({
 
           <Col xs={12}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Preparation Notes</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.prepNotes}</Form.Label>
               <Form.Control
                 size="sm"
                 value={form.notes || ''}
@@ -234,7 +236,7 @@ export default function HearingCard({
               }}
               disabled={!form.date}
             >
-              Save
+              {t.common.save}
             </Button>
             <Button
               variant="outline-secondary"
@@ -244,11 +246,11 @@ export default function HearingCard({
                 setEditing(false)
               }}
             >
-              Cancel
+              {t.common.cancel}
             </Button>
             {onDelete && (
               <Button variant="danger" size="sm" onClick={() => onDelete(hearing.id)}>
-                Delete
+                {t.common.delete}
               </Button>
             )}
           </Col>
@@ -412,7 +414,7 @@ export default function HearingCard({
                 style={{ fontSize: '0.78rem' }}
               >
                 <FaEdit size={11} />
-                <span>Edit</span>
+                <span>{t.common.edit}</span>
               </Button>
             )}
 

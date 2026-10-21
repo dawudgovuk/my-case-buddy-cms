@@ -10,6 +10,7 @@ import {
   FaFilter,
 } from 'react-icons/fa'
 import { useCasesStore } from '../../../store/casesStore'
+import { useTranslation } from '../../../hooks/useTranslation'
 import { generateId } from '../../../services/storage'
 import { toast } from '../../../store/toastStore'
 import type { FamilyCase, DocumentRecord, DocumentFilingStatus } from '../../../types/domain'
@@ -53,6 +54,7 @@ function guessDocumentType(name: string): DocumentRecord['type'] {
 
 export default function DocumentsTab({ caseId }: DocumentsTabProps) {
   const store = useCasesStore()
+  const { t } = useTranslation()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Form state
@@ -190,9 +192,9 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
                 <FaBalanceScale size={16} />
               </span>
               <div>
-                <h6 className="fw-bold mb-0 text-dark">FPR Practice Direction 27A Court Bundle</h6>
+                <h6 className="fw-bold mb-0 text-dark">{t.caseTabs.bundleCompliance}</h6>
                 <div className="small text-muted">
-                  Family Court bundles are limited to 350 pages and require sectioned pagination (Sections A–E).
+                  {t.caseTabs.documentsSubtitle}
                 </div>
               </div>
             </div>
@@ -201,7 +203,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
           <div className="d-flex align-items-center gap-2 w-100 w-md-auto justify-content-md-end flex-wrap">
             <div className="text-end me-2 d-none d-sm-block">
               <div className="small fw-semibold text-secondary">
-                {bundleSummary.totalPages} / {PD27A_MAX_PAGES} pages ({bundlePercent}%)
+                {bundleSummary.totalPages} / {PD27A_MAX_PAGES} {t.caseTabs.docPages.toLowerCase()} ({bundlePercent}%)
               </div>
               <div style={{ width: '130px' }}>
                 <ProgressBar
@@ -219,7 +221,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
               className="d-flex align-items-center gap-1 shadow-xs"
             >
               <FaBalanceScale size={12} />
-              <span>PD 27A Bundle Auditor</span>
+              <span>{t.caseTabs.bundleAuditorBtn}</span>
               <Badge
                 bg={bundleSummary.isCompliant ? 'success' : 'danger'}
                 pill
@@ -237,7 +239,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
       <Card className="p-3 shadow-sm border bg-white rounded-3">
         <Card.Title className="h6 fw-bold mb-3 d-flex align-items-center gap-2 text-dark">
           <FaFileUpload className="text-primary" />
-          <span>Upload Document & Register Evidence</span>
+          <span>{t.caseTabs.uploadAndRegister}</span>
         </Card.Title>
 
         {/* Drag and Drop Zone */}
@@ -280,7 +282,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
           ) : (
             <div className="text-muted small py-1">
               <FaFileUpload className="mb-1 d-block mx-auto text-secondary" size={20} />
-              <span className="fw-medium text-primary">Click to select file</span> or drag & drop here (PDF, DOCX, scans)
+              <span className="fw-medium text-primary">{t.caseTabs.clickToSelectFile}</span> {t.caseTabs.dragAndDropHint}
             </div>
           )}
         </div>
@@ -288,7 +290,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
         <Form as={Row} className="g-2 align-items-end">
           <Col md={4}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Title</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.docTitle}</Form.Label>
               <Form.Control
                 size="sm"
                 value={title}
@@ -300,15 +302,15 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
 
           <Col md={3}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Type</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.docCategory}</Form.Label>
               <Form.Select
                 value={type}
                 onChange={(e) => setType(e.target.value as DocumentRecord['type'])}
                 size="sm"
               >
-                {['Application', 'Statement', 'Medical', 'Expert Report', 'Bundle', 'Order', 'Other'].map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                {['Application', 'Statement', 'Medical', 'Expert Report', 'Bundle', 'Order', 'Other'].map((tVal) => (
+                  <option key={tVal} value={tVal}>
+                    {tVal}
                   </option>
                 ))}
               </Form.Select>
@@ -317,22 +319,22 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
 
           <Col md={2}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Filing Status</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.filingStatus}</Form.Label>
               <Form.Select
                 value={status}
                 onChange={(e) => setStatus(e.target.value as DocumentFilingStatus)}
                 size="sm"
               >
-                <option value="Draft">Draft</option>
-                <option value="Filed">Filed</option>
-                <option value="Served">Served</option>
+                <option value="Draft">{t.caseTabs.statusDraft}</option>
+                <option value="Filed">{t.caseTabs.statusFiled}</option>
+                <option value="Served">{t.caseTabs.statusServed}</option>
               </Form.Select>
             </Form.Group>
           </Col>
 
           <Col md={1}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Exhibit</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.exhibit}</Form.Label>
               <Form.Control
                 size="sm"
                 value={exhibitRef}
@@ -344,7 +346,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
 
           <Col md={2}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Pages</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.docPages}</Form.Label>
               <Form.Control
                 size="sm"
                 type="number"
@@ -357,7 +359,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
 
           <Col md={8}>
             <Form.Group>
-              <Form.Label className="small fw-semibold">Document Notes / Exhibit Description</Form.Label>
+              <Form.Label className="small fw-semibold">{t.caseTabs.docNotes}</Form.Label>
               <Form.Control
                 size="sm"
                 value={notes}
@@ -375,7 +377,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
               disabled={!title.trim()}
               className="w-100 fw-semibold"
             >
-              + Register Document
+              {t.caseTabs.registerDocBtn}
             </Button>
           </Col>
         </Form>
@@ -401,7 +403,7 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
         <div className="d-flex align-items-center gap-2 w-100 w-sm-auto">
           <span className="small text-muted d-flex align-items-center gap-1">
             <FaFilter size={10} />
-            <span>Type:</span>
+            <span>{t.common.filter}:</span>
           </span>
           <Form.Select
             size="sm"
@@ -409,10 +411,10 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
             onChange={(e) => setFilterType(e.target.value)}
             style={{ width: '150px' }}
           >
-            <option value="ALL">All Types</option>
-            {['Application', 'Statement', 'Medical', 'Expert Report', 'Bundle', 'Order', 'Other'].map((t) => (
-              <option key={t} value={t}>
-                {t}
+            <option value="ALL">{t.guidance.allTypes}</option>
+            {['Application', 'Statement', 'Medical', 'Expert Report', 'Bundle', 'Order', 'Other'].map((tVal) => (
+              <option key={tVal} value={tVal}>
+                {tVal}
               </option>
             ))}
           </Form.Select>
@@ -423,8 +425,8 @@ export default function DocumentsTab({ caseId }: DocumentsTabProps) {
       {filteredDocs.length === 0 ? (
         <Card className="border-dashed bg-light p-4 text-center text-muted">
           <FaFileAlt size={28} className="mb-2 text-secondary opacity-50 mx-auto" />
-          <div className="fw-semibold">No case documents found</div>
-          <div className="small">Upload applications, statements, exhibits, or expert reports above.</div>
+          <div className="fw-semibold">{t.caseTabs.noDocsFound}</div>
+          <div className="small">{t.caseTabs.noDocsDesc}</div>
         </Card>
       ) : (
         <div className="d-flex flex-column gap-2">

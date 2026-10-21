@@ -8,9 +8,11 @@ import { getDeadlinesForCase } from '../../../services/storage'
 import { fetchStrapiDeadlines, updateStrapiDeadlineStatus } from '../../../services/strapi'
 import CaseTimeline from '../CaseTimeline'
 import CaseMetadataOverview from '../CaseMetadataOverview'
+import CaseRoadmapTracker from '../CaseRoadmapTracker'
 import AddDeadlineModal from '../AddDeadlineModal'
 import BundleComplianceModal from './BundleComplianceModal'
 import { getStagesForCase, getCurrentStageIndex } from '../../../utils/caseStages'
+import { useCaseConfigStore } from '../../../store/caseConfigStore'
 import { partitionParties } from '../../../utils/partyUtils'
 import { evaluateBundleCompliance, PD27A_MAX_PAGES } from '../../../utils/bundleCompliance'
 import { displayDate } from '../../../utils/displayDate'
@@ -40,16 +42,22 @@ export interface CaseOverviewTabProps {
 
 export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseOverviewTabProps) {
   const store = useCasesStore()
+  const cases = useCasesStore((state) => state.cases)
+  const caseStagesMap = useCaseConfigStore((state) => state.caseStagesMap)
   const { t } = useTranslation()
   const [showAddDeadlineModal, setShowAddDeadlineModal] = useState(false)
   const [showBundleModal, setShowBundleModal] = useState(false)
   const [caseDeadlines, setCaseDeadlines] = useState<DocumentDeadline[]>([])
 
+  const targetId = caseData?.id || caseData?.documentId || caseId
   const resolvedCase = useMemo(() => {
-    if (caseData) return caseData
-    if (caseId) return store.getById(caseId)
-    return undefined
-  }, [caseData, caseId, store])
+    void cases
+    if (targetId) {
+      const fromStore = store.getById(targetId)
+      if (fromStore) return fromStore
+    }
+    return caseData
+  }, [caseData, targetId, store, cases])
 
   useEffect(() => {
     if (!resolvedCase) return
@@ -71,8 +79,8 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
     return <div className="text-muted p-3">{t('caseDetails.noOverviewData')}</div>
   }
 
-  const stages = getStagesForCase(resolvedCase)
-  const currentStageIndex = getCurrentStageIndex(resolvedCase)
+  const stages = getStagesForCase(resolvedCase, caseStagesMap)
+  const currentStageIndex = getCurrentStageIndex(resolvedCase, stages)
   const { adultsAndRepresented, children } = partitionParties(resolvedCase.parties || [])
 
   // Bundle metrics
@@ -105,13 +113,19 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
   const penalNoticesCount = (resolvedCase.orders || []).filter((o) => o.hasPenalNotice).length
 
   // Handle stage change
-  const handleStageChange = (newStageName: string) => {
+  const handleStageChange = async (newStageIdOrName: string) => {
+    const targetStage = stages.find(
+      (s) => s.id.toLowerCase() === newStageIdOrName.toLowerCase() || s.name.toLowerCase() === newStageIdOrName.toLowerCase()
+    )
+    const stageId = targetStage?.id || newStageIdOrName
+    const stageName = targetStage?.name || newStageIdOrName
     const updated: FamilyCase = {
       ...resolvedCase,
-      currentStage: newStageName,
+      currentStage: stageId,
+      lastUpdatedAt: new Date().toISOString(),
     }
-    store.addOrUpdate(updated)
-    toast.success(`Case milestone updated to "${newStageName}".`, 'Stage Updated')
+    await store.addOrUpdate(updated)
+    toast.success(`Case milestone updated to "${stageName}".`, 'Stage Updated')
   }
 
   const handleDeadlineToggle = async (dl: DocumentDeadline) => {
@@ -135,6 +149,8 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
     }
   }
 
+  const activeStage = stages[currentStageIndex]
+
   return (
     <div className="d-flex flex-column gap-3">
       {/* 1. Procedural Timeline & Milestone Stage Selector */}
@@ -145,26 +161,26 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
               <FaTasks size={14} />
             </span>
             <div>
-              <h6 className="fw-bold mb-0 text-dark">Procedural Timeline & Court Milestones</h6>
+              <h6 className="fw-bold mb-0 text-dark">{t('caseTabs.timelineTitle')}</h6>
               <div className="small text-muted">
-                Track formal proceedings stages through the Family Court case lifecycle.
+                {t('caseTabs.timelineSubtitle')}
               </div>
             </div>
           </div>
 
           {/* Quick Stage Progression Dropdown */}
           <div className="d-flex align-items-center gap-2 w-100 w-md-auto">
-            <span className="small text-secondary fw-semibold flex-shrink-0">Current Milestone:</span>
+            <span className="small text-secondary fw-semibold flex-shrink-0">{t('caseTabs.currentMilestone')}:</span>
             <Form.Select
               size="sm"
-              value={resolvedCase.currentStage || stages[0]?.name || ''}
+              value={activeStage?.id || resolvedCase.currentStage || ''}
               onChange={(e) => handleStageChange(e.target.value)}
               className="fw-medium"
               style={{ minWidth: '220px' }}
             >
               {stages.map((st, idx) => (
-                <option key={st.id} value={st.name}>
-                  Stage {idx + 1}: {st.name}
+                <option key={st.id} value={st.id}>
+                  {t('dashboard.stageOf')} {idx + 1}: {st.name}
                 </option>
               ))}
             </Form.Select>
@@ -178,17 +194,21 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
           showProgressBar={true}
           collapsible={false}
           defaultExpanded={true}
+          onStageChange={(newStage) => handleStageChange(newStage.id)}
         />
       </Card>
 
-      {/* 2. Key Case Pulse Command Cards */}
+      {/* 2. Interactive Legal Roadmap & Procedural Checkpoints */}
+      <CaseRoadmapTracker caseData={resolvedCase} />
+
+      {/* 3. Key Case Pulse Command Cards */}
       <Row className="g-3">
         {/* Pulse Card 1: Next Listed Hearing */}
         <Col md={6} lg={3}>
           <Card className="h-100 border shadow-sm p-3 bg-white rounded-3">
             <div className="d-flex justify-content-between align-items-start mb-2">
               <span className="small fw-semibold text-secondary text-uppercase" style={{ fontSize: '0.72rem' }}>
-                Next Court Listing
+                {t('caseTabs.nextListing')}
               </span>
               <span className="p-1.5 rounded bg-primary-subtle text-primary">
                 <FaCalendarAlt size={12} />
@@ -203,10 +223,10 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                     className="font-monospace"
                   >
                     {nextHearingDays === 0
-                      ? 'Today!'
+                      ? t('dashboard.todayCountdown')
                       : nextHearingDays === 1
-                      ? 'Tomorrow!'
-                      : `In ${nextHearingDays} days`}
+                      ? t('dashboard.tomorrowCountdown')
+                      : t('dashboard.inDaysCountdown').replace('{days}', String(nextHearingDays))}
                   </Badge>
                   <span className="fw-bold text-dark small">{nextHearing.type}</span>
                 </div>
@@ -228,7 +248,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                     style={{ fontSize: '0.75rem' }}
                   >
                     <FaVideo size={10} />
-                    <span>Join Video Room</span>
+                    <span>{t('caseTabs.joinVideoRoom')}</span>
                     <FaExternalLinkAlt size={8} />
                   </a>
                 ) : (
@@ -238,13 +258,13 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                     className="p-0 text-start small text-primary text-decoration-none mt-auto"
                     onClick={() => onSelectTab?.(CASE_DETAILS_TABS.HEARINGS)}
                   >
-                    View Hearing Details →
+                    {t('common.view')} →
                   </Button>
                 )}
               </div>
             ) : (
               <div className="d-flex flex-column justify-content-between flex-grow-1">
-                <div className="text-muted small my-2">No upcoming court hearings currently scheduled.</div>
+                <div className="text-muted small my-2">{t('professional.noneScheduled')}</div>
                 <Button
                   variant="outline-primary"
                   size="sm"
@@ -252,7 +272,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                   style={{ fontSize: '0.75rem' }}
                   onClick={() => onSelectTab?.(CASE_DETAILS_TABS.HEARINGS)}
                 >
-                  + Schedule Listing
+                  + {t('caseTabs.scheduleListing')}
                 </Button>
               </div>
             )}
@@ -264,7 +284,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
           <Card className="h-100 border shadow-sm p-3 bg-white rounded-3">
             <div className="d-flex justify-content-between align-items-start mb-2">
               <span className="small fw-semibold text-secondary text-uppercase" style={{ fontSize: '0.72rem' }}>
-                PD 27A Bundle Status
+                {t('caseTabs.bundleCompliance')}
               </span>
               <span className="p-1.5 rounded bg-success-subtle text-success">
                 <FaFileAlt size={12} />
@@ -293,7 +313,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
               />
 
               <div className="small text-muted mb-2">
-                {bundleSummary.documentCount} {bundleSummary.documentCount === 1 ? 'document' : 'documents'} indexed in 5 statutory sections.
+                {bundleSummary.documentCount} {bundleSummary.documentCount === 1 ? t('caseDetails.documentsTab').toLowerCase().slice(0, -1) : t('caseDetails.documentsTab').toLowerCase()} indexed in 5 statutory sections.
               </div>
 
               <Button
@@ -304,7 +324,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                 onClick={() => setShowBundleModal(true)}
               >
                 <FaBalanceScale size={10} />
-                <span>Audit & Export Index</span>
+                <span>{t('caseTabs.auditAndExportIndex')}</span>
               </Button>
             </div>
           </Card>
@@ -315,7 +335,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
           <Card className="h-100 border shadow-sm p-3 bg-white rounded-3">
             <div className="d-flex justify-content-between align-items-start mb-2">
               <span className="small fw-semibold text-secondary text-uppercase" style={{ fontSize: '0.72rem' }}>
-                Court Orders & Directions
+                {t('caseTabs.courtOrdersAndDirections')}
               </span>
               <span className="p-1.5 rounded bg-warning-subtle text-warning">
                 <FaGavel size={12} />
@@ -327,14 +347,14 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                 <span className="h5 fw-bold text-dark mb-0 font-monospace">
                   {resolvedCase.orders?.length || 0}
                 </span>
-                <span className="small text-muted">Court Orders</span>
+                <span className="small text-muted">{t('dashboard.orders')}</span>
               </div>
 
               <div className="d-flex flex-column gap-1 mb-2 small text-secondary">
                 {penalNoticesCount > 0 ? (
                   <span className="text-danger fw-semibold d-inline-flex align-items-center gap-1">
                     <FaExclamationTriangle size={10} />
-                    <span>{penalNoticesCount} Penal Notice Warning</span>
+                    <span>{penalNoticesCount} {t('caseTabs.penalNoticeWarning')}</span>
                   </span>
                 ) : (
                   <span>No penal warnings active</span>
@@ -351,7 +371,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                 style={{ fontSize: '0.75rem' }}
                 onClick={() => onSelectTab?.(CASE_DETAILS_TABS.ORDERS)}
               >
-                View Directions & Orders →
+                {t('common.view')} →
               </Button>
             </div>
           </Card>
@@ -362,7 +382,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
           <Card className="h-100 border shadow-sm p-3 bg-white rounded-3">
             <div className="d-flex justify-content-between align-items-start mb-2">
               <span className="small fw-semibold text-secondary text-uppercase" style={{ fontSize: '0.72rem' }}>
-                Parties & Safeguarding
+                {t('caseTabs.partiesTitle')}
               </span>
               <span className="p-1.5 rounded bg-info-subtle text-info">
                 <FaUsers size={12} />
@@ -374,11 +394,11 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                 <span className="h5 fw-bold text-dark mb-0 font-monospace">
                   {children.length}
                 </span>
-                <span className="small text-muted">{children.length === 1 ? 'Protected Child' : 'Protected Children'}</span>
+                <span className="small text-muted">{children.length === 1 ? t('dashboard.childSingular') : t('dashboard.childPlural')}</span>
               </div>
 
               <div className="small text-secondary mb-2">
-                <span>{adultsAndRepresented.length} adult parties registered.</span>
+                <span>{adultsAndRepresented.length} {t('caseTabs.adultParties') || t('dashboard.partyPlural')}</span>
                 <div className="text-muted mt-0.5">
                   CAFCASS safeguarding & Section 7 readiness.
                 </div>
@@ -391,7 +411,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                 style={{ fontSize: '0.75rem' }}
                 onClick={() => onSelectTab?.(CASE_DETAILS_TABS.PARTIES)}
               >
-                Manage Parties & Children →
+                {t('caseTabs.managePartiesAndChildren')} →
               </Button>
             </div>
           </Card>
@@ -401,7 +421,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
       {/* 3. Quick Action Launchpad */}
       <Card className="border shadow-sm bg-light p-3 rounded-3">
         <div className="small fw-bold text-dark mb-2 text-uppercase" style={{ fontSize: '0.74rem', letterSpacing: '0.5px' }}>
-          Quick Action Launchpad:
+          {t('caseTabs.quickActionLaunchpad')}
         </div>
         <Row className="g-2">
           <Col xs={6} sm={3}>
@@ -412,7 +432,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
             >
               <div className="d-flex align-items-center gap-2">
                 <FaFileAlt className="text-primary" size={13} />
-                <span className="small fw-semibold">Upload Evidence</span>
+                <span className="small fw-semibold">{t('caseTabs.uploadEvidence')}</span>
               </div>
               <FaArrowRight size={10} className="text-muted" />
             </Button>
@@ -426,7 +446,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
             >
               <div className="d-flex align-items-center gap-2">
                 <FaCalendarAlt className="text-primary" size={13} />
-                <span className="small fw-semibold">Schedule Listing</span>
+                <span className="small fw-semibold">{t('caseTabs.scheduleListing')}</span>
               </div>
               <FaArrowRight size={10} className="text-muted" />
             </Button>
@@ -440,7 +460,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
             >
               <div className="d-flex align-items-center gap-2">
                 <FaGavel className="text-primary" size={13} />
-                <span className="small fw-semibold">Record Court Order</span>
+                <span className="small fw-semibold">{t('caseTabs.recordCourtOrder')}</span>
               </div>
               <FaArrowRight size={10} className="text-muted" />
             </Button>
@@ -454,7 +474,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
             >
               <div className="d-flex align-items-center gap-2">
                 <FaBalanceScale className="text-success" size={13} />
-                <span className="small fw-semibold">Open Legal Hub</span>
+                <span className="small fw-semibold">{t('caseTabs.openLegalHub')}</span>
               </div>
               <FaArrowRight size={10} className="text-muted" />
             </Button>
@@ -468,7 +488,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
           <Card className="p-3 shadow-sm border bg-white rounded-3 h-100">
             <h6 className="fw-bold mb-3 d-flex align-items-center gap-2 text-dark">
               <FaFolderOpen className="text-primary" />
-              <span>Case Jurisdictional Metadata</span>
+              <span>{t('caseTabs.caseJurisdictionalMetadata')}</span>
             </h6>
             <CaseMetadataOverview caseData={resolvedCase} />
           </Card>
@@ -479,7 +499,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
             <div className="d-flex justify-content-between align-items-center mb-3">
               <h6 className="fw-bold mb-0 d-flex align-items-center gap-2 text-dark">
                 <FaClock className="text-primary" />
-                <span>Document Filing Deadlines ({caseDeadlines.length})</span>
+                <span>{t('caseTabs.filingDeadlines')} ({caseDeadlines.length})</span>
               </h6>
               <Button
                 variant="outline-primary"
@@ -489,13 +509,13 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                 onClick={() => setShowAddDeadlineModal(true)}
               >
                 <FaPlus size={9} />
-                <span>Add Deadline</span>
+                <span>{t('caseTabs.addDeadline')}</span>
               </Button>
             </div>
 
             {caseDeadlines.length === 0 ? (
               <div className="text-muted small p-3 bg-light rounded text-center border">
-                No active filing deadlines recorded. Click &quot;Add Deadline&quot; to track court directions.
+                {t('caseTabs.noDeadlinesRecorded')}
               </div>
             ) : (
               <div className="d-flex flex-column gap-2 overflow-auto" style={{ maxHeight: '280px' }}>
@@ -540,7 +560,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
                         className="font-monospace"
                         style={{ fontSize: '0.68rem' }}
                       >
-                        {dl.status === 'submitted' ? 'Submitted' : `Due: ${dl.deadlineDate}`}
+                        {dl.status === 'submitted' ? t('caseTabs.submitted') : `${t('caseTabs.duePrefix')} ${dl.deadlineDate}`}
                       </Badge>
                     </div>
                   </div>

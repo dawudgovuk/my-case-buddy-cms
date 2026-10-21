@@ -1,6 +1,7 @@
 import { Form } from 'react-bootstrap'
 import { FaSearch, FaTimes, FaThLarge, FaTable } from 'react-icons/fa'
 import type { CaseStatus } from '../../types/domain'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export type DashboardStatusFilter = CaseStatus | 'All'
 export type DashboardViewMode = 'grid' | 'table'
@@ -17,17 +18,6 @@ export interface DashboardFilterBarProps {
   className?: string
 }
 
-const STATUS_ITEMS: Array<{
-  key: DashboardStatusFilter
-  label: string
-  dotColor?: string
-}> = [
-  { key: 'All', label: 'All' },
-  { key: 'Open', label: 'Open', dotColor: '#10b981' },
-  { key: 'Stayed', label: 'Stayed', dotColor: '#f59e0b' },
-  { key: 'Concluded', label: 'Concluded', dotColor: '#64748b' },
-]
-
 export default function DashboardFilterBar({
   searchQuery,
   onSearchChange,
@@ -39,7 +29,19 @@ export default function DashboardFilterBar({
   onClearFilters,
   className = '',
 }: DashboardFilterBarProps) {
+  const { t } = useTranslation()
   const hasActiveFilters = Boolean(searchQuery.trim() || statusFilter !== 'All')
+
+  const statusItems: Array<{
+    key: DashboardStatusFilter
+    label: string
+    dotColor?: string
+  }> = [
+    { key: 'All', label: t('common.all') },
+    { key: 'Open', label: t('common.open'), dotColor: '#10b981' },
+    { key: 'Stayed', label: t('common.stayed'), dotColor: '#f59e0b' },
+    { key: 'Concluded', label: t('common.concluded'), dotColor: '#64748b' },
+  ]
 
   return (
     <div
@@ -57,7 +59,7 @@ export default function DashboardFilterBar({
             />
             <Form.Control
               type="search"
-              placeholder="Search cases, courts, or IDs..."
+              placeholder={t('dashboard.searchPlaceholder')}
               size="sm"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -80,7 +82,7 @@ export default function DashboardFilterBar({
 
           {/* Premium Status Filter Chips with Counts */}
           <div className="d-flex align-items-center gap-1.5 filter-chip-row">
-            {STATUS_ITEMS.map((item) => {
+            {statusItems.map((item) => {
               const isSelected = statusFilter === item.key
               const count = statusCounts[item.key] ?? 0
 
@@ -117,7 +119,7 @@ export default function DashboardFilterBar({
                 onClick={onClearFilters}
                 style={{ fontSize: '0.78rem' }}
               >
-                Reset
+                {t('casesList.resetFilters')}
               </button>
             )}
           </div>
@@ -132,7 +134,7 @@ export default function DashboardFilterBar({
             title="Card View (with Timeline)"
           >
             <FaThLarge size={11} className={viewMode === 'grid' ? 'text-primary' : 'text-muted'} />
-            <span>Cards</span>
+            <span>{t('dashboard.viewCards')}</span>
           </button>
 
           <button
@@ -142,7 +144,7 @@ export default function DashboardFilterBar({
             title="Table View"
           >
             <FaTable size={11} className={viewMode === 'table' ? 'text-primary' : 'text-muted'} />
-            <span>Table</span>
+            <span>{t('dashboard.viewTable')}</span>
           </button>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { Row, Col, Button } from 'react-bootstrap'
 import type { FamilyCase } from '../../types/domain'
 import { groupPartiesByRole } from '../../utils/caseFormUtils'
+import { useTranslation } from '../../hooks/useTranslation'
 import CaseReadinessChecklist from './CaseReadinessChecklist'
 import CaseReviewBanner from './CaseReviewBanner'
 import CaseReviewMissingTitleAlert from './CaseReviewMissingTitleAlert'
@@ -30,6 +31,7 @@ export default function CaseReviewSummary({
   onCancel,
   className = '',
 }: CaseReviewSummaryProps) {
+  const { t } = useTranslation()
   const partiesByRole = groupPartiesByRole(caseData.parties)
   const hasTitle = Boolean(caseData.title.trim())
   const allReady = hasTitle
@@ -80,11 +82,11 @@ export default function CaseReviewSummary({
       {/* Bottom Actions */}
       <div className="d-flex justify-content-between align-items-center pt-3 border-top">
         <Button variant="outline-secondary" className="px-4" onClick={() => onEditStep(1)}>
-          ← Back to Parties
+          ← {t('caseForm.stepParties')}
         </Button>
         <div className="d-flex gap-2">
           <Button variant="outline-danger" className="px-3" onClick={onCancel}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <CaseReviewSubmitButton
             isEditMode={isEditMode}
@@ -93,9 +95,9 @@ export default function CaseReviewSummary({
             onSubmit={onSubmit}
             className="px-4 fw-semibold d-flex align-items-center gap-2 shadow-sm"
             iconSize={14}
-            submittingLabel={isEditMode ? 'Saving...' : 'Creating Workspace...'}
+            submittingLabel={isEditMode ? t('profile.saving') : t('caseForm.submitCreating')}
             notReadyLabel="Title Missing (Fix in Step 1)"
-            readyLabel={isEditMode ? 'Save Changes' : 'Create Case Workspace'}
+            readyLabel={isEditMode ? t('common.saveChanges') : t('caseForm.confirmAndSave')}
           />
         </div>
       </div>

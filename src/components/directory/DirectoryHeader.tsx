@@ -1,4 +1,5 @@
 import { FaUserCheck, FaSync } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 import { DIRECTORY_METRICS, type DirectoryCounts } from '../../utils/directoryUtils'
 
 export interface DirectoryHeaderProps {
@@ -14,24 +15,26 @@ export interface DirectoryHeaderProps {
  * title / subtitle and per-role metric cards.
  */
 export default function DirectoryHeader({ title, subtitle, counts, isLoading, onRefresh }: DirectoryHeaderProps) {
+  const { t } = useTranslation()
+
   return (
     <div className="mb-4">
       <div className="d-flex align-items-center gap-2 mb-1.5">
         <span className="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 small fw-semibold">
           <FaUserCheck size={11} />
-          <span>VERIFIED LEGAL DIRECTORY</span>
+          <span>{t.peerDirectory.verifiedLegalDirectory}</span>
         </span>
         <span className="badge bg-success-subtle text-success border border-success-subtle px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 small fw-semibold">
           <span
             className="rounded-circle bg-success"
             style={{ width: 6, height: 6, display: 'inline-block' }}
           />
-          <span>{counts.all} Active Supporters</span>
+          <span>{counts.all} {t.peerDirectory.activeSupporters}</span>
         </span>
         {isLoading && (
           <span className="badge bg-light text-muted border px-2.5 py-1 rounded-pill d-inline-flex align-items-center gap-1.5 small">
             <span className="spinner-border spinner-border-sm" role="status" style={{ width: 10, height: 10 }} />
-            <span>Syncing...</span>
+            <span>{t.peerDirectory.syncing}</span>
           </span>
         )}
         <button
@@ -42,7 +45,7 @@ export default function DirectoryHeader({ title, subtitle, counts, isLoading, on
           style={{ fontSize: '0.8rem' }}
         >
           <FaSync size={10} className={isLoading ? 'fa-spin' : ''} />
-          <span>Refresh</span>
+          <span>{t.common.update}</span>
         </button>
       </div>
 

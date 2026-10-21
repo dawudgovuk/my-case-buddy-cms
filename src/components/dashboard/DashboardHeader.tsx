@@ -1,5 +1,6 @@
 import { Button } from 'react-bootstrap'
 import { FaUserShield, FaPlus, FaBriefcase, FaCalendarCheck, FaHandsHelping } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface DashboardMetric {
   label: string
@@ -23,8 +24,8 @@ export interface DashboardHeaderProps {
 
 export default function DashboardHeader({
   userName,
-  userRole = 'Litigant in Person',
-  title = 'My Cases Dashboard',
+  userRole,
+  title,
   description,
   totalCases = 0,
   upcomingHearingsCount = 0,
@@ -33,7 +34,10 @@ export default function DashboardHeader({
   onNewCase,
   className = '',
 }: DashboardHeaderProps) {
-  const defaultDesc = `Welcome back, ${userName}. Track your family court case progression, upcoming hearings, and connect with peer legal supporters.`
+  const { t } = useTranslation()
+  const effectiveRole = userRole || t('lipDashboard.userRoleLabel')
+  const effectiveTitle = title || t('lipDashboard.title')
+  const defaultDesc = t('dashboard.headerWelcome', { name: userName })
 
   return (
     <div
@@ -51,13 +55,13 @@ export default function DashboardHeader({
               className="h3 fw-bold mb-0 text-dark"
               style={{ letterSpacing: '-0.4px', fontWeight: 700 }}
             >
-              {title}
+              {effectiveTitle}
             </h1>
             <span
               className="badge badge-soft-slate px-2.5 py-1 rounded-pill fw-semibold small"
               style={{ fontSize: '0.74rem' }}
             >
-              ● {userRole}
+              ● {effectiveRole}
             </span>
           </div>
           <p
@@ -78,7 +82,7 @@ export default function DashboardHeader({
               onClick={onFindSupporters}
             >
               <FaUserShield size={14} className="text-secondary opacity-75" />
-              <span>Find Supporters</span>
+              <span>{t('dashboard.findSupporters')}</span>
             </Button>
           )}
 
@@ -89,7 +93,7 @@ export default function DashboardHeader({
               onClick={onNewCase}
             >
               <FaPlus size={11} />
-              <span>New Case</span>
+              <span>{t('dashboard.newCase')}</span>
             </Button>
           )}
         </div>
@@ -105,7 +109,7 @@ export default function DashboardHeader({
             <FaBriefcase size={12} />
           </div>
           <div className="text-truncate">
-            <span className="small text-muted me-1.5" style={{ fontSize: '0.78rem' }}>Total Cases:</span>
+            <span className="small text-muted me-1.5" style={{ fontSize: '0.78rem' }}>{t('dashboard.totalCases')}</span>
             <span className="fw-bold text-dark fs-6" style={{ fontSize: '0.9rem' }}>{totalCases}</span>
           </div>
         </div>
@@ -118,7 +122,7 @@ export default function DashboardHeader({
             <FaCalendarCheck size={12} />
           </div>
           <div className="text-truncate">
-            <span className="small text-muted me-1.5" style={{ fontSize: '0.78rem' }}>Hearings:</span>
+            <span className="small text-muted me-1.5" style={{ fontSize: '0.78rem' }}>{t('dashboard.hearings')}</span>
             <span className="fw-bold text-dark fs-6" style={{ fontSize: '0.9rem' }}>{upcomingHearingsCount}</span>
           </div>
         </div>
@@ -131,7 +135,7 @@ export default function DashboardHeader({
             <FaHandsHelping size={12} />
           </div>
           <div className="text-truncate">
-            <span className="small text-muted me-1.5" style={{ fontSize: '0.78rem' }}>Peer Support:</span>
+            <span className="small text-muted me-1.5" style={{ fontSize: '0.78rem' }}>{t('dashboard.peerSupport')}</span>
             <span className="fw-bold text-dark fs-6" style={{ fontSize: '0.9rem' }}>{peerSupportCount}</span>
           </div>
         </div>

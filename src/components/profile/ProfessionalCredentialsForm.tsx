@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Card, Form, Row, Col, Badge, Button, InputGroup } from 'react-bootstrap'
 import { FaBuilding, FaCertificate, FaClock, FaTags, FaTimes, FaPlus, FaBookOpen } from 'react-icons/fa'
 import type { UserRole } from '../../types/domain'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface ProfessionalData {
   firm?: string
@@ -34,12 +35,11 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
   data,
   onChange,
 }) => {
+  const { t } = useTranslation()
   const [customTag, setCustomTag] = useState('')
   const activeSpecialisms = data.specialisms || []
 
-  const isSolicitor = role === 'Solicitor'
   const isBarrister = role === 'Barrister'
-  const isMcKenzie = role === 'McKenzieFriend'
 
   function handleToggleSpecialism(item: string) {
     if (activeSpecialisms.includes(item)) {
@@ -67,15 +67,13 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
     <Card className="premium-card p-3 p-md-4 mb-4 border">
       <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
         <div>
-          <h2 className="h5 fw-bold text-dark mb-1">Professional Credentials & Practice Details</h2>
+          <h2 className="h5 fw-bold text-dark mb-1">{t('profile.professionalCredentialsTitle')}</h2>
           <p className="text-muted small mb-0">
-            {isSolicitor && 'Provide your law firm and SRA Roll details for verification and case invitations.'}
-            {isBarrister && 'Provide your Chambers name and Bar Standards Board (BSB) credentials.'}
-            {isMcKenzie && 'Provide your practice, community support organization, or court experience.'}
+            {t('profile.professionalCredentialsDesc')}
           </p>
         </div>
         <Badge bg="primary" className="px-2.5 py-1.5 fs-7">
-          {role} Details
+          {role}
         </Badge>
       </div>
 
@@ -85,11 +83,11 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
           <Form.Group controlId="profile-firm">
             <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5">
               <FaBuilding className="text-primary" size={13} />
-              <span>{isBarrister ? 'Chambers Name' : 'Firm or Organisation'}</span>
+              <span>{isBarrister ? 'Chambers Name' : t('profile.firmOrChambers')}</span>
             </Form.Label>
             <Form.Control
               type="text"
-              placeholder={isBarrister ? 'e.g. St Philips Chambers' : 'e.g. Apex Family Law Solicitors'}
+              placeholder={isBarrister ? 'e.g. St Philips Chambers' : t('profile.firmPlaceholder')}
               value={data.firm || ''}
               onChange={(e) => onChange({ firm: e.target.value })}
               className="py-2"
@@ -103,14 +101,12 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
             <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5">
               <FaCertificate className="text-primary" size={13} />
               <span>
-                {isSolicitor && 'SRA Number / Roll ID'}
-                {isBarrister && 'BSB Number / Bar Council ID'}
-                {isMcKenzie && 'Organisation / Reference ID (Optional)'}
+                {t('profile.registrationNumber')}
               </span>
             </Form.Label>
             <Form.Control
               type="text"
-              placeholder={isSolicitor ? 'e.g. SRA-618492' : isBarrister ? 'e.g. BSB-48192' : 'e.g. MF-2026-01'}
+              placeholder={t('profile.registrationNumberPlaceholder')}
               value={data.registrationNumber || ''}
               onChange={(e) => onChange({ registrationNumber: e.target.value })}
               className="py-2"
@@ -123,13 +119,13 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
           <Form.Group controlId="profile-yearsExperience">
             <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5">
               <FaClock className="text-primary" size={13} />
-              <span>Years of Experience</span>
+              <span>{t('profile.yearsExperience')}</span>
             </Form.Label>
             <Form.Control
               type="number"
               min={0}
               max={60}
-              placeholder="e.g. 8"
+              placeholder={t('profile.yearsExperiencePlaceholder')}
               value={data.yearsExperience !== undefined ? data.yearsExperience : ''}
               onChange={(e) => {
                 const val = e.target.value

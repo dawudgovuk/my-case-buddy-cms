@@ -9,6 +9,7 @@ import {
   FaQuestionCircle,
   FaArrowRight,
 } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 
 export interface SystemQuickGuideProps {
   isOpen: boolean
@@ -29,6 +30,8 @@ export default function SystemQuickGuide({
   onOpenFaq,
   assignedCasesCount = 0,
 }: SystemQuickGuideProps) {
+  const { t } = useTranslation()
+
   if (!isOpen) return null
 
   return (
@@ -40,9 +43,9 @@ export default function SystemQuickGuide({
               <FaInfoCircle size={16} />
             </div>
             <div>
-              <h5 className="fw-bold mb-0 text-dark">New to My Case Buddy? Quick Guide</h5>
+              <h5 className="fw-bold mb-0 text-dark">{t('professional.quickGuideTitle')}</h5>
               <p className="text-secondary small mb-0">
-                A simple overview of how this professional dashboard works and what you can do.
+                {t('professional.quickGuideSubtitle')}
               </p>
             </div>
           </div>
@@ -65,11 +68,10 @@ export default function SystemQuickGuide({
               <div className="d-flex align-items-center gap-2 mb-2">
                 <span className="badge-step-number bg-primary-subtle text-primary fw-bold">1</span>
                 <FaUserShield className="text-primary" />
-                <h6 className="fw-bold mb-0 text-dark">Your Role</h6>
+                <h6 className="fw-bold mb-0 text-dark">{t('professional.yourRole')}</h6>
               </div>
               <p className="text-muted small mb-0">
-                You are registered as a <strong>McKenzie Friend</strong> or legal professional. Litigants in Person
-                (people representing themselves in UK court) rely on you for note-taking, bundle organization, and court moral support.
+                {t('professional.yourRoleDesc')}
               </p>
             </div>
           </Col>
@@ -80,11 +82,10 @@ export default function SystemQuickGuide({
               <div className="d-flex align-items-center gap-2 mb-2">
                 <span className="badge-step-number bg-warning-subtle text-warning fw-bold">2</span>
                 <FaShieldAlt className="text-warning" />
-                <h6 className="fw-bold mb-0 text-dark">Safeguarding & Access</h6>
+                <h6 className="fw-bold mb-0 text-dark">{t('professional.safeguardingTitle')}</h6>
               </div>
               <p className="text-muted small mb-0">
-                UK Family Court matters involve confidential child orders. To protect litigant privacy under FPR Part 12,
-                email confirmation is required before browsing community peer support requests.
+                {t('professional.safeguardingDesc')}
               </p>
             </div>
           </Col>
@@ -95,11 +96,10 @@ export default function SystemQuickGuide({
               <div className="d-flex align-items-center gap-2 mb-2">
                 <span className="badge-step-number bg-success-subtle text-success fw-bold">3</span>
                 <FaFolderOpen className="text-success" />
-                <h6 className="fw-bold mb-0 text-dark">Assigned vs Peer</h6>
+                <h6 className="fw-bold mb-0 text-dark">{t('professional.assignedVsPeerTitle')}</h6>
               </div>
               <p className="text-muted small mb-0">
-                <strong>My Assigned Cases</strong> are private cases you already belong to. <strong>Peer Support Cases</strong> are
-                community requests where you can offer assistance once verified.
+                {t('professional.assignedVsPeerDesc')}
               </p>
             </div>
           </Col>
@@ -110,33 +110,33 @@ export default function SystemQuickGuide({
             {isVerified ? (
               <Badge bg="success" className="d-flex align-items-center gap-1">
                 <FaCheckCircle />
-                <span>Account Verified</span>
+                <span>{t('professional.verifiedBadge')}</span>
               </Badge>
             ) : (
               <Badge bg="warning" text="dark" className="d-flex align-items-center gap-1">
                 <FaShieldAlt />
-                <span>Verification Pending to unlock Peer Requests</span>
+                <span>{t('professional.verificationPendingNotice')}</span>
               </Badge>
             )}
-            <span>• You currently have {assignedCasesCount} assigned case{assignedCasesCount === 1 ? '' : 's'}.</span>
+            <span>• {assignedCasesCount} {assignedCasesCount === 1 ? t('dashboard.caseSingular') : t('dashboard.casePlural')}</span>
           </div>
 
           <div className="d-flex align-items-center gap-2">
             {onOpenFaq && (
               <Button variant="outline-primary" size="sm" onClick={onOpenFaq} className="d-flex align-items-center gap-1">
                 <FaQuestionCircle />
-                <span>Full System FAQ</span>
+                <span>{t('professional.fullSystemFaq')}</span>
               </Button>
             )}
             {!isVerified && onVerifyClick && (
               <Button variant="primary" size="sm" onClick={onVerifyClick} className="d-flex align-items-center gap-1 shadow-sm">
                 <FaCheckCircle />
-                <span>Verify Now (1-Click)</span>
+                <span>{t('professional.verifyNow1Click')}</span>
               </Button>
             )}
             {assignedCasesCount > 0 && onViewAssignedClick && (
               <Button variant="outline-secondary" size="sm" onClick={onViewAssignedClick} className="d-flex align-items-center gap-1">
-                <span>View Assigned Cases</span>
+                <span>{t('professional.viewAssignedCases')}</span>
                 <FaArrowRight size={11} />
               </Button>
             )}

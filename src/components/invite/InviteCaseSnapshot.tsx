@@ -1,5 +1,6 @@
 import { Card, Alert, Badge } from 'react-bootstrap'
 import { FaGavel } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 import type { FamilyCase } from '../../types/domain'
 
 export interface InviteCaseSnapshotProps {
@@ -15,6 +16,8 @@ export interface InviteCaseSnapshotProps {
  * Summary card of the invited case, or an info alert with the case reference when details are unavailable.
  */
 export default function InviteCaseSnapshot({ caseDetails, caseId }: InviteCaseSnapshotProps) {
+  const { t } = useTranslation()
+
   if (!caseDetails) {
     return (
       <Alert variant="info" className="small mb-4">
@@ -29,7 +32,7 @@ export default function InviteCaseSnapshot({ caseDetails, caseId }: InviteCaseSn
       <Card.Body className="p-3">
         <div className="d-flex justify-content-between align-items-start mb-2">
           <div>
-            <div className="text-muted small text-uppercase fw-bold" style={{ fontSize: '0.75rem' }}>Case Details</div>
+            <div className="text-muted small text-uppercase fw-bold" style={{ fontSize: '0.75rem' }}>{t.inviteAccept.caseDetailsTitle}</div>
             <h5 className="fw-bold mb-1 text-dark">{caseDetails.title}</h5>
             <div className="text-primary small fw-semibold">
               Ref: {caseDetails.caseNumber || caseDetails.id}
@@ -42,19 +45,19 @@ export default function InviteCaseSnapshot({ caseDetails, caseId }: InviteCaseSn
 
         <div className="row g-2 pt-2 border-top text-muted small">
           <div className="col-sm-6">
-            <strong>Court:</strong> {caseDetails.court}
+            <strong>{t.caseDetails.courtVenue}:</strong> {caseDetails.court}
           </div>
           <div className="col-sm-6">
-            <strong>Case Type:</strong> {caseDetails.caseType}
+            <strong>{t.caseDetails.caseType}:</strong> {caseDetails.caseType}
           </div>
           {caseDetails.currentStage && (
             <div className="col-sm-6">
-              <strong>Current Stage:</strong> {caseDetails.currentStage}
+              <strong>{t.common.stage}:</strong> {caseDetails.currentStage}
             </div>
           )}
           {caseDetails.startedAt && (
             <div className="col-sm-6">
-              <strong>Started:</strong> {caseDetails.startedAt}
+              <strong>{t.common.started}:</strong> {caseDetails.startedAt}
             </div>
           )}
         </div>

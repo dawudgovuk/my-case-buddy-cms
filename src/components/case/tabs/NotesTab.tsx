@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Card, Form, Row, Col, Button, Badge } from 'react-bootstrap'
+import { useTranslation } from '../../../hooks/useTranslation'
 import { useCasesStore } from '../../../store/casesStore'
 import { useAuthStore } from '../../../store/authStore'
 import { generateId } from '../../../services/storage'
@@ -23,6 +24,7 @@ const NOTE_CATEGORIES = [
 ] as const
 
 export default function NotesTab({ caseId }: NotesTabProps) {
+  const { t } = useTranslation()
   const store = useCasesStore()
   const { user } = useAuthStore()
   const defaultAuthor =
@@ -94,15 +96,15 @@ export default function NotesTab({ caseId }: NotesTabProps) {
                 <FaStickyNote size={16} />
               </span>
               <div>
-                <h6 className="fw-bold mb-0 text-dark">Case Strategy & Attendance Notes</h6>
+                <h6 className="fw-bold mb-0 text-dark">{t.caseTabs.caseStrategyNotes}</h6>
                 <div className="small text-muted">
-                  Record contemporaneous hearing notes, telephone attendance, client instructions, and CAFCASS meetings.
+                  {t.caseTabs.notesSubtitle}
                 </div>
               </div>
             </div>
           </div>
           <Badge bg="secondary" className="py-1.5 px-2.5 font-monospace">
-            {current.notes?.length || 0} Total Notes
+            {current.notes?.length || 0} {t.caseDetails.notesCount}
           </Badge>
         </div>
       </Card>
@@ -111,14 +113,14 @@ export default function NotesTab({ caseId }: NotesTabProps) {
       <Card className="p-3 shadow-sm border bg-white rounded-3">
         <Card.Title className="h6 fw-bold mb-3 d-flex align-items-center gap-2 text-dark">
           <FaStickyNote className="text-warning" />
-          <span>Record Contemporaneous Case Note</span>
+          <span>{t.caseTabs.recordCaseNote}</span>
         </Card.Title>
 
         <Form>
           <Row className="g-2 mb-2">
             <Col md={4}>
               <Form.Group>
-                <Form.Label className="small fw-semibold">Note Author</Form.Label>
+                <Form.Label className="small fw-semibold">{t.caseTabs.noteAuthor}</Form.Label>
                 <Form.Control
                   size="sm"
                   value={author}
@@ -130,7 +132,7 @@ export default function NotesTab({ caseId }: NotesTabProps) {
 
             <Col md={5}>
               <Form.Group>
-                <Form.Label className="small fw-semibold">Note Category</Form.Label>
+                <Form.Label className="small fw-semibold">{t.caseTabs.noteCategory}</Form.Label>
                 <Form.Select
                   size="sm"
                   value={category}
@@ -153,13 +155,13 @@ export default function NotesTab({ caseId }: NotesTabProps) {
                 disabled={!text.trim()}
                 className="w-100 fw-semibold"
               >
-                + Record Note
+                + {t.caseTabs.saveNoteBtn}
               </Button>
             </Col>
           </Row>
 
           <Form.Group>
-            <Form.Label className="small fw-semibold">Note Content / Attendance Summary</Form.Label>
+            <Form.Label className="small fw-semibold">{t.caseTabs.noteContent}</Form.Label>
             <Form.Control
               size="sm"
               as="textarea"
@@ -182,7 +184,7 @@ export default function NotesTab({ caseId }: NotesTabProps) {
             size="sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search notes by keyword or author..."
+            placeholder={`${t.common.search}...`}
             className="border-start-0"
           />
         </div>
@@ -190,7 +192,7 @@ export default function NotesTab({ caseId }: NotesTabProps) {
         <div className="d-flex align-items-center gap-2">
           <span className="small text-muted d-flex align-items-center gap-1">
             <FaFilter size={10} />
-            <span>Category:</span>
+            <span>{t.caseTabs.noteCategory}:</span>
           </span>
           <Form.Select
             size="sm"
@@ -198,7 +200,7 @@ export default function NotesTab({ caseId }: NotesTabProps) {
             onChange={(e) => setCategoryFilter(e.target.value)}
             style={{ width: '180px' }}
           >
-            <option value="ALL">All Categories</option>
+            <option value="ALL">{t.caseTabs.allCategories}</option>
             {NOTE_CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
@@ -211,7 +213,7 @@ export default function NotesTab({ caseId }: NotesTabProps) {
       {/* Notes List */}
       {filteredNotes.length === 0 ? (
         <div className="text-muted p-4 bg-light rounded text-center border">
-          No case notes found matching filter criteria.
+          {t.caseTabs.noNotesFound}
         </div>
       ) : (
         <div className="d-flex flex-column gap-2">

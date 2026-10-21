@@ -9,6 +9,7 @@ import { FaEye, FaUserPlus, FaBalanceScale, FaHandshake, FaArrowRight } from 're
 import { acceptStrapiPeerSupport } from '../../services/strapi'
 import VerificationGateCard from '../verification/VerificationGateCard'
 import { toast } from '../../store/toastStore'
+import { useTranslation } from '../../hooks/useTranslation'
 
 interface PeerSupportCasesTabProps {
   user: User
@@ -23,6 +24,7 @@ export default function PeerSupportCasesTab({
   onSwitchToAssigned,
   assignedCasesCount = 0,
 }: PeerSupportCasesTabProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const { addOrUpdate, isStrapiMode, syncWithStrapi } = useCasesStore()
   const { resendRegistrationEmails } = useAuthStore()
@@ -124,13 +126,13 @@ export default function PeerSupportCasesTab({
       <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
         <div>
           <h4 className="fw-bold mb-1 d-flex align-items-center gap-2">
-            <span>Other People&apos;s Cases Seeking Peer Support</span>
+            <span>{t('professional.otherCasesSeekingPeer')}</span>
             <Badge bg="success" className="fs-6 px-2 py-1">
-              ✓ Verified Access
+              {t('professional.verifiedAccessBadge')}
             </Badge>
           </h4>
           <p className="text-secondary small mb-0">
-            Litigants in Person who have requested experienced legal peer review and mentoring.
+            {t('professional.otherCasesDesc')}
           </p>
         </div>
 
@@ -140,7 +142,7 @@ export default function PeerSupportCasesTab({
           value={filterType}
           onChange={(e) => setFilterType(e.target.value)}
         >
-          <option value="all">All Case Types ({peerCases.length})</option>
+          <option value="all">{t('professional.allCaseTypes')} ({peerCases.length})</option>
           <option value="Private Law (Child Arrangements)">Private Law (Child Arrangements)</option>
           <option value="Public Law (Care Proceedings)">Public Law (Care Proceedings)</option>
           <option value="Domestic Abuse (Non-Molestation)">Domestic Abuse (Non-Molestation)</option>
@@ -156,7 +158,7 @@ export default function PeerSupportCasesTab({
           </div>
           {onSwitchToAssigned && (
             <Button size="sm" variant="success" onClick={onSwitchToAssigned} className="d-flex align-items-center gap-1">
-              <span>View in My Assigned Cases</span>
+              <span>{t('professional.viewInAssignedCases')}</span>
               <FaArrowRight />
             </Button>
           )}
@@ -173,8 +175,8 @@ export default function PeerSupportCasesTab({
         <Card className="text-center p-4 border-0 shadow-sm">
           <Card.Body>
             <FaBalanceScale size={40} className="text-muted mb-3" />
-            <h6>No peer support requests found matching this filter.</h6>
-            <p className="text-muted small mb-0">Check back later as new litigants seek peer assistance.</p>
+            <h6>{t('professional.noPeerMatching')}</h6>
+            <p className="text-muted small mb-0">{t('professional.noPeerMatchingDesc')}</p>
           </Card.Body>
         </Card>
       ) : (
@@ -202,21 +204,21 @@ export default function PeerSupportCasesTab({
 
                     {caseData.peerSupportNote && (
                       <div className="p-2 bg-light rounded border-start border-primary border-3 my-2 small">
-                        <strong>Requested Peer Support:</strong>
+                        <strong>{t('professional.requestedPeerSupport')}</strong>
                         <p className="mb-0 text-dark mt-1">{caseData.peerSupportNote}</p>
                       </div>
                     )}
 
                     <div className="d-flex gap-2 flex-wrap mb-3 mt-auto pt-2">
                       <Badge bg="secondary" className="px-2 py-1">
-                        Hearings: {caseData.hearings.length}
+                        {t('dashboard.hearings')}: {caseData.hearings.length}
                       </Badge>
                       <Badge bg="info" className="px-2 py-1">
-                        Parties: {caseData.parties.length}
+                        {t('dashboard.partyPlural')}: {caseData.parties.length}
                       </Badge>
                       {caseData.childrenInvolved ? (
                         <Badge bg="dark" className="px-2 py-1">
-                          Children: {caseData.childrenInvolved}
+                          {t('dashboard.childPlural')}: {caseData.childrenInvolved}
                         </Badge>
                       ) : null}
                     </div>
@@ -229,7 +231,7 @@ export default function PeerSupportCasesTab({
                         onClick={() => navigate(`/cases/${caseData.id}`)}
                       >
                         <FaEye />
-                        <span>View Details</span>
+                        <span>{t('common.view')}</span>
                       </Button>
                       <Button
                         variant={isAlreadyMember ? 'secondary' : 'success'}
@@ -243,7 +245,7 @@ export default function PeerSupportCasesTab({
                         ) : (
                           <FaUserPlus />
                         )}
-                        <span>{isAlreadyMember ? 'Joined Supporter' : 'Offer Peer Support'}</span>
+                        <span>{isAlreadyMember ? t('professional.joinedSupporter') : t('professional.offerPeerSupport')}</span>
                       </Button>
                     </div>
                   </Card.Body>

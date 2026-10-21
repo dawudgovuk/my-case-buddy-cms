@@ -28,10 +28,13 @@ import {
 export default function CaseDetails() {
   const { caseId } = useParams()
   const navigate = useNavigate()
-  const { getById, isLoadingStrapi, refresh } = useCasesStore()
+  const { cases, getById, isLoadingStrapi, refresh } = useCasesStore()
   const { user } = useAuthStore()
   const { t } = useTranslation()
-  const fc = useMemo(() => (caseId ? getById(caseId) : undefined), [caseId, getById])
+  const fc = useMemo(() => {
+    void cases
+    return caseId ? getById(caseId) : undefined
+  }, [caseId, getById, cases])
   const [tab, setTab] = useState<number>(CASE_DETAILS_TABS.OVERVIEW)
 
   const isProfessional = Boolean(user?.role && user.role !== 'LIP')

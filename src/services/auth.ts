@@ -14,7 +14,6 @@ export function isDemoUser(u: { id?: string; email?: string } | null | undefined
     id.startsWith('u_mf_') ||
     id.startsWith('u_sol_') ||
     id.startsWith('u_bar_') ||
-    email.endsWith('@example.com') ||
     email.includes('unverified.co.uk') ||
     email.includes('unverified.chambers.org')
   )

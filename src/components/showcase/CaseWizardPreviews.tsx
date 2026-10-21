@@ -81,7 +81,7 @@ export function CaseReadinessChecklistPreview({ onFeedback }: { onFeedback: (msg
 
 export function CaseReviewSummaryPreview({ onFeedback }: { onFeedback: (msg: string) => void }) {
   const sampleCase: FamilyCase = {
-    id: 'FC-23-00918',
+    id: '1792 1487 9533 6269',
     title: 'Application for Child Arrangements (Live With / Contact)',
     court: 'Family Court',
     caseType: 'Private Law (Child Arrangements)',

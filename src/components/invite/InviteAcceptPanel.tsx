@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Card, Button, Alert, Container, Row, Col, Badge, Spinner } from 'react-bootstrap'
 import { FaHandshake, FaBalanceScale, FaCheckCircle, FaShieldAlt, FaArrowRight } from 'react-icons/fa'
+import { useTranslation } from '../../hooks/useTranslation'
 import type { User } from '../../types/domain'
 import type { InviteRoleTheme } from '../../utils/inviteUtils'
 
@@ -28,6 +29,8 @@ export default function InviteAcceptPanel({
   onAccept,
   onDecline,
 }: InviteAcceptPanelProps) {
+  const { t } = useTranslation()
+
   return (
     <Container className="d-flex justify-content-center align-items-center min-vh-50 py-4 py-md-5">
       <Card className="overflow-hidden" style={{ maxWidth: 650, width: '100%', boxShadow: 'var(--mcb-shadow)' }}>
@@ -36,7 +39,7 @@ export default function InviteAcceptPanel({
           <div className="d-inline-flex p-3 rounded-circle bg-white bg-opacity-25 mb-2 shadow-sm" style={{ fontSize: '1.75rem' }}>
             <FaHandshake />
           </div>
-          <h3 className="fw-bold mb-1">Peer Support Request</h3>
+          <h3 className="fw-bold mb-1">{t.inviteAccept.invitationTitle}</h3>
           <div className="small text-white-50 text-uppercase tracking-wider">
             UK Family Court &bull; Practice Direction 27A
           </div>
@@ -56,7 +59,7 @@ export default function InviteAcceptPanel({
           </div>
 
           <div className="mb-4">
-            <span className="text-muted small d-block mb-1">Invited Capacity:</span>
+            <span className="text-muted small d-block mb-1">{t.inviteAccept.invitedAs}:</span>
             <Badge bg={roleTheme.badge} className="px-3 py-2 fs-6 fw-semibold">
               <FaBalanceScale className="me-2" />
               {roleTheme.label}
@@ -86,12 +89,12 @@ export default function InviteAcceptPanel({
                 {isSubmitting ? (
                   <>
                     <Spinner size="sm" animation="border" />
-                    <span>Connecting to Case...</span>
+                    <span>{t.inviteAccept.loading}...</span>
                   </>
                 ) : (
                   <>
                     <FaCheckCircle />
-                    <span>Accept & Join Case</span>
+                    <span>{t.inviteAccept.acceptBtn}</span>
                     <FaArrowRight className="ms-1" />
                   </>
                 )}
@@ -104,7 +107,7 @@ export default function InviteAcceptPanel({
                 onClick={onDecline}
                 disabled={isSubmitting}
               >
-                Decline & Close
+                {t.inviteAccept.declineBtn}
               </Button>
             </Col>
           </Row>

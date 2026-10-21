@@ -4,6 +4,7 @@ import { cy } from './locales/cy'
 import { es } from './locales/es'
 import { pl } from './locales/pl'
 
+export { en, cy, es, pl }
 export * from './types'
 
 export const DEFAULT_LANGUAGE: SupportedLanguage = 'en'
