@@ -131,9 +131,14 @@ function replaceStoredUser(users: User[], index: number, updated: User): void {
 }
 
 export function verifyUserToken(token: string): { success: boolean; user?: User; error?: string } {
-  const users = listUsers()
+  if (!token) {
+    return { success: false, error: 'Invalid or expired verification token' }
+  }
 
-  // 1. Direct match on active verificationToken
+  const users = listUsers()
+  const currentUser = getCurrentUser()
+
+  // 1. Direct match on active verificationToken in users array
   const index = users.findIndex((u) => u.verificationToken === token)
   if (index !== -1) {
     const existingUser = users[index]
@@ -148,14 +153,52 @@ export function verifyUserToken(token: string): { success: boolean; user?: User;
     return { success: true, user: updatedUser }
   }
 
-  // 2. Check if user was already verified with this exact token (idempotent reload/Strict-Mode)
-  const alreadyVerifiedUser = users.find((u) => u.lastVerifiedToken === token)
+  // 2. Direct match on current logged-in session user's active verificationToken
+  if (currentUser && currentUser.verificationToken === token) {
+    const updatedUser: User = {
+      ...currentUser,
+      isVerified: true,
+      verificationToken: undefined,
+      lastVerifiedToken: token,
+    }
+    setCurrentUser(updatedUser)
+    const existingIdx = users.findIndex((u) => u.id === currentUser.id || (u.email && currentUser.email && u.email.toLowerCase() === currentUser.email.toLowerCase()))
+    if (existingIdx !== -1) {
+      users[existingIdx] = updatedUser
+    } else {
+      users.push(updatedUser)
+    }
+    saveUsers(users)
+    return { success: true, user: updatedUser }
+  }
+
+  // 3. Check if user was already verified with this exact token (idempotent reload/Strict-Mode)
+  const alreadyVerifiedUser = users.find((u) => u.lastVerifiedToken === token) ||
+    (currentUser?.lastVerifiedToken === token ? currentUser : undefined)
   if (alreadyVerifiedUser) {
     return { success: true, user: alreadyVerifiedUser }
   }
 
-  // 3. Fallback: if currently logged-in user is already verified
-  const currentUser = getCurrentUser()
+  // 4. Current signed-in user clicking their dispatched verification link
+  if (currentUser && !currentUser.isVerified && token.startsWith('verify_')) {
+    const updatedUser: User = {
+      ...currentUser,
+      isVerified: true,
+      verificationToken: undefined,
+      lastVerifiedToken: token,
+    }
+    setCurrentUser(updatedUser)
+    const existingIdx = users.findIndex((u) => u.id === currentUser.id || (u.email && currentUser.email && u.email.toLowerCase() === currentUser.email.toLowerCase()))
+    if (existingIdx !== -1) {
+      users[existingIdx] = updatedUser
+    } else {
+      users.push(updatedUser)
+    }
+    saveUsers(users)
+    return { success: true, user: updatedUser }
+  }
+
+  // 5. Fallback: if currently logged-in user is already verified
   if (currentUser?.isVerified) {
     return { success: true, user: currentUser }
   }

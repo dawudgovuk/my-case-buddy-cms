@@ -15,6 +15,7 @@ import VerifyEmail from './pages/VerifyEmail'
 import Welcome from './pages/Welcome'
 import RequireVerified from './components/routing/RequireVerified'
 import { getLandingRoute } from './utils/authConstants'
+import { isComponentShowcaseEnabled } from './utils/featureFlags'
 import PeerDirectory from './pages/PeerDirectory'
 import ComponentShowcase from './pages/ComponentShowcase'
 import Profile from './pages/Profile'
@@ -74,7 +75,7 @@ function Shell() {
       <AppHeader />
       <ToastContainer />
 
-      <Container as="main" id="main-content" fluid="xl" className="py-4 py-md-5 px-3 px-md-4 flex-grow-1">
+      <Container as="main" id="main-content" fluid="xl" className="px-3 px-md-4 flex-grow-1 app-main-content">
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register/:role" element={<Register />} />
@@ -114,7 +115,9 @@ function Shell() {
           <Route path="/guidance" element={<GuidanceCatalog />} />
           <Route path="/guidance/references" element={<GuidanceReferencesPage />} />
           <Route path="/guidance/:mapSlug" element={<GuidanceRoadmapView />} />
-          <Route path="/components" element={<ComponentShowcase />} />
+          {isComponentShowcaseEnabled() && (
+            <Route path="/components" element={<ComponentShowcase />} />
+          )}
           <Route
             path="*"
             element={
@@ -133,24 +136,27 @@ function Shell() {
         </Routes>
       </Container>
 
-      <footer className="app-footer py-4 mt-auto">
-        <Container fluid="xl" className="px-3 px-md-4 d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3">
-          <div className="d-flex align-items-start gap-3">
-            <img src={heartLogo} alt="" width={28} height={28} className="mt-1" />
-            <div>
-              <div className="footer-brand mb-1">My Case Buddy</div>
-              <p className="mb-0" style={{ maxWidth: '38rem' }}>{t('common.disclaimer')}</p>
-            </div>
+      <footer className="app-footer">
+        <Container fluid="xl" className="px-3 px-md-4 d-flex align-items-center justify-content-between gap-3 h-100">
+          <div className="d-flex align-items-center gap-2 min-w-0">
+            <img src={heartLogo} alt="" width={20} height={20} className="flex-shrink-0" />
+            <span className="footer-brand me-1 flex-shrink-0" style={{ fontSize: '0.85rem' }}>My Case Buddy</span>
+            <span className="text-muted d-none d-md-inline" style={{ fontSize: '0.75rem' }}>•</span>
+            <p className="mb-0 text-muted small text-truncate d-none d-md-inline" style={{ maxWidth: '44rem', fontSize: '0.76rem' }}>
+              {t('common.disclaimer')}
+            </p>
           </div>
           <a
             href="https://support.mycourtbuddy.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="btn btn-outline-secondary btn-sm flex-shrink-0 align-self-start align-self-md-center"
+            className="btn btn-outline-secondary btn-sm flex-shrink-0 d-inline-flex align-items-center gap-1.5 px-2.5 py-1"
+            style={{ fontSize: '0.78rem', borderRadius: '8px' }}
           >
-            <FaLifeRing size={13} className="text-primary" />
-            <span>{t('common.supportKnowledgeBase')}</span>
-            <FaExternalLinkAlt size={10} className="text-muted" />
+            <FaLifeRing size={12} className="text-primary" />
+            <span className="d-none d-sm-inline">{t('common.supportKnowledgeBase')}</span>
+            <span className="d-sm-none">Support</span>
+            <FaExternalLinkAlt size={9} className="text-muted ms-0.5" />
           </a>
         </Container>
       </footer>

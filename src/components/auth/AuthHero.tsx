@@ -15,10 +15,10 @@ export default function AuthHero({ title, subtitle }: AuthHeroProps) {
   return (
     <div className="auth-hero">
       <div className="auth-hero-icon">
-        <img src={heartLogo} alt="" />
+        <img src={heartLogo} alt="My Case Buddy" />
       </div>
-      <h1 className="h3 fw-bold mb-1">{title}</h1>
-      <p>{subtitle}</p>
+      <h1 className="h4 fw-bold mb-1 text-white">{title}</h1>
+      <p className="auth-hero-subtitle">{subtitle}</p>
     </div>
   )
 }

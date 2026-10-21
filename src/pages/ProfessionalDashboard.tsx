@@ -65,7 +65,7 @@ export default function ProfessionalDashboard() {
   }
 
   return (
-    <Container fluid className="px-lg-4 py-2">
+    <div className="professional-dashboard-page py-2">
       {/* Redesigned Executive Professional Header with Metrics and Actions */}
       <ProfessionalHeader
         user={user}
@@ -116,6 +116,6 @@ export default function ProfessionalDashboard() {
 
       {/* Accessible Beginner / System FAQ Modal */}
       <ProfessionalFaqModal show={showFaqModal} onHide={() => setShowFaqModal(false)} />
-    </Container>
+    </div>
   )
 }

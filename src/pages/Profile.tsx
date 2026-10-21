@@ -135,7 +135,7 @@ export default function Profile() {
   }
 
   return (
-    <Container className="py-3 py-md-4" style={{ maxWidth: 1040 }}>
+    <div className="profile-page py-2 mx-auto" style={{ maxWidth: 1040 }}>
       {/* Navigation Header */}
       <div className="d-flex align-items-center justify-content-between mb-3">
         <Button
@@ -343,6 +343,6 @@ export default function Profile() {
           </div>
         </div>
       </Form>
-    </Container>
+    </div>
   )
 }

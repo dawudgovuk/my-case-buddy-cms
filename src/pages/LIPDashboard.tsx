@@ -69,7 +69,7 @@ export default function LIPDashboard() {
   const handleEditCase = (caseId: string) => navigate(`/cases/${caseId}/edit`)
 
   return (
-    <Container fluid className="px-lg-4 py-2">
+    <div className="lip-dashboard-page py-2">
       {/* Dashboard Executive Header & Metric Pills */}
       <DashboardHeader
         userName={user.name}
@@ -135,6 +135,6 @@ export default function LIPDashboard() {
           )}
         </>
       )}
-    </Container>
+    </div>
   )
 }

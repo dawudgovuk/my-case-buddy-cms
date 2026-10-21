@@ -114,7 +114,7 @@ export default function ProfessionalHeader({
           <Button
             variant={isGuideOpen ? 'primary' : 'outline-primary'}
             size="sm"
-            className="d-flex align-items-center gap-1 rounded-3 px-3 py-2 fw-semibold shadow-none flex-fill flex-xl-grow-0"
+            className="d-flex align-items-center gap-1 rounded-3 px-3 py-2 fw-semibold text-nowrap shadow-none flex-shrink-0"
             onClick={onToggleGuide}
           >
             <FaInfoCircle size={13} />
@@ -124,7 +124,7 @@ export default function ProfessionalHeader({
           <Button
             variant="outline-secondary"
             size="sm"
-            className="d-flex align-items-center gap-1 rounded-3 px-3 py-2 fw-semibold shadow-none flex-fill flex-xl-grow-0"
+            className="d-flex align-items-center gap-1 rounded-3 px-3 py-2 fw-semibold text-nowrap shadow-none flex-shrink-0"
             onClick={onOpenFaq}
           >
             <FaQuestionCircle size={13} />

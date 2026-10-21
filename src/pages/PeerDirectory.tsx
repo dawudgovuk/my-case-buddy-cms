@@ -1,4 +1,4 @@
-import { Container, Row, Col, Alert } from 'react-bootstrap'
+import { Row, Col, Alert } from 'react-bootstrap'
 import { useTranslation } from '../hooks/useTranslation'
 import { usePeerDirectory } from '../hooks/usePeerDirectory'
 import { FaHandshake } from 'react-icons/fa'
@@ -34,7 +34,7 @@ export default function PeerDirectory() {
   } = usePeerDirectory()
 
   return (
-    <Container fluid className="px-lg-4 py-3" style={{ maxWidth: '1360px', margin: '0 auto' }}>
+    <div className="peer-directory-page py-3">
       {/* 1. Executive Hero Header */}
       <DirectoryHeader
         title={t('peerDirectory.title')}
@@ -95,6 +95,6 @@ export default function PeerDirectory() {
         onSendRequest={handleSendRequest}
         onCancel={handleCloseRequestModal}
       />
-    </Container>
+    </div>
   )
 }

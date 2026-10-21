@@ -85,7 +85,7 @@ export default function LoginForm({
         type="submit"
         variant="primary"
         size="lg"
-        className="w-100 mb-3 d-flex align-items-center justify-content-center gap-2 shadow-xs fw-semibold"
+        className="w-100 mb-2.5 d-flex align-items-center justify-content-center gap-2 shadow-xs fw-semibold btn-auth-submit"
         disabled={loading}
       >
         {loading ? (

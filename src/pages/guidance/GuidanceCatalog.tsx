@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Container, Row, Col, Card, Badge, Button, ProgressBar, Spinner, Alert } from 'react-bootstrap';
+import { Row, Col, Card, Badge, Button, ProgressBar, Spinner, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import {
   FaCompass,
@@ -23,7 +23,7 @@ export default function GuidanceCatalog() {
   }, []);
 
   return (
-    <Container fluid="xl" className="py-4">
+    <div className="guidance-catalog-page py-2">
       {/* Hero Header */}
       <div className="mb-5 text-center text-md-start">
         <div
@@ -181,6 +181,6 @@ export default function GuidanceCatalog() {
           </div>
         </>
       )}
-    </Container>
+    </div>
   );
 }

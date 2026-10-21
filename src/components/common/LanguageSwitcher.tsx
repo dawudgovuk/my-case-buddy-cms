@@ -35,7 +35,8 @@ export default function LanguageSwitcher({
         variant={variant}
         size={size}
         id="language-switcher-dropdown"
-        className="d-flex align-items-center gap-2 border bg-light py-1 px-2 rounded-pill shadow-none"
+        className="d-flex align-items-center gap-1.5 border bg-white py-1 px-2.5 rounded-pill shadow-none text-nowrap"
+        style={{ minHeight: 38 }}
         title="Select Language"
         aria-label="Select Language"
       >
@@ -43,7 +44,7 @@ export default function LanguageSwitcher({
           {currentLanguageOption.flag}
         </span>
         {showLabel && (
-          <span className="fw-semibold text-dark small">
+          <span className="fw-semibold text-dark small d-inline d-xl-none d-xxl-inline">
             {currentLanguageOption.label}
           </span>
         )}

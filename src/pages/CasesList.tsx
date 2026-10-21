@@ -118,7 +118,7 @@ export default function CasesList() {
   }
 
   return (
-    <div className="py-2" style={{ maxWidth: '1240px', margin: '0 auto' }}>
+    <div className="cases-list-page py-2">
       {/* Executive Header & Summary Metrics */}
       <CasesHeader
         totalCases={totalCases}

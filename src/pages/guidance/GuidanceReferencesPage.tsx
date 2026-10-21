@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Container, Row, Col, Form, InputGroup, Button, ButtonGroup, Spinner, Alert } from 'react-bootstrap';
+import { Row, Col, Form, InputGroup, Button, ButtonGroup, Spinner, Alert } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import {
   FaSearch,
@@ -48,7 +48,7 @@ export default function GuidanceReferencesPage() {
   });
 
   return (
-    <Container fluid="xl" className="py-4">
+    <div className="guidance-references-page py-2">
       {/* Top Navigation */}
       <div className="d-flex align-items-center justify-content-between mb-4">
         <Button
@@ -163,6 +163,6 @@ export default function GuidanceReferencesPage() {
           ))}
         </Row>
       )}
-    </Container>
+    </div>
   );
 }

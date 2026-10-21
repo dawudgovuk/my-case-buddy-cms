@@ -21,6 +21,7 @@ import {
 } from 'react-icons/fa'
 import type { UserRole } from '../../types/domain'
 import { WELCOME_ROUTE } from '../../utils/authConstants'
+import { isComponentShowcaseEnabled } from '../../utils/featureFlags'
 
 export interface AppHeaderProps {
   className?: string
@@ -86,7 +87,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
   const isGuidanceActive =
     location.pathname.startsWith('/guidance')
 
-  const isDev = import.meta.env.DEV
+  const showComponents = isComponentShowcaseEnabled()
   const isComponentsActive = location.pathname.startsWith('/components')
 
   const safeName = user?.name || user?.email?.split('@')[0] || 'User'
@@ -104,11 +105,11 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
       expand="xl"
       expanded={expanded}
       onToggle={(exp) => setExpanded(exp)}
-      sticky="top"
+      fixed="top"
       className={`app-navbar ${className}`}
       style={{ zIndex: 1030, backdropFilter: 'blur(12px)' }}
     >
-      <Container fluid className="px-lg-4">
+      <Container fluid="xl" className="px-3 px-md-4">
         {/* Brand Logo */}
         <Navbar.Brand
           onClick={() => handleNavigate(getHomeRoute())}
@@ -126,7 +127,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
         />
 
         <Navbar.Collapse id="main-navbar-nav">
-          <Nav className="ms-auto align-items-stretch align-items-xl-center gap-1 my-2 my-xl-0">
+          <Nav className="ms-auto align-items-stretch align-items-xl-center flex-xl-nowrap gap-1 my-2 my-xl-0">
             {user ? (
               <>
                 {/* App navigation is available once the email is verified */}
@@ -136,9 +137,9 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                     <Nav.Link
                       active={isDashboardActive}
                       onClick={() => handleNavigate(getHomeRoute())}
-                      className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                      className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1.5 rounded text-nowrap"
                     >
-                      <FaHome size={15} />
+                      <FaHome size={14} />
                       <span>{t('common.dashboard')}</span>
                     </Nav.Link>
 
@@ -148,7 +149,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         <Nav.Link
                           active={isCasesActive}
                           onClick={() => handleNavigate('/cases')}
-                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                          className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1.5 rounded text-nowrap"
                         >
                           <FaGavel size={14} />
                           <span>{t('common.cases')}</span>
@@ -157,7 +158,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         <Nav.Link
                           active={isGuidanceActive}
                           onClick={() => handleNavigate('/guidance')}
-                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                          className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1.5 rounded text-nowrap"
                         >
                           <FaCompass size={14} />
                           <span>{t('common.roadmaps')}</span>
@@ -166,9 +167,9 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         <Nav.Link
                           active={isDirectoryActive}
                           onClick={() => handleNavigate('/peer-directory')}
-                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                          className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1.5 rounded text-nowrap"
                         >
-                          <FaHandshake size={15} />
+                          <FaHandshake size={14} />
                           <span>{t('common.legalSupporters')}</span>
                         </Nav.Link>
 
@@ -176,9 +177,10 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                           variant="primary"
                           size="sm"
                           onClick={() => handleNavigate('/cases/new')}
-                          className="d-none d-xl-inline-flex align-items-center gap-1.5 ms-xl-2 px-3 py-1.5 rounded-pill shadow-xs fw-semibold"
+                          className="d-none d-xl-inline-flex align-items-center gap-1 ms-xl-1 px-2.5 py-1 rounded-pill shadow-xs fw-semibold text-nowrap"
+                          style={{ fontSize: '0.8125rem' }}
                         >
-                          <FaPlus size={11} />
+                          <FaPlus size={10} />
                           <span>{t('common.newCase')}</span>
                         </Button>
                         <Nav.Link
@@ -197,7 +199,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         <Nav.Link
                           active={isCasesActive}
                           onClick={() => handleNavigate('/professional-dashboard')}
-                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                          className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1.5 rounded text-nowrap"
                         >
                           <FaGavel size={14} />
                           <span>{t('common.assignedCases')}</span>
@@ -206,7 +208,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         <Nav.Link
                           active={isGuidanceActive}
                           onClick={() => handleNavigate('/guidance')}
-                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                          className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1.5 rounded text-nowrap"
                         >
                           <FaCompass size={14} />
                           <span>{t('common.roadmaps')}</span>
@@ -215,24 +217,24 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         <Nav.Link
                           active={isDirectoryActive}
                           onClick={() => handleNavigate('/peer-directory')}
-                          className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded"
+                          className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1.5 rounded text-nowrap"
                         >
-                          <FaHandshake size={15} />
+                          <FaHandshake size={14} />
                           <span>{t('common.peerDirectory')}</span>
                         </Nav.Link>
                       </>
                     )}
 
-                    {/* Developer Components Page (Dev Mode Only) */}
-                    {isDev && (
+                    {/* Developer Components Page (Controlled via VITE_ENABLE_COMPONENT_SHOWCASE) */}
+                    {showComponents && (
                       <Nav.Link
                         active={isComponentsActive}
                         onClick={() => handleNavigate('/components')}
-                        className="px-3 py-2 fw-medium d-flex align-items-center gap-1.5 rounded"
+                        className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1 rounded text-nowrap"
                         title="Component Showcase (Development Mode)"
                       >
-                        <FaPuzzlePiece size={14} className="text-warning" />
-                        <span>{t('common.components')}</span>
+                        <FaPuzzlePiece size={13} className="text-warning" />
+                        <span className="d-none d-xxl-inline">{t('common.components')}</span>
                         <span
                           className="badge bg-warning text-dark px-1.5 py-0.5 rounded fw-bold"
                           style={{ fontSize: '0.62rem', letterSpacing: '0.5px' }}
@@ -245,7 +247,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                 )}
 
                 {/* Responsive Mobile / Desktop Controls (Language + User Profile) */}
-                <div className="d-flex align-items-center justify-content-between gap-2 ms-xl-2 pt-2 pt-xl-0 border-top border-top-xl-0">
+                <div className="d-flex align-items-center justify-content-between gap-1.5 ms-xl-2 pt-2 pt-xl-0 border-top border-top-xl-0">
                   {/* Language Switcher */}
                   <LanguageSwitcher className="my-1 my-xl-0" />
 
@@ -254,20 +256,20 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                     <Dropdown.Toggle
                       variant="light"
                       id="user-profile-dropdown"
-                      className="d-flex align-items-center gap-2 border py-1 ps-1 pe-3 rounded-pill shadow-none"
-                      style={{ fontSize: '0.875rem', minHeight: 42 }}
+                      className="d-flex align-items-center gap-1.5 border bg-white py-1 ps-1 pe-2.5 rounded-pill shadow-none text-nowrap"
+                      style={{ fontSize: '0.85rem', minHeight: 38 }}
                     >
                       <span
                         className="d-inline-flex align-items-center justify-content-center rounded-circle fw-bold flex-shrink-0"
-                        style={{ width: 32, height: 32, background: 'var(--mcb-primary-soft)', color: 'var(--mcb-primary)', fontSize: '0.8rem' }}
+                        style={{ width: 28, height: 28, background: 'var(--mcb-primary-soft)', color: 'var(--mcb-primary)', fontSize: '0.75rem' }}
                         aria-hidden="true"
                       >
                         {userInitials}
                       </span>
-                      <span className="fw-semibold text-dark text-truncate" style={{ maxWidth: '140px' }}>
+                      <span className="fw-semibold text-dark text-truncate" style={{ maxWidth: '105px' }}>
                         {safeName}
                       </span>
-                      <Badge bg={roleBadgeVariant[user.role] || 'secondary'} className="d-none d-sm-inline-flex">
+                      <Badge bg={roleBadgeVariant[user.role] || 'secondary'} className="d-none d-xxl-inline-flex">
                         {getRoleLabel(user.role)}
                       </Badge>
                     </Dropdown.Toggle>
@@ -332,15 +334,18 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                         <FaExternalLinkAlt size={10} className="text-muted" />
                       </Dropdown.Item>
 
-                      <Dropdown.Divider />
-
-                      <Dropdown.Item
-                        onClick={() => handleNavigate('/components')}
-                        className="d-flex align-items-center gap-2 py-1.5 text-muted small"
-                      >
-                        <FaPuzzlePiece size={12} />
-                        <span>{t('common.componentShowcase')}</span>
-                      </Dropdown.Item>
+                      {showComponents && (
+                        <>
+                          <Dropdown.Divider />
+                          <Dropdown.Item
+                            onClick={() => handleNavigate('/components')}
+                            className="d-flex align-items-center gap-2 py-1.5 text-muted small"
+                          >
+                            <FaPuzzlePiece size={12} />
+                            <span>{t('common.componentShowcase')}</span>
+                          </Dropdown.Item>
+                        </>
+                      )}
 
                       <Dropdown.Divider />
 
@@ -360,21 +365,21 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                 <Nav.Link
                   active={isGuidanceActive}
                   onClick={() => handleNavigate('/guidance')}
-                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded text-secondary"
+                  className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1.5 rounded text-secondary text-nowrap"
                   title="UK Family Court Procedural Roadmaps"
                 >
                   <FaCompass size={14} className="text-primary" />
                   <span>{t('common.roadmaps')}</span>
                 </Nav.Link>
 
-                {isDev && (
+                {showComponents && (
                   <Nav.Link
                     active={isComponentsActive}
                     onClick={() => handleNavigate('/components')}
-                    className="px-3 py-2 fw-medium d-flex align-items-center gap-1.5 rounded text-secondary"
+                    className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1 rounded text-secondary text-nowrap"
                     title="Component Showcase (Development Mode)"
                   >
-                    <FaPuzzlePiece size={14} className="text-warning" />
+                    <FaPuzzlePiece size={13} className="text-warning" />
                     <span>{t('common.components')}</span>
                     <span
                       className="badge bg-warning text-dark px-1.5 py-0.5 rounded fw-bold"
@@ -390,21 +395,23 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={() => setExpanded(false)}
-                  className="px-3 py-2 fw-medium d-flex align-items-center gap-2 rounded text-secondary"
+                  className="px-2 px-xxl-2.5 py-1.5 fw-medium d-flex align-items-center gap-1.5 rounded text-secondary text-nowrap"
                   title="MyCourtBuddy Support & Knowledge Base"
                 >
                   <FaLifeRing size={14} className="text-info" />
                   <span>{t('common.support')}</span>
-                  <FaExternalLinkAlt size={10} className="text-muted ms-1" />
+                  <FaExternalLinkAlt size={10} className="text-muted ms-0.5" />
                 </Nav.Link>
                 <div className="d-flex align-items-center gap-2 ms-xl-2 pt-2 pt-xl-0 border-top border-top-xl-0">
                   <LanguageSwitcher />
-                  <Nav.Link
-                    onClick={() => handleNavigate('/login')}
-                    className="btn btn-primary btn-sm px-3 text-center flex-fill flex-xl-grow-0 text-white"
-                  >
-                    {t('common.signIn')}
-                  </Nav.Link>
+                  {location.pathname !== '/login' && (
+                    <Nav.Link
+                      onClick={() => handleNavigate('/login')}
+                      className="btn btn-primary btn-sm px-3 text-center flex-fill flex-xl-grow-0 text-white"
+                    >
+                      {t('common.signIn')}
+                    </Nav.Link>
+                  )}
                 </div>
               </>
             )}

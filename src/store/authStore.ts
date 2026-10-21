@@ -10,7 +10,16 @@ import {
   verifyAllProfessionals as verifyAllProfessionalsService,
   updateUserProfile as updateUserProfileService,
 } from '../services/auth'
-import { strapiLogout, strapiRegister, strapiLogin, isStrapiEnabled, setStrapiToken, updateStrapiUserProfile } from '../services/strapi'
+import {
+  strapiLogout,
+  strapiRegister,
+  strapiLogin,
+  isStrapiEnabled,
+  setStrapiToken,
+  getStrapiToken,
+  strapiGetMe,
+  updateStrapiUserProfile,
+} from '../services/strapi'
 import { generateId } from '../services/storage'
 import { authClient } from '../auth'
 import { dispatchMcKenzieRegistrationEmails, resendMcKenzieRegistrationEmails } from '../services/emailService'
@@ -64,7 +73,7 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set, get) => ({
-  user: getCurrentUser(),
+  user: null,
   users: listUsers(),
   neonUser: null,
   neonSession: null,
@@ -72,38 +81,125 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   initNeonAuth: async () => {
     try {
-      const res = await authClient.getSession()
-      if (res.data?.session && res.data?.user) {
-        const nUser = res.data.user as NeonUserData
-        const nSession = res.data.session as NeonSessionData
+      // 1. Verify Neon Auth session
+      let neonUser: NeonUserData | null = null
+      let neonSession: NeonSessionData | null = null
+
+      try {
+        const res = await authClient.getSession()
+        if (res.data?.session && res.data?.user) {
+          neonUser = res.data.user as NeonUserData
+          neonSession = res.data.session as NeonSessionData
+        }
+      } catch (err) {
+        console.warn('Neon auth getSession check failed:', err)
+      }
+
+      // 2. Verify Strapi session if Strapi integration is enabled and token exists
+      let strapiUser: User | null = null
+      if (isStrapiEnabled() && getStrapiToken()) {
+        try {
+          strapiUser = await strapiGetMe()
+          if (!strapiUser) {
+            setStrapiToken(null)
+          }
+        } catch {
+          setStrapiToken(null)
+        }
+      }
+
+      // 3. Resolve verified session
+      if (neonUser) {
         const users = get().users
-        let matched = findUserByEmail(users, nUser.email)
+        let matched = findUserByEmail(users, neonUser.email)
         if (!matched) {
-          matched = appUserFromNeon(nUser, nUser.email.split('@')[0])
+          matched = appUserFromNeon(neonUser, neonUser.email.split('@')[0])
           const updatedUsers = [...users, matched]
           saveUsers(updatedUsers)
           set({ users: updatedUsers })
         }
+        if (strapiUser && sameEmail(strapiUser.email, neonUser.email)) {
+          matched = {
+            ...matched,
+            role: strapiUser.role || matched.role,
+            isVerified: strapiUser.isVerified ?? matched.isVerified,
+            firm: strapiUser.firm || matched.firm,
+            registrationNumber: strapiUser.registrationNumber || matched.registrationNumber,
+          }
+        }
         setCurrentUser(matched)
         set({
           user: matched,
-          neonUser: nUser,
-          neonSession: nSession,
+          neonUser,
+          neonSession,
           isLoadingSession: false,
         })
         return
       }
+
+      if (strapiUser) {
+        const users = get().users
+        let matched = findUserByEmail(users, strapiUser.email)
+        if (!matched) {
+          matched = strapiUser
+          const updatedUsers = [...users, matched]
+          saveUsers(updatedUsers)
+          set({ users: updatedUsers })
+        } else {
+          matched = { ...matched, ...strapiUser }
+        }
+        setCurrentUser(matched)
+        set({
+          user: matched,
+          neonUser: null,
+          neonSession: null,
+          isLoadingSession: false,
+        })
+        return
+      }
+
+      // 4. NEITHER backend has an active session.
+      // Purge any residual localStorage session so nonexistent/deleted users cannot access protected routes.
+      setCurrentUser(null)
+      setStrapiToken(null)
+      set({
+        user: null,
+        neonUser: null,
+        neonSession: null,
+        isLoadingSession: false,
+      })
     } catch (err) {
-      console.warn('Neon auth getSession check failed:', err)
+      console.warn('Session initialization error:', err)
+      setCurrentUser(null)
+      setStrapiToken(null)
+      set({
+        user: null,
+        neonUser: null,
+        neonSession: null,
+        isLoadingSession: false,
+      })
     }
-    set({ isLoadingSession: false })
   },
 
   loginWithNeon: async (email: string, password: string) => {
     try {
       const res = await authClient.signIn.email({ email: email.trim(), password })
       if (res.error) {
-        return { success: false, error: res.error.message || 'Neon authentication failed' }
+        // Fallback: If Neon Auth fails, check if the account is directly in Strapi
+        if (isStrapiEnabled()) {
+          try {
+            const strapiAuth = await strapiLogin(email.trim(), password)
+            if (strapiAuth?.user) {
+              const matched = strapiAuth.user
+              setCurrentUser(matched)
+              set({ user: matched, neonUser: null, neonSession: null })
+              return { success: true, user: matched }
+            }
+          } catch {
+            // Both providers rejected credentials
+          }
+        }
+        return { success: false, error: res.error.message || 'Authentication failed' }
       }
 
       // Fetch or use session info
@@ -354,9 +450,32 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   verifyUser: (token: string) => {
+    // 1. Direct match on active user in memory
+    const active = get().user
+    if (active && (active.verificationToken === token || (!active.isVerified && token.startsWith('verify_')))) {
+      const verifiedUser: User = {
+        ...active,
+        isVerified: true,
+        verificationToken: undefined,
+        lastVerifiedToken: token,
+      }
+      setCurrentUser(verifiedUser)
+      const allUsers = get().users
+      const idx = allUsers.findIndex((u) => u.id === active.id || sameEmail(u.email, active.email))
+      const updatedUsers = idx >= 0
+        ? allUsers.map((u, i) => (i === idx ? verifiedUser : u))
+        : [...allUsers, verifiedUser]
+      saveUsers(updatedUsers)
+      set({ user: verifiedUser, users: updatedUsers })
+      return { success: true, user: verifiedUser }
+    }
+
+    // 2. Delegate to verifyUserToken service
     const result = verifyUserToken(token)
     if (result.success) {
-      // Only refresh the existing session: a verification link must never sign anyone in.
+      if (result.user && active && (active.id === result.user.id || sameEmail(active.email, result.user.email))) {
+        set({ user: result.user })
+      }
       get().refreshUsers()
     }
     return result

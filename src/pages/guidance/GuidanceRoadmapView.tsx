@@ -90,7 +90,7 @@ export default function GuidanceRoadmapView() {
   }
 
   return (
-    <Container fluid="xl" className="py-4">
+    <div className="guidance-roadmap-view-page py-2">
       {/* Top Navigation & Breadcrumbs */}
       <div className="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
         <Button
@@ -309,6 +309,6 @@ export default function GuidanceRoadmapView() {
           </Button>
         </Modal.Footer>
       </Modal>
-    </Container>
+    </div>
   );
 }
