@@ -1,6 +1,16 @@
 import React from 'react'
 import { Card, Badge } from 'react-bootstrap'
-import { FaCheckCircle, FaExclamationCircle, FaShieldAlt, FaIdBadge } from 'react-icons/fa'
+import {
+  FaCheckCircle,
+  FaExclamationCircle,
+  FaShieldAlt,
+  FaEnvelope,
+  FaLock,
+  FaBuilding,
+  FaCertificate,
+  FaGavel,
+  FaBalanceScale,
+} from 'react-icons/fa'
 import type { User, UserRole } from '../../types/domain'
 import { useTranslation } from '../../hooks/useTranslation'
 
@@ -10,11 +20,31 @@ interface ProfileHeroProps {
   userInitials: string
 }
 
-const roleBadgeVariant: Record<UserRole, string> = {
-  LIP: 'secondary',
-  McKenzieFriend: 'info',
-  Solicitor: 'primary',
-  Barrister: 'dark',
+const roleBadgeVariant: Record<UserRole, { bg: string; text: string; label: string; icon: React.ReactNode }> = {
+  LIP: {
+    bg: 'secondary',
+    text: 'white',
+    label: 'Litigant in Person',
+    icon: <FaBalanceScale size={12} />,
+  },
+  McKenzieFriend: {
+    bg: 'success',
+    text: 'white',
+    label: 'McKenzie Friend',
+    icon: <FaShieldAlt size={12} />,
+  },
+  Solicitor: {
+    bg: 'primary',
+    text: 'white',
+    label: 'SRA Solicitor',
+    icon: <FaGavel size={12} />,
+  },
+  Barrister: {
+    bg: 'dark',
+    text: 'white',
+    label: 'BSB Barrister',
+    icon: <FaGavel size={12} />,
+  },
 }
 
 export const ProfileHero: React.FC<ProfileHeroProps> = ({ user, safeName, userInitials }) => {
@@ -35,91 +65,109 @@ export const ProfileHero: React.FC<ProfileHeroProps> = ({ user, safeName, userIn
     }
   }
 
+  const roleMeta = roleBadgeVariant[user.role] || roleBadgeVariant.LIP
+
   return (
-    <Card className="border-0 shadow-sm mb-4 overflow-hidden" style={{ borderRadius: 16 }}>
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%)',
-          padding: '2rem 1.5rem 1.5rem',
-          color: '#ffffff',
-        }}
-      >
-        <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
-          <div className="d-flex align-items-center gap-3">
-            <div
-              className="d-flex align-items-center justify-content-center rounded-circle fw-bold flex-shrink-0 shadow-sm"
-              style={{
-                width: 72,
-                height: 72,
-                background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
-                color: '#ffffff',
-                fontSize: '1.75rem',
-                border: '3px solid rgba(255, 255, 255, 0.25)',
-              }}
-            >
+    <Card className="profile-hero-card mb-4 p-3 p-md-4">
+      <div className="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
+        {/* User Identity Column */}
+        <div className="d-flex align-items-center gap-3 min-w-0">
+          <div className="position-relative flex-shrink-0">
+            <div className="profile-avatar-circle" aria-hidden="true">
               {userInitials}
             </div>
-            <div>
-              <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
-                <h1 className="h3 fw-bold text-white mb-0">{safeName}</h1>
-                <Badge bg={roleBadgeVariant[user.role] || 'secondary'} className="px-2.5 py-1.5 fs-7">
-                  {getRoleLabel(user.role)}
-                </Badge>
-                {user.role !== 'LIP' && (
-                  user.isVerified ? (
-                    <Badge bg="success" className="px-2.5 py-1.5 fs-7 d-inline-flex align-items-center gap-1">
-                      <FaCheckCircle size={11} />
-                      <span>{t('common.verified')}</span>
-                    </Badge>
-                  ) : (
-                    <Badge bg="warning" className="text-dark px-2.5 py-1.5 fs-7 d-inline-flex align-items-center gap-1">
-                      <FaExclamationCircle size={11} />
-                      <span>{t('common.unverified')}</span>
-                    </Badge>
-                  )
-                )}
-              </div>
-              <div className="text-white-50 small mb-2 d-flex align-items-center gap-2 flex-wrap">
-                <span>{user.email}</span>
-                {user.firm && (
-                  <>
-                    <span>•</span>
-                    <span className="text-light">{user.firm}</span>
-                  </>
-                )}
-                {user.registrationNumber && (
-                  <>
-                    <span>•</span>
-                    <span className="text-light">Reg: {user.registrationNumber}</span>
-                  </>
-                )}
-              </div>
-            </div>
+            {user.isVerified && (
+              <span
+                className="position-absolute bottom-0 end-0 bg-success text-white rounded-circle d-flex align-items-center justify-content-center shadow-xs"
+                style={{ width: 22, height: 22, border: '2px solid #ffffff' }}
+                title="Verified Account"
+              >
+                <FaCheckCircle size={11} />
+              </span>
+            )}
           </div>
 
-          <div className="d-flex align-items-center gap-2 flex-wrap">
-            <div
-              className="px-3 py-2 rounded-3 text-start"
-              style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.12)' }}
-            >
-              <div className="text-white-50 fs-8 d-flex align-items-center gap-1">
-                <FaIdBadge size={11} />
-                <span>Account ID</span>
-              </div>
-              <div className="fw-mono text-white small text-truncate" style={{ maxWidth: 120 }}>
-                {user.id}
-              </div>
+          <div className="min-w-0">
+            <div className="d-flex align-items-center gap-2 flex-wrap mb-1">
+              <h1 className="h3 fw-bold text-dark mb-0 text-truncate" style={{ letterSpacing: '-0.02em' }}>
+                {safeName}
+              </h1>
+
+              <Badge
+                bg={roleMeta.bg}
+                className="d-inline-flex align-items-center gap-1.5 px-2.5 py-1 rounded-pill fw-semibold shadow-xs"
+                style={{ fontSize: '0.8rem' }}
+              >
+                {roleMeta.icon}
+                <span>{getRoleLabel(user.role)}</span>
+              </Badge>
+
+              {user.isVerified ? (
+                <Badge
+                  bg="success-soft"
+                  className="text-success border border-success-subtle d-inline-flex align-items-center gap-1 px-2 py-0.5 rounded-pill fw-semibold"
+                  style={{ fontSize: '0.75rem', backgroundColor: 'var(--mcb-success-soft)' }}
+                >
+                  <FaCheckCircle size={10} />
+                  <span>{t('common.verified')}</span>
+                </Badge>
+              ) : (
+                <Badge
+                  bg="warning-soft"
+                  className="text-warning border border-warning-subtle d-inline-flex align-items-center gap-1 px-2 py-0.5 rounded-pill fw-semibold"
+                  style={{ fontSize: '0.75rem', backgroundColor: 'var(--mcb-warning-soft)', color: 'var(--mcb-warning)' }}
+                >
+                  <FaExclamationCircle size={10} />
+                  <span>{t('common.unverified')}</span>
+                </Badge>
+              )}
             </div>
-            <div
-              className="px-3 py-2 rounded-3 text-start"
-              style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.12)' }}
-            >
-              <div className="text-white-50 fs-8 d-flex align-items-center gap-1">
-                <FaShieldAlt size={11} />
-                <span>FPR Privacy</span>
-              </div>
-              <div className="text-success small fw-semibold">Protected</div>
+
+            <div className="text-muted small d-flex align-items-center gap-2 flex-wrap">
+              <span className="d-inline-flex align-items-center gap-1">
+                <FaEnvelope size={11} className="text-primary" />
+                <span className="text-dark fw-medium">{user.email}</span>
+              </span>
+
+              {user.firm && (
+                <>
+                  <span className="text-muted">•</span>
+                  <span className="d-inline-flex align-items-center gap-1">
+                    <FaBuilding size={11} className="text-secondary" />
+                    <span>{user.firm}</span>
+                  </span>
+                </>
+              )}
+
+              {user.registrationNumber && (
+                <>
+                  <span className="text-muted">•</span>
+                  <span className="d-inline-flex align-items-center gap-1">
+                    <FaCertificate size={11} className="text-secondary" />
+                    <span>Reg: {user.registrationNumber}</span>
+                  </span>
+                </>
+              )}
             </div>
+          </div>
+        </div>
+
+        {/* Quick Context & Compliance Badges */}
+        <div className="profile-hero-stats">
+          <div className="profile-stat-box">
+            <div className="text-muted fs-8 d-flex align-items-center gap-1 mb-0.5">
+              <FaShieldAlt size={11} className="text-success" />
+              <span>Court Confidentiality</span>
+            </div>
+            <div className="text-success small fw-bold">FPR 12.73 Protected</div>
+          </div>
+
+          <div className="profile-stat-box">
+            <div className="text-muted fs-8 d-flex align-items-center gap-1 mb-0.5">
+              <FaLock size={10} className="text-primary" />
+              <span>Data Protection</span>
+            </div>
+            <div className="text-dark small fw-bold">Encrypted AES-256</div>
           </div>
         </div>
       </div>

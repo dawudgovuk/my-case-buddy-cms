@@ -247,7 +247,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                 )}
 
                 {/* Responsive Mobile / Desktop Controls (Language + User Profile) */}
-                <div className="d-flex align-items-center justify-content-between gap-1.5 ms-xl-2 pt-2 pt-xl-0 border-top border-top-xl-0">
+                <div className="app-header-controls d-flex align-items-center gap-1.5 ms-xl-2">
                   {/* Language Switcher */}
                   <LanguageSwitcher className="my-1 my-xl-0" />
 
@@ -402,7 +402,7 @@ export default function AppHeader({ className = '' }: AppHeaderProps) {
                   <span>{t('common.support')}</span>
                   <FaExternalLinkAlt size={10} className="text-muted ms-0.5" />
                 </Nav.Link>
-                <div className="d-flex align-items-center gap-2 ms-xl-2 pt-2 pt-xl-0 border-top border-top-xl-0">
+                <div className="app-header-controls d-flex align-items-center gap-2 ms-xl-2">
                   <LanguageSwitcher />
                   {location.pathname !== '/login' && (
                     <Nav.Link

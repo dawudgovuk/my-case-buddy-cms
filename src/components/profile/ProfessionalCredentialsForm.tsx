@@ -1,6 +1,16 @@
 import React, { useState } from 'react'
 import { Card, Form, Row, Col, Badge, Button, InputGroup } from 'react-bootstrap'
-import { FaBuilding, FaCertificate, FaClock, FaTags, FaTimes, FaPlus, FaBookOpen } from 'react-icons/fa'
+import {
+  FaBuilding,
+  FaCertificate,
+  FaClock,
+  FaTags,
+  FaTimes,
+  FaPlus,
+  FaBookOpen,
+  FaCheck,
+  FaAward,
+} from 'react-icons/fa'
 import type { UserRole } from '../../types/domain'
 import { useTranslation } from '../../hooks/useTranslation'
 
@@ -40,6 +50,7 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
   const activeSpecialisms = data.specialisms || []
 
   const isBarrister = role === 'Barrister'
+  const isSolicitor = role === 'Solicitor'
 
   function handleToggleSpecialism(item: string) {
     if (activeSpecialisms.includes(item)) {
@@ -67,12 +78,18 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
     <Card className="premium-card p-3 p-md-4 mb-4 border">
       <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
         <div>
-          <h2 className="h5 fw-bold text-dark mb-1">{t('profile.professionalCredentialsTitle')}</h2>
+          <h2 className="h5 fw-bold text-dark d-flex align-items-center gap-2 mb-1">
+            <FaAward className="text-primary" size={16} />
+            <span>{t('profile.professionalCredentialsTitle')}</span>
+          </h2>
           <p className="text-muted small mb-0">
             {t('profile.professionalCredentialsDesc')}
           </p>
         </div>
-        <Badge bg="primary" className="px-2.5 py-1.5 fs-7">
+        <Badge
+          bg={isBarrister ? 'dark' : isSolicitor ? 'primary' : 'success'}
+          className="px-3 py-1.5 rounded-pill fs-7 fw-semibold shadow-xs"
+        >
           {role}
         </Badge>
       </div>
@@ -81,13 +98,13 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
         {/* Firm / Chambers */}
         <Col xs={12} md={6}>
           <Form.Group controlId="profile-firm">
-            <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5">
+            <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5 mb-1.5">
               <FaBuilding className="text-primary" size={13} />
               <span>{isBarrister ? 'Chambers Name' : t('profile.firmOrChambers')}</span>
             </Form.Label>
             <Form.Control
               type="text"
-              placeholder={isBarrister ? 'e.g. St Philips Chambers' : t('profile.firmPlaceholder')}
+              placeholder={isBarrister ? 'e.g. 4PB / St Philips Chambers' : t('profile.firmPlaceholder')}
               value={data.firm || ''}
               onChange={(e) => onChange({ firm: e.target.value })}
               className="py-2"
@@ -98,15 +115,25 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
         {/* Registration Number */}
         <Col xs={12} md={6}>
           <Form.Group controlId="profile-registrationNumber">
-            <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5">
+            <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5 mb-1.5">
               <FaCertificate className="text-primary" size={13} />
               <span>
-                {t('profile.registrationNumber')}
+                {isBarrister
+                  ? 'Bar Standards Board (BSB) Number'
+                  : isSolicitor
+                  ? 'SRA Practising Roll ID'
+                  : t('profile.registrationNumber')}
               </span>
             </Form.Label>
             <Form.Control
               type="text"
-              placeholder={t('profile.registrationNumberPlaceholder')}
+              placeholder={
+                isBarrister
+                  ? 'e.g. BSB-123456'
+                  : isSolicitor
+                  ? 'e.g. SRA-654321'
+                  : t('profile.registrationNumberPlaceholder')
+              }
               value={data.registrationNumber || ''}
               onChange={(e) => onChange({ registrationNumber: e.target.value })}
               className="py-2"
@@ -115,9 +142,9 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
         </Col>
 
         {/* Years of Experience */}
-        <Col xs={12} md={4}>
+        <Col xs={12} md={6}>
           <Form.Group controlId="profile-yearsExperience">
-            <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5">
+            <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5 mb-1.5">
               <FaClock className="text-primary" size={13} />
               <span>{t('profile.yearsExperience')}</span>
             </Form.Label>
@@ -139,16 +166,16 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
         {/* Areas of Specialism */}
         <Col xs={12}>
           <Form.Group>
-            <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5 mb-1.5">
+            <Form.Label className="fw-semibold small text-dark d-flex align-items-center gap-1.5 mb-1">
               <FaTags className="text-primary" size={13} />
-              <span>Areas of Specialism & Practice</span>
+              <span>Areas of Specialism & Court Practice</span>
             </Form.Label>
-            <p className="text-muted small mb-2">
+            <p className="text-muted small mb-2.5">
               Select all practice areas you cover. These highlight your expertise in the Legal Directory and Case Team matchmaking.
             </p>
 
             {/* Preset tags pill list */}
-            <div className="d-flex flex-wrap gap-1.5 mb-2.5">
+            <div className="d-flex flex-wrap gap-1.5 mb-3">
               {PRESET_SPECIALISMS.map((spec) => {
                 const isSelected = activeSpecialisms.includes(spec)
                 return (
@@ -156,50 +183,54 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
                     key={spec}
                     type="button"
                     onClick={() => handleToggleSpecialism(spec)}
-                    className={`btn btn-sm rounded-pill px-2.5 py-1 transition-all ${
+                    className={`btn btn-sm rounded-pill px-3 py-1.5 transition-all d-inline-flex align-items-center gap-1.5 ${
                       isSelected
-                        ? 'btn-primary'
+                        ? 'btn-primary shadow-xs fw-semibold'
                         : 'btn-outline-secondary bg-white text-secondary'
                     }`}
-                    style={{ fontSize: '0.8rem' }}
+                    style={{ fontSize: '0.8125rem' }}
                   >
-                    {isSelected ? '✓ ' : '+ '}
-                    {spec}
+                    {isSelected ? <FaCheck size={10} /> : <FaPlus size={9} />}
+                    <span>{spec}</span>
                   </button>
                 )
               })}
             </div>
 
             {/* Custom Tag Input */}
-            <InputGroup className="mb-2" style={{ maxWidth: 440 }}>
-              <Form.Control
-                type="text"
-                size="sm"
-                placeholder="Add other custom specialism..."
-                value={customTag}
-                onChange={(e) => setCustomTag(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault()
-                    handleAddCustomTag()
-                  }
-                }}
-              />
-              <Button variant="outline-primary" size="sm" onClick={() => handleAddCustomTag()}>
-                <FaPlus size={10} className="me-1" />
-                Add
-              </Button>
-            </InputGroup>
+            <div className="d-flex align-items-center gap-2 mb-2">
+              <InputGroup style={{ maxWidth: 440 }}>
+                <Form.Control
+                  type="text"
+                  size="sm"
+                  placeholder="Add other custom practice area..."
+                  value={customTag}
+                  onChange={(e) => setCustomTag(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleAddCustomTag()
+                    }
+                  }}
+                  className="py-1.5"
+                />
+                <Button variant="outline-primary" size="sm" onClick={() => handleAddCustomTag()} className="px-3">
+                  <FaPlus size={10} className="me-1" />
+                  Add
+                </Button>
+              </InputGroup>
+            </div>
 
             {/* Active Tags display */}
             {activeSpecialisms.length > 0 && (
-              <div className="d-flex flex-wrap gap-1 mt-2 p-2 rounded-2 bg-light border">
-                <span className="small text-muted me-1 align-self-center">Selected:</span>
+              <div className="d-flex flex-wrap align-items-center gap-1.5 mt-2 p-2.5 rounded-3 bg-light border">
+                <span className="small text-muted fw-semibold me-1">Selected Specialisms ({activeSpecialisms.length}):</span>
                 {activeSpecialisms.map((tag) => (
                   <Badge
                     key={tag}
                     bg="dark"
-                    className="d-inline-flex align-items-center gap-1 px-2 py-1 fw-normal text-white"
+                    className="d-inline-flex align-items-center gap-1 px-2.5 py-1 rounded-pill fw-medium text-white shadow-xs"
+                    style={{ fontSize: '0.78rem' }}
                   >
                     <span>{tag}</span>
                     <FaTimes
@@ -207,6 +238,7 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
                       size={10}
                       className="ms-1 cursor-pointer text-white-50 hover-text-white"
                       onClick={() => handleRemoveTag(tag)}
+                      title="Remove specialism"
                     />
                   </Badge>
                 ))}
@@ -223,12 +255,14 @@ export const ProfessionalCredentialsForm: React.FC<ProfessionalCredentialsFormPr
                 <FaBookOpen className="text-primary" size={13} />
                 <span>Professional Biography & Court Approach</span>
               </span>
-              <span className="text-muted small">{(data.bio || '').length} characters</span>
+              <span className="badge bg-light text-muted border">
+                {(data.bio || '').length} characters
+              </span>
             </Form.Label>
             <Form.Control
               as="textarea"
               rows={4}
-              placeholder="Outline your background in Family Law, courtroom presence, approaches to dispute resolution, and any particular areas of experience (e.g. international matters, complex fact-findings)..."
+              placeholder="Outline your background in UK Family Law, courtroom presence, approaches to dispute resolution, and any particular areas of experience (e.g. complex fact-findings, international child matters, non-molestation orders)..."
               value={data.bio || ''}
               onChange={(e) => onChange({ bio: e.target.value })}
               className="py-2"

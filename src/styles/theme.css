@@ -1071,3 +1071,156 @@ textarea.form-control { min-height: 5.5rem; }
   .dashboard-header-card .text-truncate,
   .professional-header-card .text-nowrap { white-space: normal !important; overflow: visible !important; }
 }
+
+/* Navigation desktop controls vs mobile drawer */
+.app-header-controls {
+  display: flex;
+  align-items: center;
+}
+@media (max-width: 1199.98px) {
+  .app-header-controls {
+    border-top: 1px solid var(--mcb-border);
+    padding-top: 0.75rem;
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+@media (min-width: 1200px) {
+  .app-header-controls {
+    border-top: none !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    width: auto !important;
+  }
+}
+
+/* ---------- Profile Page Enhancements ---------- */
+.profile-page {
+  animation: profileFadeIn 0.25s ease-in-out;
+}
+.profile-hero-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8faff 50%, #eef2ff 100%) !important;
+  border: 1px solid var(--mcb-border) !important;
+  border-top: 3.5px solid var(--mcb-primary) !important;
+  border-radius: var(--mcb-radius-lg) !important;
+  box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.06), 0 1px 3px rgba(15, 23, 42, 0.03) !important;
+  position: relative;
+}
+.profile-hero-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+@media (max-width: 767.98px) {
+  .profile-hero-stats {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--mcb-border);
+  }
+}
+@media (min-width: 768px) {
+  .profile-hero-stats {
+    border-top: none !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    margin-left: auto;
+  }
+}
+.profile-avatar-circle {
+  width: 76px;
+  height: 76px;
+  background: linear-gradient(135deg, #2b4acb 0%, #3b82f6 50%, #6366f1 100%);
+  color: #ffffff;
+  font-size: 1.75rem;
+  font-weight: 750;
+  border-radius: 50%;
+  box-shadow: 0 8px 24px -4px rgba(43, 74, 203, 0.35);
+  border: 3px solid #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.profile-stat-box {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid var(--mcb-border);
+  border-radius: 12px;
+  padding: 0.6rem 0.9rem;
+  backdrop-filter: blur(8px);
+  min-width: 130px;
+  transition: all 0.18s ease-in-out;
+}
+.profile-stat-box:hover {
+  border-color: var(--mcb-primary-border);
+  background: #ffffff;
+  box-shadow: var(--mcb-shadow-xs);
+  transform: translateY(-1px);
+}
+.profile-nav-pills {
+  background: var(--mcb-surface-2);
+  border: 1px solid var(--mcb-border);
+  border-radius: 12px;
+  padding: 4px;
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.profile-nav-pills .nav-link {
+  border-radius: 9px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--mcb-text-2);
+  padding: 0.55rem 1.1rem;
+  transition: all 0.18s ease-in-out;
+  border: none;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+.profile-nav-pills .nav-link:hover {
+  color: var(--mcb-ink);
+  background: rgba(255, 255, 255, 0.7);
+}
+.profile-nav-pills .nav-link.active {
+  background: #ffffff !important;
+  color: var(--mcb-primary) !important;
+  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+.profile-floating-save {
+  position: fixed;
+  bottom: calc(var(--mcb-footer-height) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1015;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--mcb-primary-border);
+  border-radius: 9999px;
+  box-shadow: 0 16px 40px -6px rgba(15, 23, 42, 0.18), 0 4px 12px -2px rgba(43, 74, 203, 0.12);
+  padding: 0.6rem 1rem 0.6rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  animation: profileSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  max-width: 92vw;
+}
+@keyframes profileSlideUp {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 14px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@keyframes profileFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
