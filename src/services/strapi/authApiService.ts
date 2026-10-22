@@ -10,6 +10,7 @@ interface StrapiAuthResponse {
     email: string;
     name?: string;
     userRole?: string;
+    role?: string | { id?: number; name?: string; type?: string };
     firm?: string;
     registrationNumber?: string;
     confirmed?: boolean;
@@ -20,12 +21,41 @@ interface StrapiAuthResponse {
   };
 }
 
+export function normalizeUserRole(roleVal: unknown, userRoleVal?: unknown): UserRole {
+  // First check role object or string
+  if (roleVal && typeof roleVal === 'object') {
+    const r = roleVal as { type?: string; name?: string };
+    const raw = (r.type || r.name || '').toLowerCase().replace(/[-_\s]/g, '');
+    if (raw === 'lip' || raw === 'litigantinperson') return 'LIP';
+    if (raw === 'mckenziefriend' || raw === 'mckenzie') return 'McKenzieFriend';
+    if (raw === 'solicitor') return 'Solicitor';
+    if (raw === 'barrister') return 'Barrister';
+  } else if (typeof roleVal === 'string' && roleVal.trim()) {
+    const raw = roleVal.toLowerCase().replace(/[-_\s]/g, '');
+    if (raw === 'lip' || raw === 'litigantinperson') return 'LIP';
+    if (raw === 'mckenziefriend' || raw === 'mckenzie') return 'McKenzieFriend';
+    if (raw === 'solicitor') return 'Solicitor';
+    if (raw === 'barrister') return 'Barrister';
+  }
+
+  // Fallback to userRole
+  if (typeof userRoleVal === 'string' && userRoleVal.trim()) {
+    const raw = userRoleVal.toLowerCase().replace(/[-_\s]/g, '');
+    if (raw === 'lip' || raw === 'litigantinperson') return 'LIP';
+    if (raw === 'mckenziefriend' || raw === 'mckenzie') return 'McKenzieFriend';
+    if (raw === 'solicitor') return 'Solicitor';
+    if (raw === 'barrister') return 'Barrister';
+  }
+
+  return 'LIP';
+}
+
 function mapStrapiUserToDomain(u: StrapiAuthResponse['user']): User {
   return {
     id: String(u.id),
     name: u.name || u.username || u.email,
     email: u.email,
-    role: (u.userRole as UserRole) || 'LIP',
+    role: normalizeUserRole(u.role, u.userRole),
     firm: u.firm,
     registrationNumber: u.registrationNumber,
     isVerified: u.confirmed ?? true,
@@ -66,7 +96,10 @@ export async function strapiRegister(data: {
   firm?: string;
   registrationNumber?: string;
 }): Promise<{ jwt: string; user: User }> {
-  const result = await strapiPost<StrapiAuthResponse>('/api/auth/local/register', data);
+  const result = await strapiPost<StrapiAuthResponse>('/api/auth/local/register', {
+    ...data,
+    role: data.userRole,
+  });
 
   if (result.jwt) {
     setStrapiToken(result.jwt);
@@ -83,7 +116,7 @@ export async function strapiRegister(data: {
  */
 export async function strapiGetMe(): Promise<User | null> {
   try {
-    const raw = await strapiGet<StrapiAuthResponse['user']>('/api/users/me');
+    const raw = await strapiGet<StrapiAuthResponse['user']>('/api/users/me?populate=role');
     if (!raw || !raw.id) return null;
     return mapStrapiUserToDomain(raw);
   } catch {

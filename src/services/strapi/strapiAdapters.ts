@@ -17,6 +17,7 @@ import type {
   PartyRepresentation,
 } from '../../types/domain';
 import { unwrapEntry as unwrap } from './strapiTypes';
+import { normalizeUserRole } from './authApiService';
 
 export interface StrapiCaseRaw {
   id: number;
@@ -128,6 +129,7 @@ export interface StrapiMemberRaw {
   username?: string;
   email?: string;
   userRole?: string;
+  role?: string | { id?: number; name?: string; type?: string };
   firm?: string;
   name?: string;
   attributes?: Record<string, unknown>;
@@ -241,7 +243,7 @@ export function toDomainMember(raw: StrapiMemberRaw): CaseMember {
   return {
     userId: String(raw.documentId ?? data.documentId ?? data.id ?? raw.id ?? ''),
     documentId: raw.documentId || (data.documentId as string | undefined),
-    role: (data.userRole as CaseMember['role']) || 'Collaborator',
+    role: (normalizeUserRole(data.role, data.userRole) as unknown as CaseMember['role']) || 'Collaborator',
     email,
     name,
     username: data.username as string | undefined,

@@ -2,6 +2,7 @@ import type { User, UserRole } from '../../types/domain';
 import { strapiGet } from './strapiClient';
 import type { StrapiListResponse } from './strapiTypes';
 import { isProfessionalRole } from '../../utils/userUtils';
+import { normalizeUserRole } from './authApiService';
 
 interface StrapiUserRaw {
   id: number | string;
@@ -9,7 +10,7 @@ interface StrapiUserRaw {
   username?: string;
   email?: string;
   userRole?: string;
-  role?: string | { name?: string };
+  role?: string | { id?: number; name?: string; type?: string };
   firm?: string;
   registrationNumber?: string;
   bio?: string;
@@ -20,8 +21,8 @@ interface StrapiUserRaw {
 }
 
 /** The user's role, read from `role` (string or relation) or the custom `userRole` field. */
-function rawRoleOf(u: StrapiUserRaw): string | undefined {
-  return typeof u.role === 'string' ? u.role : u.role?.name || u.userRole;
+function rawRoleOf(u: StrapiUserRaw): UserRole {
+  return normalizeUserRole(u.role, u.userRole);
 }
 
 function toDomainProfessional(u: StrapiUserRaw): User {
@@ -29,7 +30,7 @@ function toDomainProfessional(u: StrapiUserRaw): User {
     id: String(u.id),
     name: u.name || u.username || u.email || 'Legal Professional',
     email: u.email || '',
-    role: (rawRoleOf(u) || 'McKenzieFriend') as UserRole,
+    role: rawRoleOf(u),
     firm: u.firm,
     registrationNumber: u.registrationNumber,
     isVerified: u.isVerified ?? u.confirmed ?? true,
