@@ -89,9 +89,8 @@ export async function updateStrapiCase(
   fc: FamilyCase,
   currentUser?: { id?: string; email?: string }
 ): Promise<FamilyCase> {
-  // First locate the Strapi record to obtain its internal documentId
-  const existing = await fetchStrapiCaseById(fc.id);
-  const targetId = existing?.documentId || existing?.id || fc.documentId || fc.id;
+  // Locate the Strapi record to obtain its internal documentId
+  const targetId = fc.documentId || (await fetchStrapiCaseById(fc.id))?.documentId || fc.id;
 
   const payload = toStrapiCasePayload(fc, currentUser, true);
   delete (payload.data as Record<string, unknown>).ownerEmail;

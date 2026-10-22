@@ -3,7 +3,9 @@ import CaseStatusBadge from '../common/CaseStatusBadge'
 import { useTranslation } from '../../hooks/useTranslation'
 
 export interface CaseMetadataOverviewProps {
-  caseData: Pick<FamilyCase, 'id' | 'court' | 'caseType' | 'status' | 'startedAt' | 'allocatedJudge'>
+  caseData: Pick<FamilyCase, 'id' | 'court' | 'caseType' | 'status' | 'startedAt' | 'allocatedJudge'> & {
+    caseNumber?: string
+  }
   className?: string
 }
 
@@ -18,7 +20,7 @@ export default function CaseMetadataOverview({ caseData, className }: CaseMetada
     <div className={`row g-3 ${className || ''}`}>
       <div className="col-12 col-md-6 col-lg-4">
         <span className="text-muted small d-block">{t('caseDetails.caseNumber')}</span>
-        <strong className="text-dark fs-6">{caseData.id}</strong>
+        <strong className="text-dark fs-6">{caseData.caseNumber || caseData.id}</strong>
       </div>
 
       <div className="col-12 col-md-6 col-lg-4">

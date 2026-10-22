@@ -76,10 +76,14 @@ export function saveSnapshot(update: (prev: AppStateSnapshot) => AppStateSnapsho
   return normalized;
 }
 
-export function upsertCase(fc: FamilyCase): AppStateSnapshot {
+export function upsertCase(fc: FamilyCase, previousId?: string): AppStateSnapshot {
   return saveSnapshot((prev) => {
     const existsIndex = prev.cases.findIndex(
-      (c) => c.id === fc.id || (Boolean(fc.documentId) && c.documentId === fc.documentId)
+      (c) =>
+        c.id === fc.id ||
+        (Boolean(previousId) && c.id === previousId) ||
+        (Boolean(fc.documentId) && c.documentId === fc.documentId) ||
+        (Boolean(fc.caseNumber) && c.caseNumber === fc.caseNumber)
     );
     const cases = [...prev.cases];
     if (existsIndex >= 0) {
@@ -87,19 +91,27 @@ export function upsertCase(fc: FamilyCase): AppStateSnapshot {
     } else {
       cases.unshift({ ...fc, lastUpdatedAt: nowIso() });
     }
-    return { ...prev, cases };
+
+    let invites = prev.invites;
+    let deadlines = prev.deadlines;
+    if (previousId && previousId !== fc.id) {
+      invites = invites.map((inv) => (inv.caseId === previousId ? { ...inv, caseId: fc.id } : inv));
+      deadlines = deadlines.map((dl) => (dl.caseId === previousId ? { ...dl, caseId: fc.id } : dl));
+    }
+
+    return { ...prev, cases, invites, deadlines };
   });
 }
 
 export function deleteCase(caseId: string): AppStateSnapshot {
   return saveSnapshot((prev) => ({
     ...prev,
-    cases: prev.cases.filter((c) => c.id !== caseId && c.documentId !== caseId),
+    cases: prev.cases.filter((c) => c.id !== caseId && c.documentId !== caseId && c.caseNumber !== caseId),
   }));
 }
 
 export function getCase(caseId: string): FamilyCase | undefined {
-  return loadSnapshot().cases.find((c) => c.id === caseId || c.documentId === caseId);
+  return loadSnapshot().cases.find((c) => c.id === caseId || c.documentId === caseId || c.caseNumber === caseId);
 }
 
 export function generateId(prefix: string): string {

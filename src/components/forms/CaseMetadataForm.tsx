@@ -42,26 +42,50 @@ export default function CaseMetadataForm({
   const validation = useMemo(() => validateCaseNumber(values.id), [values.id])
   const isAutoId = Boolean(values.id && (values.id.startsWith('CASE_') || values.id.startsWith('case_')))
 
-  const courtOptions = useMemo(() => {
+  const courtSelectOptions = useMemo(() => {
     const list = [...courtJurisdictions]
     if (values.court && !list.includes(values.court)) {
       list.unshift(values.court)
     }
-    return list
-  }, [courtJurisdictions, values.court])
+    return list.map((c) => {
+      let label = c
+      if (c === 'Family Court') label = t('caseForm.courtFamilyCourt')
+      else if (c === 'High Court Family Division') label = t('caseForm.courtHighCourt')
+      return { value: c, label }
+    })
+  }, [courtJurisdictions, values.court, t])
 
-  const caseTypeOptions = useMemo(() => {
+  const caseTypeSelectOptions = useMemo(() => {
     const list = [...caseTypes]
     if (values.caseType && !list.includes(values.caseType)) {
       list.unshift(values.caseType)
     }
-    return list
-  }, [caseTypes, values.caseType])
+    return list.map((ct) => {
+      let label = ct
+      if (ct === 'Public Law (Care Proceedings)') label = t('caseForm.caseTypePublicLaw')
+      else if (ct === 'Private Law (Child Arrangements)') label = t('caseForm.caseTypePrivateLaw')
+      else if (ct === 'Domestic Abuse (Non-Molestation)') label = t('caseForm.caseTypeDomesticAbuse')
+      else if (ct === 'Financial Remedies') label = t('caseForm.caseTypeFinancialRemedies')
+      else if (ct === 'Adoption') label = t('caseForm.caseTypeAdoption')
+      else if (ct === 'Other') label = t('caseForm.caseTypeOther')
+      return { value: ct, label }
+    })
+  }, [caseTypes, values.caseType, t])
+
+  const statusSelectOptions = useMemo(() => {
+    return CASE_STATUSES.map((st) => {
+      let label: string = st
+      if (st === 'Open') label = t('caseForm.statusOpen')
+      else if (st === 'Stayed') label = t('caseForm.statusStayed')
+      else if (st === 'Concluded') label = t('caseForm.statusConcluded')
+      return { value: st, label }
+    })
+  }, [t])
 
   const helperText = isAutoId
-    ? 'Assigned bundle tracking reference. You can update this with your official 16-digit court case number once issued.'
+    ? t('caseForm.litigantTipNotice')
     : validation.digitsCount > 0 && validation.digitsCount < 16
-    ? `Entering 16-digit HMCTS case reference: ${validation.digitsCount}/16 digits`
+    ? `${t('caseForm.caseNumberLabel')}: ${validation.digitsCount}/16`
     : t('caseForm.caseNumberHelp')
 
   return (
@@ -76,7 +100,7 @@ export default function CaseMetadataForm({
             <div>
               <h6 className="fw-bold mb-0 text-dark">{t('caseDetails.metadataTitle')}</h6>
               <span className="text-muted small" style={{ fontSize: '0.78rem' }}>
-                Primary proceeding name and court registry number
+                {t('caseForm.caseSubtitle')}
               </span>
             </div>
           </div>
@@ -90,7 +114,7 @@ export default function CaseMetadataForm({
           required
           disabled={disabled}
           icon={<FaFolder size={14} />}
-          helperText="Descriptive title identifying your court matter"
+          helperText={t('caseForm.caseTitleHelper')}
           className="mb-3"
         />
 
@@ -115,7 +139,7 @@ export default function CaseMetadataForm({
           <Alert variant="info" className="py-2 px-3 mb-0 d-flex align-items-center gap-2 border-0 bg-info-subtle text-info-emphasis">
             <FaInfoCircle size={14} className="flex-shrink-0" />
             <span style={{ fontSize: '0.8rem' }}>
-              <strong>Litigant Tip:</strong> If your application has not yet been stamped by the court, an automatic tracking ID will be generated for your digital bundle.
+              <strong>{t('caseForm.litigantTipLabel')}:</strong> {t('caseForm.litigantTipNotice')}
             </span>
           </Alert>
         )}
@@ -128,9 +152,9 @@ export default function CaseMetadataForm({
             <FaGavel size={14} />
           </div>
           <div>
-            <h6 className="fw-bold mb-0 text-dark">Jurisdiction & Proceedings Details</h6>
+            <h6 className="fw-bold mb-0 text-dark">{t('caseForm.jurisdictionSectionTitle')}</h6>
             <span className="text-muted small" style={{ fontSize: '0.78rem' }}>
-              Family division, procedural track, and key milestone dates
+              {t('caseForm.jurisdictionSectionSubtitle')}
             </span>
           </div>
         </div>
@@ -141,10 +165,10 @@ export default function CaseMetadataForm({
               label={t('caseForm.courtJurisdictionLabel')}
               value={values.court}
               onChange={(val) => onChange('court', val as CourtType)}
-              options={courtOptions}
+              options={courtSelectOptions}
               required
               disabled={disabled}
-              helperText="Competent family court venue"
+              helperText={t('caseForm.courtVenueHelper')}
             />
           </Col>
           <Col md={6}>
@@ -152,10 +176,10 @@ export default function CaseMetadataForm({
               label={t('caseForm.caseTypeLabel')}
               value={values.caseType}
               onChange={(val) => onChange('caseType', val as CaseType)}
-              options={caseTypeOptions}
+              options={caseTypeSelectOptions}
               required
               disabled={disabled}
-              helperText="Procedural classification under Family Procedure Rules"
+              helperText={t('caseForm.caseTypeHelper')}
             />
           </Col>
         </Row>
@@ -166,10 +190,10 @@ export default function CaseMetadataForm({
               label={t('caseDetails.statusLabel')}
               value={values.status}
               onChange={(val) => onChange('status', val as CaseStatus)}
-              options={CASE_STATUSES}
+              options={statusSelectOptions}
               required
               disabled={disabled}
-              helperText="Active, Stayed, or Concluded status"
+              helperText={t('caseForm.statusHelper')}
             />
           </Col>
           <Col md={6}>
@@ -179,7 +203,7 @@ export default function CaseMetadataForm({
               onChange={(val) => onChange('startedAt', val)}
               required
               disabled={disabled}
-              helperText="Application filing date or service date"
+              helperText={t('caseForm.filingDateHelper')}
             />
           </Col>
         </Row>
@@ -192,9 +216,9 @@ export default function CaseMetadataForm({
             <FaCalendarCheck size={14} />
           </div>
           <div>
-            <h6 className="fw-bold mb-0 text-dark">Judicial Bench Allocation</h6>
+            <h6 className="fw-bold mb-0 text-dark">{t('caseForm.benchSectionTitle')}</h6>
             <span className="text-muted small" style={{ fontSize: '0.78rem' }}>
-              Allocated judge, magistrates bench, or legal adviser
+              {t('caseForm.benchSectionSubtitle')}
             </span>
           </div>
         </div>
@@ -208,7 +232,7 @@ export default function CaseMetadataForm({
               onChange={(val) => onChange('allocatedJudge', val)}
               disabled={disabled}
               icon={<FaGavel size={14} />}
-              helperText="Lead judge or magistrate allocated for case management"
+              helperText={t('caseForm.leadJudgeHelper')}
               className="mb-0"
             />
           </Col>
@@ -221,7 +245,9 @@ export default function CaseMetadataForm({
                 <div>
                   <div className="fw-semibold small text-dark">{t('common.children')}</div>
                   <div className="text-muted small" style={{ fontSize: '0.75rem' }}>
-                    {childrenCount === 1 ? '1 child involved' : `${childrenCount} children involved`}
+                    {childrenCount === 1
+                      ? t('caseForm.childCountSingle')
+                      : t('caseForm.childCountPlural').replace('{count}', String(childrenCount))}
                   </div>
                 </div>
               </div>

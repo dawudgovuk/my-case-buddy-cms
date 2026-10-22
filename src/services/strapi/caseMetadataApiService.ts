@@ -175,3 +175,65 @@ export async function fetchStrapiCaseTypes(): Promise<CaseTypeDomain[]> {
     return [];
   }
 }
+
+export interface CasePresetDomain {
+  id: string;
+  documentId?: string;
+  presetKey: string;
+  label: string;
+  titleTemplate: string;
+  caseType: string;
+  court: string;
+  icon: string;
+  description: string;
+  order: number;
+  isActive: boolean;
+}
+
+interface StrapiCasePresetRaw {
+  id: number;
+  documentId?: string;
+  presetKey?: string;
+  label?: string;
+  titleTemplate?: string;
+  caseType?: string;
+  court?: string;
+  icon?: string;
+  description?: string;
+  order?: number;
+  isActive?: boolean;
+  attributes?: Record<string, unknown>;
+}
+
+export async function fetchStrapiCasePresets(): Promise<CasePresetDomain[]> {
+  try {
+    const query = {
+      'sort': 'order:asc',
+      'filters[isActive][$eq]': 'true',
+      'pagination[pageSize]': '100',
+    };
+    const response = await strapiGet<StrapiListResponse<StrapiCasePresetRaw>>('/api/case-presets', query);
+    if (!response?.data || !Array.isArray(response.data)) {
+      return [];
+    }
+    return response.data.map((raw) => {
+      const data = unwrap(raw);
+      return {
+        id: String(data.documentId || data.id || raw.id || ''),
+        documentId: raw.documentId || (data.documentId as string | undefined),
+        presetKey: String(data.presetKey || ''),
+        label: String(data.label || ''),
+        titleTemplate: String(data.titleTemplate || ''),
+        caseType: String(data.caseType || ''),
+        court: String(data.court || 'Family Court'),
+        icon: String(data.icon || 'child'),
+        description: String(data.description || ''),
+        order: typeof data.order === 'number' ? data.order : 1,
+        isActive: data.isActive !== false,
+      };
+    });
+  } catch (err) {
+    console.warn('Failed to fetch Strapi case presets, using defaults:', err);
+    return [];
+  }
+}

@@ -34,7 +34,7 @@ interface CasesState {
   refresh: () => void;
   setStrapiMode: (enabled: boolean) => void;
   syncWithStrapi: () => Promise<void>;
-  addOrUpdate: (fc: FamilyCase) => Promise<FamilyCase>;
+  addOrUpdate: (fc: FamilyCase, previousId?: string) => Promise<FamilyCase>;
   remove: (caseId: string) => void;
   getById: (caseId: string) => FamilyCase | undefined;
   togglePeerSupport: (caseId: string, seeking: boolean, note?: string) => void;
@@ -86,13 +86,22 @@ export const useCasesStore = create<CasesState>((set, get) => ({
     }
   },
 
-  addOrUpdate: async (fc: FamilyCase): Promise<FamilyCase> => {
+  addOrUpdate: async (fc: FamilyCase, previousId?: string): Promise<FamilyCase> => {
     // Determine whether this case already exists before any mutation
-    const isExisting = Boolean(get().cases.some((c) => isSameCase(c, fc)) || getCase(fc.id));
+    const isExisting = Boolean(
+      (previousId && (get().cases.some((c) => c.id === previousId) || getCase(previousId))) ||
+      get().cases.some((c) => isSameCase(c, fc)) ||
+      getCase(fc.id)
+    );
 
     // Optimistic persistence to local snapshot and Zustand store
-    upsertCase(fc);
-    set((state) => ({ cases: upsertCaseInList(state.cases, fc), strapiError: null }));
+    upsertCase(fc, previousId);
+    set((state) => {
+      const list = previousId && previousId !== fc.id
+        ? state.cases.filter((c) => c.id !== previousId)
+        : state.cases;
+      return { cases: upsertCaseInList(list, fc), strapiError: null };
+    });
 
     if (get().isStrapiMode) {
       set({ isLoadingStrapi: true });
@@ -105,12 +114,17 @@ export const useCasesStore = create<CasesState>((set, get) => ({
         if (savedCase) {
           // Client-side ownership must never be lost when the server omits members
           const hydratedCase = mergeCaseMembers(savedCase, fc);
-          upsertCase(hydratedCase);
-          set((state) => ({
-            cases: upsertCaseInList(state.cases, hydratedCase),
-            isLoadingStrapi: false,
-            strapiError: null,
-          }));
+          upsertCase(hydratedCase, previousId);
+          set((state) => {
+            const list = previousId && previousId !== hydratedCase.id
+              ? state.cases.filter((c) => c.id !== previousId)
+              : state.cases;
+            return {
+              cases: upsertCaseInList(list, hydratedCase),
+              isLoadingStrapi: false,
+              strapiError: null,
+            };
+          });
           return hydratedCase;
         }
       } catch (err: unknown) {
@@ -142,7 +156,10 @@ export const useCasesStore = create<CasesState>((set, get) => ({
   },
 
   getById: (caseId: string) => {
-    return getCase(caseId) ?? get().cases.find((c) => c.id === caseId || c.documentId === caseId);
+    return (
+      getCase(caseId) ??
+      get().cases.find((c) => c.id === caseId || c.documentId === caseId || c.caseNumber === caseId)
+    );
   },
 
   togglePeerSupport: (caseId: string, seeking: boolean, note?: string) => {

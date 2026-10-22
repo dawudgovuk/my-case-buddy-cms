@@ -35,7 +35,7 @@ export default function CaseForm() {
 
   const childrenCount = countChildren(form.parties)
   const adultPartiesCount = countAdults(form.parties)
-  const isCaseNumberValid = validateCaseNumber(form.id).isValid
+  const isCaseNumberValid = validateCaseNumber(form.caseNumber || form.id).isValid
   const isDetailsValid = Boolean(form.title.trim()) && isCaseNumberValid
   const exitToCaseOrHome = () => navigate(existing ? `/cases/${existing.id}` : '/')
 
@@ -78,7 +78,7 @@ export default function CaseForm() {
           <CaseMetadataForm
             values={{
               title: form.title,
-              id: form.id,
+              id: form.caseNumber || form.id,
               court: form.court,
               caseType: form.caseType,
               status: form.status,

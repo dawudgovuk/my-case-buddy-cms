@@ -78,6 +78,13 @@ export interface TranslationSchema {
     update: string
     completed: string
     pending: string
+    caseNumber: string
+    title: string
+    note: string
+    quickNote: string
+    listing: string
+    listings: string
+    pendingPlural: string
   }
   roles: {
     lip: string
@@ -184,6 +191,36 @@ export interface TranslationSchema {
     presetCareApp: string
     presetChildArrangements: string
     presetFinancialRemedy: string
+    presetProhibitedSteps: string
+    presetNonMolestation: string
+    presetCareProceedings: string
+    caseSubtitle: string
+    caseTitleHelper: string
+    litigantTipLabel: string
+    litigantTipNotice: string
+    jurisdictionSectionTitle: string
+    jurisdictionSectionSubtitle: string
+    courtVenueHelper: string
+    caseTypeHelper: string
+    statusHelper: string
+    filingDateHelper: string
+    benchSectionTitle: string
+    benchSectionSubtitle: string
+    leadJudgeHelper: string
+    litigantTipBox: string
+    childCountSingle: string
+    childCountPlural: string
+    courtFamilyCourt: string
+    courtHighCourt: string
+    caseTypePublicLaw: string
+    caseTypePrivateLaw: string
+    caseTypeDomesticAbuse: string
+    caseTypeFinancialRemedies: string
+    caseTypeAdoption: string
+    caseTypeOther: string
+    statusOpen: string
+    statusStayed: string
+    statusConcluded: string
     readinessChecklistTitle: string
     readinessChecklistSubtitle: string
     applicantReviewTitle: string
@@ -476,6 +513,22 @@ export interface TranslationSchema {
     partyPlural: string
     childSingular: string
     childPlural: string
+    courtAndTrack: string
+    status: string
+    nextListing: string
+    deadlines: string
+    upcomingHearings: string
+    noUpcomingHearings: string
+    noUpcomingHearingsDesc: string
+    submissionDeadlines: string
+    noPendingDeadlines: string
+    noPendingDeadlinesDesc: string
+    overdue: string
+    upcomingDeadlines: string
+    daysOverdue: string
+    dueIn: string
+    day: string
+    days: string
   }
   caseTabs: {
     timelineTitle: string
@@ -703,5 +756,10 @@ export interface TranslationSchema {
     visitSupportCentre: string
     knowledgeBaseArticles: string
     understoodClose: string
+    noAssignedCasesDesc: string
+    noAssignedMatchingFilter: string
+    noPeerMatching: string
+    noPeerMatchingDesc: string
+    noteContentPlaceholder: string
   }
 }

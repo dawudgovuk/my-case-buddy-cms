@@ -89,7 +89,12 @@ export default function CaseSummaryCard({
                     title={`Current Court Milestone: ${stageObj.description}`}
                   >
                     <FaTasks size={10} />
-                    <span>{t('dashboard.stageOf')} {currentStageIdx + 1}/{stages.length}: {stageObj.name}</span>
+                    <span>
+                      {t('dashboard.stageOf', {
+                        current: currentStageIdx + 1,
+                        total: stages.length,
+                      })}: {stageObj.name}
+                    </span>
                   </span>
                 )
               })()}

@@ -9,6 +9,7 @@ import { useAuthStore } from '../../store/authStore'
 import { withAppendedNote } from '../../utils/caseNotes'
 import { toast } from '../../store/toastStore'
 import { useTranslation } from '../../hooks/useTranslation'
+import CaseStatusBadge from '../common/CaseStatusBadge'
 
 type SortField = 'title' | 'caseId' | 'nextHearing' | 'deadline' | 'priority'
 type SortDirection = 'asc' | 'desc'
@@ -19,7 +20,9 @@ interface AssignedCasesTabProps {
 }
 
 function getNextDeadline(caseData: FamilyCase, deadlines: DocumentDeadline[]): DocumentDeadline | null {
-  const caseDeadlines = deadlines.filter((d) => d.caseId === caseData.id && d.status === 'pending')
+  const caseDeadlines = deadlines.filter(
+    (d) => (d.caseId === caseData.id || (Boolean(caseData.caseNumber) && d.caseId === caseData.caseNumber)) && d.status === 'pending'
+  )
   if (caseDeadlines.length === 0) return null
   return caseDeadlines.sort((a, b) => new Date(a.deadlineDate).getTime() - new Date(b.deadlineDate).getTime())[0]
 }
@@ -247,69 +250,66 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
 
                   return (
                     <tr key={c.id}>
-                      <td className="fw-bold text-primary">{c.caseNumber || c.id}</td>
+                      <td>
+                        <span className="badge bg-light text-primary border font-monospace px-2.5 py-1.5 rounded-2 d-inline-flex align-items-center" style={{ fontSize: '0.8rem' }}>
+                          {c.caseNumber || c.id}
+                        </span>
+                      </td>
                       <td>
                         <div className="fw-semibold text-dark">{c.title}</div>
                       </td>
                       <td className="small text-muted">
-                        {c.court}
-                        <br />
+                        <div className="fw-medium text-dark">{c.court}</div>
                         <span className="text-secondary">{c.caseType}</span>
                       </td>
                       <td>
-                        <Badge
-                          bg={c.status === 'Open' ? 'success' : c.status === 'Stayed' ? 'warning' : 'secondary'}
-                          className="font-monospace"
-                          style={{ fontSize: '0.7rem' }}
-                        >
-                          {c.status}
-                        </Badge>
+                        <CaseStatusBadge status={c.status} />
                       </td>
                       <td className="small">
                         {nextHearing ? (
                           <div>
-                            {format(new Date(nextHearing.date), 'dd MMM yyyy')}
-                            <Badge bg="info" className="ms-1 px-1">
+                            <span className="fw-medium text-dark">{format(new Date(nextHearing.date), 'dd MMM yyyy')}</span>
+                            <Badge bg="info-subtle" className="text-info border border-info-subtle ms-1 px-1.5 py-0.5 rounded-pill">
                               {nextHearing.type}
                             </Badge>
                           </div>
                         ) : (
-                          <span className="text-muted">{t('professional.noneScheduled')}</span>
+                          <span className="text-muted fst-italic">{t('professional.noneScheduled')}</span>
                         )}
                       </td>
                       <td className="small">
                         {nextDl ? (
                           <div>
-                            {format(new Date(nextDl.deadlineDate), 'dd MMM yyyy')}
-                            <Badge bg="warning" className="ms-1 px-1 text-dark">
+                            <span className="fw-medium text-dark">{format(new Date(nextDl.deadlineDate), 'dd MMM yyyy')}</span>
+                            <Badge bg="warning-subtle" className="text-warning-emphasis border border-warning-subtle ms-1 px-1.5 py-0.5 rounded-pill">
                               {nextDl.title}
                             </Badge>
                           </div>
                         ) : (
-                          <span className="text-muted">{t('professional.noDeadlines')}</span>
+                          <span className="text-muted fst-italic">{t('professional.noDeadlines')}</span>
                         )}
                       </td>
                       <td className="text-end">
-                        <div className="d-flex gap-1 justify-content-end">
+                        <div className="d-flex gap-1.5 justify-content-end align-items-center">
                           <Button
                             variant="outline-secondary"
                             size="sm"
                             onClick={() => handleOpenNoteModal(c)}
                             title={t('professional.quickAttendanceNote')}
-                            className="d-inline-flex align-items-center gap-1 py-1 px-2"
+                            className="d-inline-flex align-items-center gap-1.5 py-1 px-2.5 rounded-2"
                             style={{ fontSize: '0.78rem' }}
                           >
-                            <FaStickyNote size={11} className="text-warning" />
-                            <span>{t('caseTabs.noteTitle')}</span>
+                            <FaStickyNote size={12} className="text-warning" />
+                            <span>{t('common.quickNote')}</span>
                           </Button>
                           <Button
-                            variant="outline-primary"
+                            variant="primary"
                             size="sm"
                             onClick={() => navigate(`/cases/${c.id}`)}
-                            className="d-inline-flex align-items-center gap-1 py-1 px-2"
+                            className="d-inline-flex align-items-center gap-1.5 py-1 px-2.5 rounded-2 shadow-xs"
                             style={{ fontSize: '0.78rem' }}
                           >
-                            <FaEye size={11} />
+                            <FaEye size={12} />
                             <span>{t('common.view')}</span>
                           </Button>
                         </div>

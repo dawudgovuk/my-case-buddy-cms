@@ -1,8 +1,12 @@
 import type { FamilyCase } from '../types/domain';
 
-/** True when two cases are the same record (matched by id, or by Strapi documentId when present). */
+/** True when two cases are the same record (matched by id, by Strapi documentId, or by caseNumber when present). */
 export function isSameCase(existing: FamilyCase, candidate: FamilyCase): boolean {
-  return existing.id === candidate.id || (Boolean(candidate.documentId) && existing.documentId === candidate.documentId);
+  return (
+    existing.id === candidate.id ||
+    (Boolean(candidate.documentId) && existing.documentId === candidate.documentId) ||
+    (Boolean(candidate.caseNumber) && existing.caseNumber === candidate.caseNumber)
+  );
 }
 
 /**

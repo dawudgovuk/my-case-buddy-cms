@@ -172,11 +172,18 @@ export default function PeerSupportCasesTab({
       )}
 
       {filtered.length === 0 ? (
-        <Card className="text-center p-4 border-0 shadow-sm">
-          <Card.Body>
-            <FaBalanceScale size={40} className="text-muted mb-3" />
-            <h6>{t('professional.noPeerMatching')}</h6>
-            <p className="text-muted small mb-0">{t('professional.noPeerMatchingDesc')}</p>
+        <Card className="text-center p-5 border-0 shadow-sm rounded-4 bg-white my-3">
+          <Card.Body className="py-4">
+            <div
+              className="p-3 rounded-circle bg-primary-subtle text-primary d-inline-flex align-items-center justify-content-center mb-3"
+              style={{ width: '64px', height: '64px' }}
+            >
+              <FaBalanceScale size={30} />
+            </div>
+            <h5 className="fw-bold text-dark mb-2">{t('professional.noPeerMatching')}</h5>
+            <p className="text-muted small mb-0" style={{ maxWidth: '480px', margin: '0 auto', lineHeight: 1.5 }}>
+              {t('professional.noPeerMatchingDesc')}
+            </p>
           </Card.Body>
         </Card>
       ) : (
@@ -191,7 +198,7 @@ export default function PeerSupportCasesTab({
                     <div className="d-flex justify-content-between align-items-start mb-2">
                       <div>
                         <h5 className="fw-bold mb-1 text-primary">
-                          {caseData.id} — {caseData.title}
+                          {caseData.caseNumber || caseData.id} — {caseData.title}
                         </h5>
                         <div className="small text-secondary">
                           {caseData.court} • {caseData.caseType}

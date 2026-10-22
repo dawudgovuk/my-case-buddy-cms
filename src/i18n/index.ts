@@ -72,10 +72,12 @@ export function translate(
   }
 
   if (!params) {
-    return result
+    return result.replace(/\s*{{\s*\w+\s*}}(?:\s*(?:of|de|z|o)\s*{{\s*\w+\s*}})?/gi, '').trim()
   }
 
-  return Object.entries(params).reduce((str, [paramKey, paramVal]) => {
+  const substituted = Object.entries(params).reduce((str, [paramKey, paramVal]) => {
     return str.replace(new RegExp(`{{\\s*${paramKey}\\s*}}`, 'g'), String(paramVal))
   }, result)
+
+  return substituted.replace(/{{\s*\w+\s*}}/g, '')
 }

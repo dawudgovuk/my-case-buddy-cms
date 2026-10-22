@@ -55,10 +55,18 @@ export function useCaseForm(caseId: string | undefined): UseCaseFormReturn {
     field: K,
     value: CaseMetadataFormValues[K]
   ) {
-    setForm((f) => ({
-      ...f,
-      [field]: value,
-    }))
+    setForm((f) => {
+      const next = { ...f, [field]: value }
+      if (field === 'id') {
+        const str = typeof value === 'string' ? value.trim() : ''
+        next.id = str
+        next.caseNumber =
+          str && !str.startsWith('CASE_') && !str.startsWith('case_')
+            ? formatCaseNumberInput(str)
+            : undefined
+      }
+      return next
+    })
   }
 
   function handleSelectPreset(preset: CasePreset) {
@@ -105,7 +113,8 @@ export function useCaseForm(caseId: string | undefined): UseCaseFormReturn {
       return
     }
 
-    const caseIdValidation = validateCaseNumber(form.id)
+    const rawNumber = form.caseNumber || form.id
+    const caseIdValidation = validateCaseNumber(rawNumber)
     if (!caseIdValidation.isValid) {
       toast.warning(
         caseIdValidation.error || 'Please enter a valid 16-digit Court Case Number or leave blank for auto-generated ID.',
@@ -118,12 +127,22 @@ export function useCaseForm(caseId: string | undefined): UseCaseFormReturn {
     setErrorMessage(null)
 
     const trimmedJudge = form.allocatedJudge?.trim() || undefined
-    const cleanId = form.id ? formatCaseNumberInput(form.id) : undefined
-    const id = existing?.id || cleanId || generateId('CASE')
+    const cleanId = rawNumber ? formatCaseNumberInput(rawNumber) : undefined
+    const isOfficialCaseNumber = Boolean(
+      cleanId && !cleanId.startsWith('CASE_') && !cleanId.startsWith('case_')
+    )
+    const finalCaseNumber = isOfficialCaseNumber ? cleanId : undefined
+    const finalId = isOfficialCaseNumber
+      ? cleanId!
+      : existing?.id || cleanId || generateId('CASE')
+
+    const previousId = existing?.id && existing.id !== finalId ? existing.id : undefined
+
     const payload: FamilyCase = {
       ...form,
-      id,
-      caseNumber: cleanId,
+      id: finalId,
+      documentId: existing?.documentId || form.documentId,
+      caseNumber: finalCaseNumber,
       title: trimmedTitle,
       allocatedJudge: trimmedJudge,
       startedAt: form.startedAt,
@@ -133,13 +152,13 @@ export function useCaseForm(caseId: string | undefined): UseCaseFormReturn {
     }
 
     try {
-      const savedCase = await addOrUpdate(payload)
+      const savedCase = await addOrUpdate(payload, previousId)
       if (existing) {
         toast.success(`Changes to "${savedCase.title || trimmedTitle}" saved successfully.`, 'Case Updated')
       } else {
         toast.success(`Case "${savedCase.title || trimmedTitle}" created successfully.`, 'Case Created')
       }
-      navigate(`/cases/${savedCase.id || id}`)
+      navigate(`/cases/${encodeURIComponent(savedCase.id || finalId)}`)
     } catch (err: unknown) {
       const message =
         err instanceof Error

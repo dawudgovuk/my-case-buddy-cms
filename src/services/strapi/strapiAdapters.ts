@@ -318,10 +318,15 @@ export function toDomainCase(raw: StrapiCaseRaw): FamilyCase {
     }
   }
 
+  const rawCaseNumber = typeof data.caseNumber === 'string' ? data.caseNumber : (data.caseNumber ? String(data.caseNumber) : undefined);
+
   return {
     id: String(data.caseNumber || raw.documentId || data.documentId || data.id || ''),
     documentId: raw.documentId || (data.documentId as string | undefined),
-    caseNumber: data.caseNumber ? String(data.caseNumber) : undefined,
+    caseNumber:
+      rawCaseNumber && !rawCaseNumber.startsWith('CASE_') && !rawCaseNumber.startsWith('case_')
+        ? rawCaseNumber
+        : undefined,
     title: String(data.title || 'Untitled Case'),
     court: (data.court as CourtType) || 'Family Court',
     caseType: (data.caseType as CaseType) || 'Private Law (Child Arrangements)',
@@ -353,7 +358,7 @@ export function toStrapiCasePayload(
     : currentUser?.email || fc.members?.find((m) => m.email || m.userId?.includes('@'))?.email;
   return {
     data: {
-      caseNumber: fc.id,
+      caseNumber: fc.caseNumber || fc.id,
       title: fc.title,
       court: fc.court,
       caseType: fc.caseType,

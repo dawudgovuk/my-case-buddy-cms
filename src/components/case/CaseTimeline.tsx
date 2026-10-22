@@ -5,6 +5,7 @@ import type { FamilyCase } from '../../types/domain'
 import type { CaseStageInfo } from '../../utils/caseStages'
 import { isUserCaseMember } from '../../utils/caseMembership'
 import { useAuthStore } from '../../store/authStore'
+import { useTranslation } from '../../hooks/useTranslation'
 import UpdateCaseStageModal from './UpdateCaseStageModal'
 import {
   FaCheck,
@@ -75,6 +76,7 @@ export default function CaseTimeline({
   const [selectedTargetStage, setSelectedTargetStage] = useState<string | undefined>(undefined)
 
   const { user } = useAuthStore()
+  const { t } = useTranslation()
 
   // Authorized members: Litigant in Person (owner), McKenzie Friend, Solicitor, Barrister
   const canUpdate = Boolean(caseData && user && isUserCaseMember(caseData, user))
@@ -101,7 +103,7 @@ export default function CaseTimeline({
         <div className="d-flex align-items-center justify-content-between gap-2 mb-2 flex-wrap">
           <div className="d-flex align-items-center gap-2">
             <span className="fw-bold text-dark" style={{ fontSize: '0.84rem' }}>
-              Stage {currentStageIndex + 1} of {total}
+              {t('dashboard.stageOf', { current: currentStageIndex + 1, total })}
             </span>
             {activeStage && (
               <span

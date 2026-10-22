@@ -6,9 +6,16 @@ import { isSameCase, mergeCaseMembers, upsertCaseInList } from '../../src/utils/
 const makeCase = (overrides: Partial<FamilyCase>): FamilyCase =>
   ({ id: 'C1', title: 'Case', parties: [], hearings: [], orders: [], documents: [], notes: [], ...overrides }) as FamilyCase;
 
-test('isSameCase matches by id or by documentId when the candidate has one', () => {
+test('isSameCase matches by id, by documentId, or by caseNumber when present', () => {
   assert.equal(isSameCase(makeCase({ id: 'A' }), makeCase({ id: 'A' })), true);
   assert.equal(isSameCase(makeCase({ id: 'A', documentId: 'd1' }), makeCase({ id: 'B', documentId: 'd1' })), true);
+  assert.equal(
+    isSameCase(
+      makeCase({ id: 'CASE_123', caseNumber: '1792 1487 9533 6269' }),
+      makeCase({ id: '1792 1487 9533 6269', caseNumber: '1792 1487 9533 6269' })
+    ),
+    true
+  );
   assert.equal(isSameCase(makeCase({ id: 'A' }), makeCase({ id: 'B' })), false);
   // A missing documentId never matches another missing documentId
   assert.equal(isSameCase(makeCase({ id: 'A' }), makeCase({ id: 'B', documentId: undefined })), false);

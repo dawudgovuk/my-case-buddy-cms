@@ -180,7 +180,7 @@ export default function CaseOverviewTab({ caseData, caseId, onSelectTab }: CaseO
             >
               {stages.map((st, idx) => (
                 <option key={st.id} value={st.id}>
-                  {t('dashboard.stageOf')} {idx + 1}: {st.name}
+                  {t('dashboard.stageOf', { current: idx + 1, total: stages.length })}: {st.name}
                 </option>
               ))}
             </Form.Select>

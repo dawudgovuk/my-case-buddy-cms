@@ -1,17 +1,8 @@
 import { Card, Badge } from 'react-bootstrap'
 import { FaBolt, FaChild, FaShieldAlt, FaBalanceScale, FaFileAlt } from 'react-icons/fa'
 import { useTranslation } from '../../hooks/useTranslation'
+import { useCaseConfigStore } from '../../store/caseConfigStore'
 import type { CaseType, CourtType } from '../../types/domain'
-
-export interface CasePreset {
-  id: string
-  label: string
-  titleTemplate: string
-  caseType: CaseType
-  court: CourtType
-  icon: typeof FaChild
-  description: string
-}
 
 export interface CaseQuickPresetsProps {
   onSelectPreset: (preset: { title: string; caseType: CaseType; court: CourtType }) => void
@@ -19,53 +10,19 @@ export interface CaseQuickPresetsProps {
   className?: string
 }
 
-const PRESETS: CasePreset[] = [
-  {
-    id: 'child-arrangements',
-    label: 'Child Arrangements',
-    titleTemplate: 'Application for Child Arrangements (Live With / Contact)',
-    caseType: 'Private Law (Child Arrangements)',
-    court: 'Family Court',
-    icon: FaChild,
-    description: 'Residence, spend time with & holiday contact',
-  },
-  {
-    id: 'prohibited-steps',
-    label: 'Prohibited Steps Order',
-    titleTemplate: 'Application for Prohibited Steps / Specific Issue Order',
-    caseType: 'Private Law (Child Arrangements)',
-    court: 'Family Court',
-    icon: FaShieldAlt,
-    description: 'Schooling, relocation, or medical decisions',
-  },
-  {
-    id: 'non-molestation',
-    label: 'Non-Molestation',
-    titleTemplate: 'Application for Non-Molestation & Occupation Order',
-    caseType: 'Domestic Abuse (Non-Molestation)',
-    court: 'Family Court',
-    icon: FaShieldAlt,
-    description: 'Protection from domestic abuse and harassment',
-  },
-  {
-    id: 'financial-remedy',
-    label: 'Financial Remedies',
-    titleTemplate: 'Financial Remedy Proceedings (Form A / Consent)',
-    caseType: 'Financial Remedies',
-    court: 'Family Court',
-    icon: FaBalanceScale,
-    description: 'Maintenance, property adjustment & pensions',
-  },
-  {
-    id: 'care-proceedings',
-    label: 'Care / Supervision',
-    titleTemplate: 'Public Law Proceedings under Section 31 Children Act',
-    caseType: 'Public Law (Care Proceedings)',
-    court: 'Family Court',
-    icon: FaFileAlt,
-    description: 'Local authority care or supervision orders',
-  },
-]
+function getPresetIcon(iconStr?: string) {
+  switch (iconStr) {
+    case 'shield':
+      return FaShieldAlt
+    case 'balance':
+      return FaBalanceScale
+    case 'file':
+      return FaFileAlt
+    case 'child':
+    default:
+      return FaChild
+  }
+}
 
 export default function CaseQuickPresets({
   onSelectPreset,
@@ -73,9 +30,35 @@ export default function CaseQuickPresets({
   className = '',
 }: CaseQuickPresetsProps) {
   const { t } = useTranslation()
+  const { casePresets } = useCaseConfigStore()
+
+  const getPresetLabel = (key: string, fallback: string): string => {
+    switch (key) {
+      case 'child-arrangements':
+        return t('caseForm.presetChildArrangements')
+      case 'prohibited-steps':
+        return t('caseForm.presetProhibitedSteps')
+      case 'non-molestation':
+        return t('caseForm.presetNonMolestation')
+      case 'financial-remedy':
+        return t('caseForm.presetFinancialRemedy')
+      case 'care-proceedings':
+        return t('caseForm.presetCareProceedings')
+      default:
+        return fallback
+    }
+  }
+
+  const activePresets = casePresets.filter((p) => p.isActive !== false)
 
   return (
-    <Card className={`p-3 mb-4 ${className}`} style={{ background: 'linear-gradient(135deg, #f3f6ff 0%, #ffffff 70%)', borderColor: 'var(--mcb-primary-border)' }}>
+    <Card
+      className={`p-3 mb-4 ${className}`}
+      style={{
+        background: 'linear-gradient(135deg, #f3f6ff 0%, #ffffff 70%)',
+        borderColor: 'var(--mcb-primary-border)',
+      }}
+    >
       <div className="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between gap-1 mb-2">
         <div className="d-flex align-items-center gap-2">
           <Badge bg="primary" className="d-inline-flex align-items-center gap-1">
@@ -87,19 +70,20 @@ export default function CaseQuickPresets({
       </div>
 
       <div className="d-flex flex-wrap gap-2 pt-1">
-        {PRESETS.map((p) => {
-          const Icon = p.icon
+        {activePresets.map((p) => {
+          const Icon = getPresetIcon(p.icon)
           const isSelected = currentTitle.trim() === p.titleTemplate.trim()
+          const label = getPresetLabel(p.presetKey, p.label)
 
           return (
             <button
-              key={p.id}
+              key={p.presetKey || p.id}
               type="button"
               onClick={() =>
                 onSelectPreset({
                   title: p.titleTemplate,
-                  caseType: p.caseType,
-                  court: p.court,
+                  caseType: p.caseType as CaseType,
+                  court: p.court as CourtType,
                 })
               }
               className={`btn btn-sm d-flex align-items-center gap-2 rounded-pill px-3 ${
@@ -110,7 +94,7 @@ export default function CaseQuickPresets({
               title={p.description}
             >
               <Icon size={12} className={isSelected ? 'text-white' : 'text-primary'} />
-              <span>{p.label}</span>
+              <span>{label}</span>
             </button>
           )
         })}
