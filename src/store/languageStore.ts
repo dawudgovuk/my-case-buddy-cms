@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { DEFAULT_LANGUAGE, type SupportedLanguage, SUPPORTED_LANGUAGES } from '../i18n'
+import { useCaseConfigStore } from './caseConfigStore'
 
 const STORAGE_KEY = 'mcb_language'
 
@@ -29,5 +30,7 @@ export const useLanguageStore = create<LanguageState>((set) => ({
       // ignore localStorage write errors
     }
     set({ language })
+    // Dynamically refresh Strapi metadata dropdowns for the selected language
+    useCaseConfigStore.getState().loadCaseConfig(language)
   },
 }))

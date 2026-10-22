@@ -32,23 +32,6 @@ export default function CaseQuickPresets({
   const { t } = useTranslation()
   const { casePresets } = useCaseConfigStore()
 
-  const getPresetLabel = (key: string, fallback: string): string => {
-    switch (key) {
-      case 'child-arrangements':
-        return t('caseForm.presetChildArrangements')
-      case 'prohibited-steps':
-        return t('caseForm.presetProhibitedSteps')
-      case 'non-molestation':
-        return t('caseForm.presetNonMolestation')
-      case 'financial-remedy':
-        return t('caseForm.presetFinancialRemedy')
-      case 'care-proceedings':
-        return t('caseForm.presetCareProceedings')
-      default:
-        return fallback
-    }
-  }
-
   const activePresets = casePresets.filter((p) => p.isActive !== false)
 
   return (
@@ -73,7 +56,7 @@ export default function CaseQuickPresets({
         {activePresets.map((p) => {
           const Icon = getPresetIcon(p.icon)
           const isSelected = currentTitle.trim() === p.titleTemplate.trim()
-          const label = getPresetLabel(p.presetKey, p.label)
+          const label = p.label || p.presetKey
 
           return (
             <button

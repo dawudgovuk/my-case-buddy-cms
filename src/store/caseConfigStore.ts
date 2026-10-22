@@ -83,6 +83,7 @@ export const DEFAULT_CASE_PRESETS: CasePresetDomain[] = [
 ];
 
 interface CaseConfigState {
+  currentLocale: string;
   courtJurisdictions: string[];
   courtJurisdictionItems: CourtJurisdictionDomain[];
   caseTypes: string[];
@@ -91,11 +92,12 @@ interface CaseConfigState {
   caseStagesMap: Record<string, CaseStageInfo[]>;
   isLoading: boolean;
   isLoaded: boolean;
-  loadCaseConfig: () => Promise<void>;
+  loadCaseConfig: (locale?: string) => Promise<void>;
   getStagesForCaseType: (caseType: string) => CaseStageInfo[];
 }
 
 export const useCaseConfigStore = create<CaseConfigState>((set, get) => ({
+  currentLocale: 'en',
   courtJurisdictions: DEFAULT_COURTS,
   courtJurisdictionItems: [],
   caseTypes: DEFAULT_CASE_TYPES,
@@ -105,13 +107,14 @@ export const useCaseConfigStore = create<CaseConfigState>((set, get) => ({
   isLoading: false,
   isLoaded: false,
 
-  loadCaseConfig: async () => {
-    set({ isLoading: true });
+  loadCaseConfig: async (locale?: string) => {
+    const effectiveLocale = locale || get().currentLocale || 'en';
+    set({ isLoading: true, currentLocale: effectiveLocale });
     try {
       const [courtsData, caseTypesData, presetsData] = await Promise.all([
-        fetchStrapiCourtJurisdictions(),
-        fetchStrapiCaseTypes(),
-        fetchStrapiCasePresets(),
+        fetchStrapiCourtJurisdictions(effectiveLocale),
+        fetchStrapiCaseTypes(effectiveLocale),
+        fetchStrapiCasePresets(effectiveLocale),
       ]);
 
       const courtNames = courtsData.length > 0

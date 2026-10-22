@@ -47,30 +47,16 @@ export default function CaseMetadataForm({
     if (values.court && !list.includes(values.court)) {
       list.unshift(values.court)
     }
-    return list.map((c) => {
-      let label = c
-      if (c === 'Family Court') label = t('caseForm.courtFamilyCourt')
-      else if (c === 'High Court Family Division') label = t('caseForm.courtHighCourt')
-      return { value: c, label }
-    })
-  }, [courtJurisdictions, values.court, t])
+    return list.map((c) => ({ value: c, label: c }))
+  }, [courtJurisdictions, values.court])
 
   const caseTypeSelectOptions = useMemo(() => {
     const list = [...caseTypes]
     if (values.caseType && !list.includes(values.caseType)) {
       list.unshift(values.caseType)
     }
-    return list.map((ct) => {
-      let label = ct
-      if (ct === 'Public Law (Care Proceedings)') label = t('caseForm.caseTypePublicLaw')
-      else if (ct === 'Private Law (Child Arrangements)') label = t('caseForm.caseTypePrivateLaw')
-      else if (ct === 'Domestic Abuse (Non-Molestation)') label = t('caseForm.caseTypeDomesticAbuse')
-      else if (ct === 'Financial Remedies') label = t('caseForm.caseTypeFinancialRemedies')
-      else if (ct === 'Adoption') label = t('caseForm.caseTypeAdoption')
-      else if (ct === 'Other') label = t('caseForm.caseTypeOther')
-      return { value: ct, label }
-    })
-  }, [caseTypes, values.caseType, t])
+    return list.map((ct) => ({ value: ct, label: ct }))
+  }, [caseTypes, values.caseType])
 
   const statusSelectOptions = useMemo(() => {
     return CASE_STATUSES.map((st) => {

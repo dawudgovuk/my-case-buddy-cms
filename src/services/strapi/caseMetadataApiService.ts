@@ -69,14 +69,24 @@ interface StrapiCaseTypeRaw {
   attributes?: Record<string, unknown>;
 }
 
-export async function fetchStrapiCourtJurisdictions(): Promise<CourtJurisdictionDomain[]> {
+export async function fetchStrapiCourtJurisdictions(locale?: string): Promise<CourtJurisdictionDomain[]> {
   try {
-    const query = {
+    const query: Record<string, string> = {
       'sort': 'order:asc',
       'filters[isActive][$eq]': 'true',
       'pagination[pageSize]': '100',
     };
-    const response = await strapiGet<StrapiListResponse<StrapiCourtRaw>>('/api/court-jurisdictions', query);
+    if (locale) {
+      query.locale = locale;
+    }
+    let response = await strapiGet<StrapiListResponse<StrapiCourtRaw>>('/api/court-jurisdictions', query);
+    
+    // Fallback to English if target locale has no entries
+    if ((!response?.data || response.data.length === 0) && locale && locale !== 'en') {
+      const fallbackQuery = { ...query, locale: 'en' };
+      response = await strapiGet<StrapiListResponse<StrapiCourtRaw>>('/api/court-jurisdictions', fallbackQuery);
+    }
+
     if (!response?.data || !Array.isArray(response.data)) {
       return [];
     }
@@ -98,14 +108,23 @@ export async function fetchStrapiCourtJurisdictions(): Promise<CourtJurisdiction
   }
 }
 
-export async function fetchStrapiCaseStages(): Promise<CaseStageDomain[]> {
+export async function fetchStrapiCaseStages(locale?: string): Promise<CaseStageDomain[]> {
   try {
-    const query = {
+    const query: Record<string, string> = {
       'sort': 'order:asc',
       'filters[isActive][$eq]': 'true',
       'pagination[pageSize]': '100',
     };
-    const response = await strapiGet<StrapiListResponse<StrapiStageRaw>>('/api/case-stages', query);
+    if (locale) {
+      query.locale = locale;
+    }
+    let response = await strapiGet<StrapiListResponse<StrapiStageRaw>>('/api/case-stages', query);
+
+    if ((!response?.data || response.data.length === 0) && locale && locale !== 'en') {
+      const fallbackQuery = { ...query, locale: 'en' };
+      response = await strapiGet<StrapiListResponse<StrapiStageRaw>>('/api/case-stages', fallbackQuery);
+    }
+
     if (!response?.data || !Array.isArray(response.data)) {
       return [];
     }
@@ -128,15 +147,24 @@ export async function fetchStrapiCaseStages(): Promise<CaseStageDomain[]> {
   }
 }
 
-export async function fetchStrapiCaseTypes(): Promise<CaseTypeDomain[]> {
+export async function fetchStrapiCaseTypes(locale?: string): Promise<CaseTypeDomain[]> {
   try {
-    const query = {
+    const query: Record<string, string> = {
       'populate': '*',
       'sort': 'order:asc',
       'filters[isActive][$eq]': 'true',
       'pagination[pageSize]': '100',
     };
-    const response = await strapiGet<StrapiListResponse<StrapiCaseTypeRaw>>('/api/case-types', query);
+    if (locale) {
+      query.locale = locale;
+    }
+    let response = await strapiGet<StrapiListResponse<StrapiCaseTypeRaw>>('/api/case-types', query);
+
+    if ((!response?.data || response.data.length === 0) && locale && locale !== 'en') {
+      const fallbackQuery = { ...query, locale: 'en' };
+      response = await strapiGet<StrapiListResponse<StrapiCaseTypeRaw>>('/api/case-types', fallbackQuery);
+    }
+
     if (!response?.data || !Array.isArray(response.data)) {
       return [];
     }
@@ -205,14 +233,23 @@ interface StrapiCasePresetRaw {
   attributes?: Record<string, unknown>;
 }
 
-export async function fetchStrapiCasePresets(): Promise<CasePresetDomain[]> {
+export async function fetchStrapiCasePresets(locale?: string): Promise<CasePresetDomain[]> {
   try {
-    const query = {
+    const query: Record<string, string> = {
       'sort': 'order:asc',
       'filters[isActive][$eq]': 'true',
       'pagination[pageSize]': '100',
     };
-    const response = await strapiGet<StrapiListResponse<StrapiCasePresetRaw>>('/api/case-presets', query);
+    if (locale) {
+      query.locale = locale;
+    }
+    let response = await strapiGet<StrapiListResponse<StrapiCasePresetRaw>>('/api/case-presets', query);
+
+    if ((!response?.data || response.data.length === 0) && locale && locale !== 'en') {
+      const fallbackQuery = { ...query, locale: 'en' };
+      response = await strapiGet<StrapiListResponse<StrapiCasePresetRaw>>('/api/case-presets', fallbackQuery);
+    }
+
     if (!response?.data || !Array.isArray(response.data)) {
       return [];
     }

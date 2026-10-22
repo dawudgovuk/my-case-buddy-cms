@@ -38,17 +38,17 @@ function Shell() {
   const { user, initNeonAuth, isLoadingSession } = useAuthStore()
   const { isStrapiMode, syncWithStrapi } = useCasesStore()
   const { loadCaseConfig } = useCaseConfigStore()
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const isLip = user?.role === 'LIP'
 
   useEffect(() => {
     void initNeonAuth()
-    void loadCaseConfig()
+    void loadCaseConfig(language)
     if (isStrapiMode) {
       void syncWithStrapi()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [language])
 
   if (isLoadingSession) {
     return (

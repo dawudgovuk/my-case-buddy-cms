@@ -11,12 +11,13 @@ import CaseListItemCard from '../components/case/CaseListItemCard'
 import CaseCard from '../components/case/CaseCard'
 import EmptyCasesState from '../components/case/EmptyCasesState'
 import DeleteCaseModal from '../components/case/DeleteCaseModal'
-import { CASE_TYPE_OPTIONS } from '../utils/caseConstants'
 import { countChildren } from '../utils/partyUtils'
 import { toast } from '../store/toastStore'
+import { useCaseConfigStore } from '../store/caseConfigStore'
 
 export default function CasesList() {
   const { cases, remove, togglePeerSupport, refresh } = useCasesStore()
+  const { caseTypes } = useCaseConfigStore()
   const { user } = useAuthStore()
   const navigate = useNavigate()
 
@@ -142,7 +143,7 @@ export default function CasesList() {
         }}
         selectedCaseType={selectedCaseType}
         onCaseTypeChange={setSelectedCaseType}
-        caseTypeOptions={CASE_TYPE_OPTIONS}
+        caseTypeOptions={caseTypes}
         sortBy={sortBy}
         onSortChange={setSortBy}
         viewMode={viewMode}

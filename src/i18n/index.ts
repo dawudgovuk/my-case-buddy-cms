@@ -1,10 +1,12 @@
 import type { LanguageOption, SupportedLanguage, TranslationSchema } from './types'
 import { en } from './locales/en'
 import { cy } from './locales/cy'
+import { hi } from './locales/hi'
+import { bn } from './locales/bn'
 import { es } from './locales/es'
 import { pl } from './locales/pl'
 
-export { en, cy, es, pl }
+export { en, cy, hi, bn, es, pl }
 export * from './types'
 
 export const DEFAULT_LANGUAGE: SupportedLanguage = 'en'
@@ -12,6 +14,8 @@ export const DEFAULT_LANGUAGE: SupportedLanguage = 'en'
 export const SUPPORTED_LANGUAGES: readonly LanguageOption[] = [
   { code: 'en', label: 'English', nativeName: 'English (UK)', flag: '🇬🇧' },
   { code: 'cy', label: 'Welsh', nativeName: 'Cymraeg', flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿' },
+  { code: 'hi', label: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
+  { code: 'bn', label: 'Bengali', nativeName: 'বাংলা', flag: '🇧🇩' },
   { code: 'es', label: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
   { code: 'pl', label: 'Polish', nativeName: 'Polski', flag: '🇵🇱' },
 ] as const
@@ -19,6 +23,8 @@ export const SUPPORTED_LANGUAGES: readonly LanguageOption[] = [
 export const TRANSLATIONS: Record<SupportedLanguage, TranslationSchema> = {
   en,
   cy,
+  hi,
+  bn,
   es,
   pl,
 }

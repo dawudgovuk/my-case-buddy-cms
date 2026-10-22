@@ -10,6 +10,7 @@ import { acceptStrapiPeerSupport } from '../../services/strapi'
 import VerificationGateCard from '../verification/VerificationGateCard'
 import { toast } from '../../store/toastStore'
 import { useTranslation } from '../../hooks/useTranslation'
+import { useCaseConfigStore } from '../../store/caseConfigStore'
 
 interface PeerSupportCasesTabProps {
   user: User
@@ -25,6 +26,7 @@ export default function PeerSupportCasesTab({
   assignedCasesCount = 0,
 }: PeerSupportCasesTabProps) {
   const { t } = useTranslation()
+  const { caseTypes } = useCaseConfigStore()
   const navigate = useNavigate()
   const { addOrUpdate, isStrapiMode, syncWithStrapi } = useCasesStore()
   const { resendRegistrationEmails } = useAuthStore()
@@ -143,10 +145,11 @@ export default function PeerSupportCasesTab({
           onChange={(e) => setFilterType(e.target.value)}
         >
           <option value="all">{t('professional.allCaseTypes')} ({peerCases.length})</option>
-          <option value="Private Law (Child Arrangements)">Private Law (Child Arrangements)</option>
-          <option value="Public Law (Care Proceedings)">Public Law (Care Proceedings)</option>
-          <option value="Domestic Abuse (Non-Molestation)">Domestic Abuse (Non-Molestation)</option>
-          <option value="Financial Remedies">Financial Remedies</option>
+          {caseTypes.map((type) => (
+            <option key={type} value={type}>
+              {type}
+            </option>
+          ))}
         </Form.Select>
       </div>
 

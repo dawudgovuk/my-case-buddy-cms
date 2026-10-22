@@ -1,4 +1,4 @@
-export type SupportedLanguage = 'en' | 'cy' | 'es' | 'pl'
+export type SupportedLanguage = 'en' | 'cy' | 'hi' | 'bn' | 'es' | 'pl'
 
 export interface LanguageOption {
   code: SupportedLanguage
@@ -188,12 +188,6 @@ export interface TranslationSchema {
     seekingPeerSupportHelp: string
     quickPresetsTitle: string
     quickPresetsDesc: string
-    presetCareApp: string
-    presetChildArrangements: string
-    presetFinancialRemedy: string
-    presetProhibitedSteps: string
-    presetNonMolestation: string
-    presetCareProceedings: string
     caseSubtitle: string
     caseTitleHelper: string
     litigantTipLabel: string
@@ -210,14 +204,6 @@ export interface TranslationSchema {
     litigantTipBox: string
     childCountSingle: string
     childCountPlural: string
-    courtFamilyCourt: string
-    courtHighCourt: string
-    caseTypePublicLaw: string
-    caseTypePrivateLaw: string
-    caseTypeDomesticAbuse: string
-    caseTypeFinancialRemedies: string
-    caseTypeAdoption: string
-    caseTypeOther: string
     statusOpen: string
     statusStayed: string
     statusConcluded: string
