@@ -1,5 +1,5 @@
 import type { UserRole } from '../types/domain'
-import type { DispatchRegistrationResult } from '../types/email'
+import type { DispatchedEmail, DispatchRegistrationResult } from '../types/email'
 import { strapiPost } from './strapi/strapiClient'
 import { isStrapiEnabled } from './strapi/strapiConfig'
 import { getAllDispatchedEmails, saveDispatchedEmails } from './email/dispatchedEmailLog'
@@ -47,31 +47,48 @@ export async function dispatchMcKenzieRegistrationEmails(params: {
     verificationUrl,
   })
 
-  // 3. Persist into Local Dispatched Emails storage
-  const existing = getAllDispatchedEmails()
-  const updated = [confirmationEmail, verificationEmail, ...existing]
-  saveDispatchedEmails(updated)
+  let activeConfirmation = confirmationEmail
+  let activeVerification = verificationEmail
 
-  // 4. Optionally synchronize with Strapi headless backend if active
+  // 3. Synchronize with Strapi headless backend if active to fetch dynamic localized templates
   if (isStrapiEnabled()) {
     try {
-      await strapiPost('/api/auth-notification/send-registration-emails', {
-        name,
-        email,
-        role,
-        token,
-        verificationUrl: verificationEmail.verificationUrl,
-        referenceId,
-      })
+      const activeLocale =
+        typeof window !== 'undefined'
+          ? (localStorage.getItem('i18nextLng') || 'en').substring(0, 2)
+          : 'en'
+      const response = await strapiPost<{ success: boolean; emails?: DispatchedEmail[] }>(
+        '/api/auth-notification/send-registration-emails',
+        {
+          name,
+          email,
+          role,
+          token,
+          verificationUrl: verificationEmail.verificationUrl,
+          referenceId,
+          locale: activeLocale,
+        }
+      )
+      if (response && Array.isArray(response.emails)) {
+        const conf = response.emails.find((e) => e.type === 'registration_confirmation')
+        const verif = response.emails.find((e) => e.type === 'email_verification')
+        if (conf) activeConfirmation = { ...confirmationEmail, ...conf }
+        if (verif) activeVerification = { ...verificationEmail, ...verif }
+      }
     } catch (err) {
       console.warn('[emailService] Strapi email notification sync note:', err)
     }
   }
 
+  // 4. Persist into Local Dispatched Emails storage
+  const existing = getAllDispatchedEmails()
+  const updated = [activeConfirmation, activeVerification, ...existing]
+  saveDispatchedEmails(updated)
+
   return {
-    confirmationEmail,
-    verificationEmail,
-    emails: [confirmationEmail, verificationEmail],
+    confirmationEmail: activeConfirmation,
+    verificationEmail: activeVerification,
+    emails: [activeConfirmation, activeVerification],
   }
 }
 

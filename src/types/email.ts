@@ -18,6 +18,8 @@ export interface DispatchedEmail {
   verificationUrl?: string
   bodyText: string
   html?: string
+  locale?: string
+  source?: string
   guidelinesSummary?: {
     allowed: string[]
     prohibited: string[]
