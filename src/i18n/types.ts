@@ -42,6 +42,7 @@ export interface TranslationSchema {
     pageNotFound: string
     error: string
     language: string
+    selectLanguage: string
     myDashboard: string
     support: string
     supportKnowledgeBase: string
@@ -90,6 +91,7 @@ export interface TranslationSchema {
     lip: string
     lipFull: string
     mckenzieFriend: string
+    courtLaySupporter: string
     solicitor: string
     barrister: string
     child: string

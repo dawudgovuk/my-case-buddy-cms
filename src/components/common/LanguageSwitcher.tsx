@@ -20,7 +20,7 @@ export default function LanguageSwitcher({
   variant = 'light',
   showLabel = true,
 }: LanguageSwitcherProps) {
-  const { language, setLanguage, languages, currentLanguageOption } = useTranslation()
+  const { t, language, setLanguage, languages, currentLanguageOption } = useTranslation()
 
   const handleSelectLanguage = (lang: (typeof languages)[number]) => {
     if (lang.code !== language) {
@@ -37,8 +37,8 @@ export default function LanguageSwitcher({
         id="language-switcher-dropdown"
         className="d-flex align-items-center gap-1.5 border bg-white py-1 px-2.5 rounded-pill shadow-none text-nowrap"
         style={{ minHeight: 38 }}
-        title="Select Language"
-        aria-label="Select Language"
+        title={t('common.selectLanguage')}
+        aria-label={t('common.selectLanguage')}
       >
         <span className="fs-6" role="img" aria-label={currentLanguageOption.label}>
           {currentLanguageOption.flag}
@@ -53,7 +53,7 @@ export default function LanguageSwitcher({
       <Dropdown.Menu align="end" className="shadow border-0 py-2" style={{ minWidth: 200 }}>
         <div className="px-3 py-1 text-muted small fw-semibold text-uppercase d-flex align-items-center gap-1 border-bottom mb-1">
           <FaGlobe size={12} />
-          <span>Select Language / Dewis Iaith</span>
+          <span>{t('common.selectLanguage')}</span>
         </div>
 
         {languages.map((lang) => {

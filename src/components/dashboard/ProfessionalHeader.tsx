@@ -44,7 +44,7 @@ export default function ProfessionalHeader({
   const getRoleDisplayName = (role: string) => {
     switch (role) {
       case 'McKenzieFriend':
-        return `${t('roles.mckenzieFriend')} (Court Lay Supporter)`
+        return `${t('roles.mckenzieFriend')} (${t('roles.courtLaySupporter')})`
       case 'Solicitor':
         return `${t('roles.solicitor')}`
       case 'Barrister':

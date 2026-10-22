@@ -165,7 +165,7 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
           <h4 className="fw-bold mb-1 d-flex align-items-center gap-2">
             <span>{t('professional.myAssignedCases')}</span>
             <Badge bg="secondary" className="fs-6 px-2 py-1">
-              {cases.length} Total
+              {cases.length} {t('common.total')}
             </Badge>
           </h4>
           <p className="text-secondary small mb-0">
@@ -204,9 +204,9 @@ export default function AssignedCasesTab({ cases, deadlines }: AssignedCasesTabP
               style={{ width: '140px' }}
             >
               <option value="ALL">{t('professional.allStatuses')}</option>
-              <option value="Open">Open</option>
-              <option value="Stayed">Stayed</option>
-              <option value="Concluded">Concluded</option>
+              <option value="Open">{t('common.open')}</option>
+              <option value="Stayed">{t('common.stayed')}</option>
+              <option value="Concluded">{t('common.concluded')}</option>
             </Form.Select>
           </Col>
         </Row>
